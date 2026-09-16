@@ -103,12 +103,26 @@ def decode_access_token(token: str) -> dict:
         )
 
 
+from backend.database import users, rate_limits
+from pymongo import ReturnDocument
+
 # ------------------------------------------------------------------------------
-# In-Memory Sliding-Window Rate Limiter for Login & Public Submissions
+# Distributed & In-Memory Rate Limiting
 # ------------------------------------------------------------------------------
+# IMPORTANT DEPLOYMENT CAVEAT:
+# Standard in-process rate limiting (e.g. dict or memory-based sliding windows)
+# is bound to a single Python OS process. On multi-worker application servers
+# (e.g. Uvicorn/Gunicorn with multiple workers) or serverless platforms (Vercel,
+# AWS Lambda) that scale horizontally, process-local memory is isolated across
+# instances and evaporates when instances scale down.
+#
+# To ensure reliable protection, DistributedRateLimiter uses MongoDB's atomic
+# operations on the `rate_limits` collection with automatic TTL index cleanup.
+# If MongoDB is unavailable or in offline test suites (mongomock), it falls back
+# cleanly to the thread-safe in-memory sliding window limiter.
 
 class SlidingWindowRateLimiter:
-    """Thread-safe in-memory rate limiter per client key."""
+    """Thread-safe in-memory rate limiter per client key (used as fallback)."""
     def __init__(self, max_requests: int, window_seconds: int = 60):
         self.max_requests = max_requests
         self.window_seconds = window_seconds
@@ -138,15 +152,76 @@ class SlidingWindowRateLimiter:
                 self._records.clear()
 
 
-login_limiter = SlidingWindowRateLimiter(
+class DistributedRateLimiter:
+    """MongoDB-backed atomic rate limiter with in-memory fallback."""
+    def __init__(self, namespace: str, max_requests: int, window_seconds: int = 60):
+        self.namespace = namespace
+        self.max_requests = max_requests
+        self.window_seconds = window_seconds
+        self._fallback = SlidingWindowRateLimiter(max_requests, window_seconds)
+
+    @property
+    def _records(self):
+        return self._fallback._records
+
+    @_records.setter
+    def _records(self, val):
+        self._fallback._records = val
+
+    def is_allowed(self, key: str) -> Tuple[bool, int]:
+        if settings.ENVIRONMENT == "test":
+            return self._fallback.is_allowed(key)
+
+        now = time.time()
+        window_start = int(now // self.window_seconds) * self.window_seconds
+        expires_at = datetime.fromtimestamp(window_start + self.window_seconds * 2, tz=timezone.utc)
+        record_key = f"{self.namespace}:{key}"
+
+        try:
+            doc = rate_limits.find_one_and_update(
+                {"key": record_key, "window_start": window_start},
+                {
+                    "$inc": {"count": 1},
+                    "$setOnInsert": {"expires_at": expires_at}
+                },
+                upsert=True,
+                return_document=ReturnDocument.AFTER
+            )
+            if doc:
+                count = doc.get("count", 1)
+                if count > self.max_requests:
+                    wait_sec = max(1, int(window_start + self.window_seconds - now))
+                    return False, wait_sec
+                return True, max(0, self.max_requests - count)
+        except Exception:
+            # Fallback to local memory limiter if Mongo unavailable/in mock test
+            pass
+
+        return self._fallback.is_allowed(key)
+
+    def reset(self, key: Optional[str] = None):
+        try:
+            if key:
+                rate_limits.delete_many({"key": f"{self.namespace}:{key}"})
+            else:
+                rate_limits.delete_many({"key": {"$regex": f"^{self.namespace}:"}})
+        except Exception:
+            pass
+        self._fallback.reset(key)
+
+
+login_limiter = DistributedRateLimiter(
+    namespace="login",
     max_requests=settings.RATE_LIMIT_LOGIN_PER_MINUTE,
     window_seconds=60
 )
-public_review_limiter = SlidingWindowRateLimiter(
+public_review_limiter = DistributedRateLimiter(
+    namespace="public_review",
     max_requests=settings.RATE_LIMIT_PUBLIC_REVIEW_PER_MINUTE,
     window_seconds=60
 )
-export_limiter = SlidingWindowRateLimiter(
+export_limiter = DistributedRateLimiter(
+    namespace="export",
     max_requests=10,
     window_seconds=60
 )
