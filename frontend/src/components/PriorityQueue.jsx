@@ -22,7 +22,11 @@ const FILTER_CHIP_DEFS = [
   { key: 'search', label: 'Search' },
 ];
 
-const RISK_TIERS = ["High Risk - Review", "Medium Risk - Monitor", "Low Risk"];
+const RISK_TIERS = [
+  { value: "High Risk - Review", label: "High Risk (> 70)" },
+  { value: "Medium Risk - Monitor", label: "Medium Risk (50 – 70)" },
+  { value: "Low Risk", label: "Low Risk (≤ 50)" },
+];
 
 export default function PriorityQueue({
   works,
@@ -84,7 +88,7 @@ export default function PriorityQueue({
               Priority Audit Queue
             </h2>
             <p className="text-sm text-muted-foreground mt-0.5">
-              Ranked by the unified risk index (likelihood × impact). High-priority works carry evidence-grounded causes.
+              Ranked by unified risk index: High Risk (&gt;70), Medium Risk (50–70), and Low Risk (≤50).
             </p>
           </div>
 
@@ -125,7 +129,7 @@ export default function PriorityQueue({
             <SelectContent>
               <SelectItem value="ALL">All Risk Tiers</SelectItem>
               {RISK_TIERS.map((tier) => (
-                <SelectItem key={tier} value={tier}>{tier}</SelectItem>
+                <SelectItem key={tier.value} value={tier.value}>{tier.label}</SelectItem>
               ))}
             </SelectContent>
           </Select>
