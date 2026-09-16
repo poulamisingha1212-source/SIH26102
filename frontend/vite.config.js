@@ -20,18 +20,6 @@ export default defineConfig({
       '/api': {
         target: process.env.BACKEND_URL || 'http://localhost:8000',
         changeOrigin: true,
-      },
-      '/works': {
-        target: process.env.BACKEND_URL || 'http://localhost:8000',
-        changeOrigin: true,
-      },
-      '/stats': {
-        target: process.env.BACKEND_URL || 'http://localhost:8000',
-        changeOrigin: true,
-      },
-      '/sync': {
-        target: process.env.BACKEND_URL || 'http://localhost:8000',
-        changeOrigin: true,
       }
     }
   }
