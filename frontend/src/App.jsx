@@ -58,7 +58,7 @@ export default function App() {
   const [isLoadingWorks, setIsLoadingWorks] = useState(true);
 
   // Filters — mp_name lets the MP Directory deep-link into the audit queue.
-  // Global house scope: '' = Both Houses; applied to every data view.
+  // Global house scope: '' = All Houses / Terms; applied to every data view.
   const [house, setHouse] = useState('');
   const [filters, setFilters] = useState({
     state: '',
