@@ -129,7 +129,7 @@ export default function MPProfileModal({ mpName, house, onClose, onOpenWork, onV
                   label="Avg Risk Score"
                   value={profile.avg_risk_score.toFixed(1)}
                   sub={`peak ${profile.max_risk_score.toFixed(0)}/100`}
-                  valueClass={profile.avg_risk_score >= 70 ? 'text-red-600' : profile.avg_risk_score >= 40 ? 'text-amber-600' : 'text-emerald-600'}
+                  valueClass={profile.avg_risk_score > 70 ? 'text-red-600' : profile.avg_risk_score >= 50 ? 'text-amber-600' : 'text-emerald-600'}
                 />
                 <SummaryCard
                   icon={<AlertTriangle className="w-4 h-4 text-red-400" />}
