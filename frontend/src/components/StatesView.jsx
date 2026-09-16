@@ -16,8 +16,8 @@ import { apiFetch } from '@/lib/api';
  */
 
 function riskBadge(avgRisk) {
-  if (avgRisk >= 70) return { label: 'High Risk', className: 'border-red-200 bg-red-50 text-red-700' };
-  if (avgRisk >= 40) return { label: 'Medium Risk', className: 'border-amber-200 bg-amber-50 text-amber-700' };
+  if (avgRisk > 70) return { label: 'High Risk', className: 'border-red-200 bg-red-50 text-red-700' };
+  if (avgRisk >= 50) return { label: 'Medium Risk', className: 'border-amber-200 bg-amber-50 text-amber-700' };
   return { label: 'Low Risk', className: 'border-emerald-200 bg-emerald-50 text-emerald-700' };
 }
 
