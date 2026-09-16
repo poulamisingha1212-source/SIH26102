@@ -26,7 +26,6 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..",
 
 from backend.config import settings
 import backend.database as db
-from backend.database import works, mp_allocations, sync_logs, next_id
 from backend.models import now_utc, lower_or_none
 from backend.services.mplads_live import (
     MPLADSLiveClient,
@@ -147,7 +146,7 @@ def feed_house_data(
         mappings = [_normalize_work(r) for r in rows]
         work_ids = [m["work_id"] for m in mappings]
 
-        existing_ids = set(works.distinct("work_id", {"work_id": {"$in": work_ids}}))
+        existing_ids = set(db.works.distinct("work_id", {"work_id": {"$in": work_ids}}))
 
         ops = []
         chunk_ins = chunk_upd = 0
@@ -166,7 +165,7 @@ def feed_house_data(
                 chunk_ins += 1
 
         if ops:
-            works.bulk_write(ops, ordered=False)
+            db.works.bulk_write(ops, ordered=False)
 
         inserted_total += chunk_ins
         updated_total += chunk_upd
@@ -211,22 +210,20 @@ def run_full_feed(
     chunk_size: int = 2000,
     purge_preloaded: bool = True,
     mongo_uri: Optional[str] = None,
+    force: bool = False,
 ) -> Dict[str, any]:
     """
     Main feed orchestrator. Acquires distributed lock, cleans synthetic data,
     and feeds each house sequentially.
     """
     if mongo_uri:
-        os.environ["MONGODB_URI"] = mongo_uri
-        settings.MONGODB_URI = mongo_uri
-        import pymongo
-        client = pymongo.MongoClient(mongo_uri)
-        db.client = client
-        db.db = client[settings.MONGO_DB_NAME]
-        db.works = db.db["works"]
-        db.mp_allocations = db.db["mp_allocations"]
-        db.sync_logs = db.db["sync_logs"]
-        db.distributed_locks = db.db["distributed_locks"]
+        db.init_database(mongo_uri)
+    elif settings.MONGODB_URI:
+        db.init_database(settings.MONGODB_URI)
+
+    if force:
+        logger.info("Force flag passed: releasing any existing distributed lock...")
+        db.distributed_locks.delete_many({"_id": "mplads_ingestion_lock"})
 
     start_time = now_utc()
     t0 = time.time()
@@ -235,7 +232,7 @@ def run_full_feed(
 
     lock_owner = acquire_sync_lock(lease_seconds=7200)  # 2 hour lock
     if not lock_owner:
-        logger.error("Could not acquire distributed sync lock. Another sync is already running.")
+        logger.error("Could not acquire distributed sync lock. Another sync is already running (use --force to override).")
         return {"status": "failed", "error": "Distributed lock held by another process"}
 
     try:
@@ -247,7 +244,7 @@ def run_full_feed(
         # Build initial allocation map
         alloc_map = {
             a["mp_name"]: a.get("allocated_amount") or 0.0
-            for a in mp_allocations.find({}, {"mp_name": 1, "allocated_amount": 1})
+            for a in db.mp_allocations.find({}, {"mp_name": 1, "allocated_amount": 1})
         }
 
         live_client = MPLADSLiveClient(
@@ -283,7 +280,7 @@ def run_full_feed(
             # Refresh allocation map for next house
             alloc_map = {
                 a["mp_name"]: a.get("allocated_amount") or 0.0
-                for a in mp_allocations.find({}, {"mp_name": 1, "allocated_amount": 1})
+                for a in db.mp_allocations.find({}, {"mp_name": 1, "allocated_amount": 1})
             }
 
         duration = round(time.time() - t0, 2)
@@ -296,8 +293,8 @@ def run_full_feed(
         logger.info("=" * 70)
 
         # Write final sync log
-        sync_logs.insert_one({
-            "id": next_id("sync_logs"),
+        db.sync_logs.insert_one({
+            "id": db.next_id("sync_logs"),
             "run_timestamp": start_time,
             "start_time": start_time,
             "end_time": now_utc(),
@@ -315,8 +312,8 @@ def run_full_feed(
 
     except Exception as e:
         logger.exception("Feed failed with error: %s", e)
-        sync_logs.insert_one({
-            "id": next_id("sync_logs"),
+        db.sync_logs.insert_one({
+            "id": db.next_id("sync_logs"),
             "run_timestamp": start_time,
             "start_time": start_time,
             "end_time": now_utc(),
@@ -354,6 +351,11 @@ def main():
         default=None,
         help="MongoDB connection URI (overrides MONGODB_URI env var)",
     )
+    parser.add_argument(
+        "--force",
+        action="store_true",
+        help="Force acquisition by clearing any existing distributed lock",
+    )
 
     args = parser.parse_args()
 
@@ -372,6 +374,7 @@ def main():
         chunk_size=args.chunk_size,
         purge_preloaded=not args.skip_purge,
         mongo_uri=args.mongodb_uri,
+        force=args.force,
     )
     sys.exit(0 if res.get("status") == "success" else 1)
 
