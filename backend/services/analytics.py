@@ -91,9 +91,25 @@ def _count_groups(group_key: str, match: dict) -> int:
     return int(res[0]["n"]) if res else 0
 
 
+def house_match(house: Optional[str]):
+    """Returns the MongoDB match value for a house filter.
+    'Lok Sabha' matches both 17th and 18th terms via regex.
+    '18th Lok Sabha' matches specifically '18th Lok Sabha'.
+    '17th Lok Sabha' matches specifically '17th Lok Sabha'.
+    'Rajya Sabha' matches 'Rajya Sabha'.
+    """
+    if not house:
+        return None
+    h = str(house).strip()
+    if h.lower() in ("lok sabha", "loksabha"):
+        return {"$regex": "Lok Sabha", "$options": "i"}
+    return h
+
+
 def _allocations_by_mp(house: Optional[str] = None) -> dict:
     """Per-MP allocated totals from the mp_allocations ledger."""
-    match = {"house": house.strip()} if house else {}
+    hm = house_match(house)
+    match = {"house": hm} if hm is not None else {}
     rows = mp_allocations.aggregate([
         {"$match": match},
         {"$group": {"_id": "$mp_name",
@@ -104,7 +120,8 @@ def _allocations_by_mp(house: Optional[str] = None) -> dict:
 
 def _allocations_by_state(house: Optional[str] = None) -> dict:
     """Per-state allocated totals from the mp_allocations ledger."""
-    match = {"house": house.strip()} if house else {}
+    hm = house_match(house)
+    match = {"house": hm} if hm is not None else {}
     rows = mp_allocations.aggregate([
         {"$match": match},
         {"$group": {"_id": "$state",
@@ -155,8 +172,9 @@ def work_to_list_item(w: dict) -> dict:
 
 def apply_house(filt: dict, house: Optional[str]) -> dict:
     """Constrain a filter dict to a single house when one is selected."""
-    if house:
-        filt["house"] = house.strip()
+    hm = house_match(house)
+    if hm is not None:
+        filt["house"] = hm
     return filt
 
 
@@ -177,7 +195,9 @@ def apply_work_filters(
     if mp_name:
         filt["mp_name"] = _ci(mp_name)
     if house:
-        filt["house"] = house.strip()
+        hm = house_match(house)
+        if hm is not None:
+            filt["house"] = hm
     if ida:
         filt["ida"] = _ci(ida)
     if risk_tier:
@@ -211,7 +231,9 @@ def get_mp_directory(
     if state:
         match["state"] = _ci(state)
     if house:
-        match["house"] = house.strip()
+        hm = house_match(house)
+        if hm is not None:
+            match["house"] = hm
     if search:
         match["$or"] = [{"mp_name": _ci(search)}, {"constituency": _ci(search)}]
 
@@ -260,7 +282,9 @@ def get_mp_profile(db, mp_name: str, house: Optional[str] = None) -> Optional[di
     """Full transparency dossier for one MP: funds, risk tiers, breakdowns, works."""
     match: dict = {"_mp_name_lower": mp_name.strip().lower()}
     if house:
-        match["house"] = house.strip()
+        hm = house_match(house)
+        if hm is not None:
+            match["house"] = hm
 
     agg_rows = list(works.aggregate([
         {"$match": match},
@@ -274,7 +298,9 @@ def get_mp_profile(db, mp_name: str, house: Optional[str] = None) -> Optional[di
     # fall back to the sum of work sanctions, which is a different source field.
     alloc_match = {"_mp_name_lower": mp_name.strip().lower()}
     if house:
-        alloc_match["house"] = house.strip()
+        hm = house_match(house)
+        if hm is not None:
+            alloc_match["house"] = hm
     alloc_rows = list(mp_allocations.aggregate([
         {"$match": alloc_match},
         {"$group": {"_id": None,
@@ -382,7 +408,9 @@ def get_state_directory(
     """State-wise aggregation: funds, MPs covered, risk concentration."""
     match: dict = {"state": {"$nin": [None, ""]}}
     if house:
-        match["house"] = house.strip()
+        hm = house_match(house)
+        if hm is not None:
+            match["house"] = hm
 
     total = _count_groups("state", match)
     sort_field = _DIRECTORY_SORT_KEY.get(sort_by, "total_sanctioned")
@@ -429,7 +457,9 @@ def get_state_profile(db, state: str, house: Optional[str] = None) -> Optional[d
     """State dossier: funds, tier spread, top MPs, agencies and categories."""
     match: dict = {"_state_lower": state.strip().lower()}
     if house:
-        match["house"] = house.strip()
+        hm = house_match(house)
+        if hm is not None:
+            match["house"] = hm
 
     agg_rows = list(works.aggregate([
         {"$match": match},
@@ -485,7 +515,9 @@ def get_state_profile(db, state: str, house: Optional[str] = None) -> Optional[d
 
     alloc_match = {"state": _ci(state)}
     if house:
-        alloc_match["house"] = house.strip()
+        hm = house_match(house)
+        if hm is not None:
+            alloc_match["house"] = hm
     alloc_rows = list(mp_allocations.aggregate([
         {"$match": alloc_match},
         {"$group": {"_id": None, "total_allocated": {"$sum": {"$ifNull": ["$allocated_amount", 0.0]}}}},
@@ -537,7 +569,9 @@ def get_category_analytics(db, house: Optional[str] = None) -> list:
     """Fund share & risk per work category (for the overview charts)."""
     match: dict = {"work_category": {"$nin": [None, ""]}}
     if house:
-        match["house"] = house.strip()
+        hm = house_match(house)
+        if hm is not None:
+            match["house"] = hm
     rows = works.aggregate([
         {"$match": match},
         {"$group": {
@@ -570,7 +604,9 @@ def get_status_analytics(db, house: Optional[str] = None) -> list:
     """Execution status distribution (completed / ongoing / etc.)."""
     match: dict = {"work_status": {"$nin": [None, ""]}}
     if house:
-        match["house"] = house.strip()
+        hm = house_match(house)
+        if hm is not None:
+            match["house"] = hm
     rows = works.aggregate([
         {"$match": match},
         {"$group": {
@@ -600,7 +636,9 @@ def top_entity_stats(group_field: str, house: Optional[str] = None,
     """Top-risk entities (states / MPs / vendors) for the overview dashboard."""
     match: dict = {group_field: {"$nin": [None, ""]}}
     if house:
-        match["house"] = house.strip()
+        hm = house_match(house)
+        if hm is not None:
+            match["house"] = hm
     rows = works.aggregate([
         {"$match": match},
         {"$group": {
