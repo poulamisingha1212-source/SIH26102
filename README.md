@@ -22,23 +22,19 @@ app_port: 7860
 
 ```
 project-root/
-├── docs/
-│   ├── SRS.md                      # Software Requirements Specification (aligned to MongoDB & 5-Agent Engine)
-│   └── fraud_detection_logic.md    # Evidence-grounded typology & multi-agent signal mapping
-│
 ├── model/
 │   ├── risk_engine.py              # Risk scoring coordinator & case packet generator
 │   └── agents/                     # Multi-Agent Risk Engine:
 │       ├── coordinator.py          # Orchestrates agent pipeline and weights
-│       ├── financial.py            # Financial & disbursement anomaly agent
-│       ├── velocity.py             # Stagnation & milestone velocity agent
-│       ├── vendor.py               # Vendor procurement concentration agent
-│       ├── keyword.py              # High-risk description & keyword anomaly agent
-│       └── compliance.py           # Guideline & statutory compliance agent
+│       ├── financial_agent.py      # Financial & disbursement anomaly agent
+│       ├── timeline_agent.py       # Stagnation & milestone velocity agent
+│       ├── vendor_agent.py         # Vendor procurement concentration agent
+│       ├── duplicate_agent.py      # Near-duplicate works agent
+│       ├── geographic_agent.py     # Geographic cluster & IDA capture agent
+│       └── compliance_agent.py     # Guideline & statutory compliance agent
 │
 ├── data/
-│   ├── mplads_raw_sample.csv       # Reference schema sample for tests and offline replay
-│   └── last_live_feed.csv          # Local live-sync cache (bounded atomic write)
+│   └── generate_sample_feed.py     # Dynamic synthetic schema sample generator for tests
 │
 ├── backend/
 │   ├── config.py                   # Pydantic & environment configuration

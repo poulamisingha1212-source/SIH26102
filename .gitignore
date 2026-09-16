@@ -14,12 +14,17 @@ __pycache__/
 venv/
 env/
 
-# Local runtime data
+# Local runtime and sample data
 *.db
 *.db-shm
 *.db-wal
 *.log
-data/*_live_feed.csv
+data/*.csv
+!data/.gitkeep
+
+# Documentation and audit scan artifacts
+docs/
+
 
 # Frontend dependencies and build output
 frontend/node_modules/

@@ -11,11 +11,25 @@ from model.agents import AGENTS, AGENT_REGISTRY
 # ---------------------------------------------------------------------------
 
 def _scored_sample(n):
-    """Score rows from the bundled sample feed through the real engine."""
+    """Score rows from the sample feed through the real engine, generating if absent."""
+    from pathlib import Path
+    import csv
     from backend.services.ingestion import _reshape_long_format
-    raw = pd.read_csv("data/mplads_raw_sample.csv")
+    sample_file = Path("data/mplads_raw_sample.csv")
+    if not sample_file.exists():
+        from data.generate_sample_feed import generate_records, LONG_COLUMNS
+        sample_file.parent.mkdir(parents=True, exist_ok=True)
+        recs = generate_records()
+        with open(sample_file, "w", newline="", encoding="utf-8") as f:
+            writer = csv.DictWriter(f, fieldnames=LONG_COLUMNS)
+            writer.writeheader()
+            for r in recs:
+                full_r = {col: r.get(col, "") for col in LONG_COLUMNS}
+                writer.writerow(full_r)
+    raw = pd.read_csv(sample_file)
     scored = score_dataset(_reshape_long_format(raw), model_dir="model")
     return scored.dropna(subset=["work_id"]).head(n)
+
 
 
 # ---------------------------------------------------------------------------

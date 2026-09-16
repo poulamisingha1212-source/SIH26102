@@ -81,11 +81,21 @@ if not use_real_mongo and mongomock is not None:
         from backend.services.ingestion import _reshape_long_format, _upsert_dataframe
         from model.risk_engine import score_dataset
         sample_path = settings.RAW_SAMPLE_PATH
-        if sample_path.exists():
-            raw = pd.read_csv(sample_path)
-            reshaped = _reshape_long_format(raw)
-            scored = score_dataset(reshaped, model_dir=settings.MODEL_DIR)
-            _upsert_dataframe(scored)
+        if not sample_path.exists():
+            import csv
+            from data.generate_sample_feed import generate_records, LONG_COLUMNS
+            sample_path.parent.mkdir(parents=True, exist_ok=True)
+            recs = generate_records()
+            with open(sample_path, "w", newline="", encoding="utf-8") as f:
+                writer = csv.DictWriter(f, fieldnames=LONG_COLUMNS)
+                writer.writeheader()
+                for r in recs:
+                    full_r = {col: r.get(col, "") for col in LONG_COLUMNS}
+                    writer.writerow(full_r)
+        raw = pd.read_csv(sample_path)
+        reshaped = _reshape_long_format(raw)
+        scored = score_dataset(reshaped, model_dir=settings.MODEL_DIR)
+        _upsert_dataframe(scored)
 
 
 @pytest.fixture(autouse=True)
