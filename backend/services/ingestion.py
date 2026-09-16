@@ -116,12 +116,21 @@ def _validate_house(df: pd.DataFrame) -> None:
 
 
 def _classify_house(val: Optional[str]) -> str:
-    """Explicit house classification. Prevents silent misclassification of Rajya Sabha works."""
+    """Explicit house classification. Distinguishes parliamentary terms (18th / 17th)
+    while preserving generic Lok Sabha and Rajya Sabha classifications."""
     if val is None or pd.isna(val):
         return "Unknown / Unclassified"
     s = str(val).strip().lower()
     if not s or s in ("none", "nan", "null", "unknown", "unclassified"):
         return "Unknown / Unclassified"
+    if "18" in s and "lok" in s:
+        return "18th Lok Sabha"
+    if "17" in s and "lok" in s:
+        return "17th Lok Sabha"
+    if s in ("18th lok sabha", "18th loksabha"):
+        return "18th Lok Sabha"
+    if s in ("17th lok sabha", "17th loksabha"):
+        return "17th Lok Sabha"
     if s in ("lok sabha", "loksabha", "ls", "house of the people"):
         return "Lok Sabha"
     if s in ("rajya sabha", "rajyasabha", "rs", "council of states", "council of state"):
