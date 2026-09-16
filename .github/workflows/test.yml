@@ -1,0 +1,38 @@
+name: Run Tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    name: Python Test Suite
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Generate sample data (gitignored, needed by tests)
+        run: python data/generate_sample_feed.py
+
+      - name: Run tests
+        run: python -m pytest tests/ -v --tb=short
+        env:
+          ENVIRONMENT: test
+          MONGODB_URI: mongodb://localhost:27017
+          MONGO_DB_NAME: mplads_test
+          JWT_SECRET: test-secret-key-for-ci-only-not-prod
+          SEED_FROM_SAMPLE: '0'
+          IS_SERVERLESS: '1'
