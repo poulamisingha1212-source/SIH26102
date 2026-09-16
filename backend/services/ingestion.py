@@ -382,6 +382,34 @@ def _upsert_allocations(long_df: pd.DataFrame) -> int:
     return count
 
 
+def recompute_global_priority_ranks(batch_size: int = 5000) -> int:
+    """Assigns unique global priority ranks (1..N) ordered strictly by
+    final_risk_score DESC, sanction_amount DESC, rule_flag_count DESC, work_id ASC.
+    Uses the rank_order_idx compound index to prevent in-memory sort overflows."""
+    cursor = works.find({}, {"_id": 1}).sort([
+        ("final_risk_score", -1),
+        ("sanction_amount", -1),
+        ("rule_flag_count", -1),
+        ("work_id", 1),
+    ])
+    ops = []
+    rank = 1
+    total_ranked = 0
+    for doc in cursor:
+        ops.append(UpdateOne({"_id": doc["_id"]}, {"$set": {"priority_rank": rank}}))
+        rank += 1
+        if len(ops) >= batch_size:
+            works.bulk_write(ops, ordered=False)
+            total_ranked += len(ops)
+            ops = []
+    if ops:
+        works.bulk_write(ops, ordered=False)
+        total_ranked += len(ops)
+    logger.info("Recomputed global priority ranks for %d works.", total_ranked)
+    return total_ranked
+
+
+
 def _log_sync(*, source, status, start_dt, counts=None, note=None):
     """Enforce exact 1-log contract with complete metrics."""
     end_dt = now_utc()
@@ -515,6 +543,9 @@ def run_ingestion(mode: str = "live", purge_preloaded: Optional[bool] = None) ->
         alloc_count = _upsert_allocations(raw)
         del raw
         gc.collect()
+
+        # Recalculate unique global priority ranks across all works
+        recompute_global_priority_ranks()
 
         counts = {
             "fetched": fetched,
