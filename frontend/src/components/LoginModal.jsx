@@ -89,11 +89,14 @@ export default function LoginModal({ targetRole, onClose, onSuccess }) {
           )}
 
           <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">Username</label>
+            <label htmlFor="login-username" className="text-xs font-semibold text-slate-700 dark:text-slate-300">Username</label>
             <div className="relative">
               <User className="w-4 h-4 text-slate-400 absolute left-3 top-2.5" />
               <Input
+                id="login-username"
+                name="username"
                 type="text"
+                autoComplete="username"
                 placeholder="Enter username"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
@@ -104,11 +107,14 @@ export default function LoginModal({ targetRole, onClose, onSuccess }) {
           </div>
 
           <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">Password</label>
+            <label htmlFor="login-password" className="text-xs font-semibold text-slate-700 dark:text-slate-300">Password</label>
             <div className="relative">
               <KeyRound className="w-4 h-4 text-slate-400 absolute left-3 top-2.5" />
               <Input
+                id="login-password"
+                name="password"
                 type="password"
+                autoComplete="current-password"
                 placeholder="Enter password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}

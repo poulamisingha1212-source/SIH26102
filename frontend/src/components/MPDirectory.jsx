@@ -272,17 +272,13 @@ export default function MPDirectory({
                         </span>
                       </TableCell>
                       <TableCell className="text-right whitespace-nowrap">
-                        <span className="font-bold font-mono text-xs text-indigo-700 block">
+                        <span className="font-bold font-mono text-xs text-indigo-700">
                           {formatINR(mp.allocated_amount || mp.total_allocated || 0)}
                         </span>
-                        <span className="text-[10px] text-indigo-500/80 block">allocated ceiling</span>
                       </TableCell>
                       <TableCell className="text-right whitespace-nowrap">
-                        <span className="font-bold font-mono text-xs text-emerald-700 block">
+                        <span className="font-bold font-mono text-xs text-emerald-700">
                           {formatINR(mp.total_sanctioned)}
-                        </span>
-                        <span className="text-[10px] text-muted-foreground block">
-                          {formatINR(mp.total_disbursed)} disbursed
                         </span>
                       </TableCell>
                       <TableCell className="text-right hidden lg:table-cell whitespace-nowrap">
