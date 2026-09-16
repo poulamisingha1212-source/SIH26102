@@ -279,9 +279,9 @@ export default function MPDirectory({
                       <TableCell className="text-right font-mono text-xs text-foreground/80">{formatNumber(mp.works_count)}</TableCell>
                       <TableCell className="text-right">
                         <Badge variant="outline" className={`font-mono text-xs ${
-                          mp.avg_risk_score >= 70
+                          mp.avg_risk_score > 70
                             ? 'border-red-200 bg-red-50 text-red-700'
-                            : mp.avg_risk_score >= 40
+                            : mp.avg_risk_score >= 50
                               ? 'border-amber-200 bg-amber-50 text-amber-700'
                               : 'border-emerald-200 bg-emerald-50 text-emerald-700'
                         }`}>
