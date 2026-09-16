@@ -96,13 +96,14 @@ export default function Header({
           <div className="hidden lg:flex items-center justify-end gap-2 shrink-0">
             {/* House Scope Filter */}
             <Select value={house || "ALL"} onValueChange={(v) => setHouse(v === "ALL" ? '' : v)}>
-              <SelectTrigger className="h-9 min-w-[130px] px-3 gap-2 rounded-xl border-slate-200/90 bg-white text-xs font-medium shadow-2xs hover:bg-slate-50 transition-colors focus:ring-primary/20 cursor-pointer">
+              <SelectTrigger className="h-9 min-w-[170px] px-3 gap-2 rounded-xl border-slate-200/90 bg-white text-xs font-medium shadow-2xs hover:bg-slate-50 transition-colors focus:ring-primary/20 cursor-pointer">
                 <Landmark className="w-3.5 h-3.5 text-indigo-600 shrink-0" />
                 <SelectValue />
               </SelectTrigger>
               <SelectContent align="end" className="rounded-xl shadow-lg border-slate-200/80">
-                <SelectItem value="ALL" className="text-xs cursor-pointer">Both Houses</SelectItem>
-                <SelectItem value="Lok Sabha" className="text-xs cursor-pointer">Lok Sabha</SelectItem>
+                <SelectItem value="ALL" className="text-xs cursor-pointer">All Houses / Terms</SelectItem>
+                <SelectItem value="18th Lok Sabha" className="text-xs cursor-pointer">18th Lok Sabha (Current)</SelectItem>
+                <SelectItem value="17th Lok Sabha" className="text-xs cursor-pointer">17th Lok Sabha (2019–2024)</SelectItem>
                 <SelectItem value="Rajya Sabha" className="text-xs cursor-pointer">Rajya Sabha</SelectItem>
               </SelectContent>
             </Select>
@@ -168,8 +169,9 @@ export default function Header({
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="ALL" className="text-xs">Both Houses</SelectItem>
-                  <SelectItem value="Lok Sabha" className="text-xs">Lok Sabha</SelectItem>
+                  <SelectItem value="ALL" className="text-xs">All Houses / Terms</SelectItem>
+                  <SelectItem value="18th Lok Sabha" className="text-xs">18th Lok Sabha (Current)</SelectItem>
+                  <SelectItem value="17th Lok Sabha" className="text-xs">17th Lok Sabha (2019–24)</SelectItem>
                   <SelectItem value="Rajya Sabha" className="text-xs">Rajya Sabha</SelectItem>
                 </SelectContent>
               </Select>
