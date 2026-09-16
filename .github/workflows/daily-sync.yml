@@ -52,7 +52,7 @@ jobs:
               --chunk-size "${{ github.event.inputs.chunk_size || 2000 }}"
           elif [ -n "$BACKEND_URL" ] && [ -n "$CRON_SECRET" ]; then
             echo "Triggering live sync via backend cron endpoint..."
-            curl -f -X GET "${BACKEND_URL}/api/cron/sync?mode=live" \
+            curl -f -X POST "${BACKEND_URL}/api/cron/sync?mode=live" \
               -H "Authorization: Bearer ${CRON_SECRET}"
           else
             echo "Notice: Neither MONGODB_URI nor BACKEND_URL+CRON_SECRET is configured in repository secrets."
