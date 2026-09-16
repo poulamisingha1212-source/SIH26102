@@ -1,0 +1,55 @@
+# JanNidhi MPLADS AI Sentinel — Agent Configuration
+# -------------------------------------------------------
+# Edit this file to tune agent weights and detection thresholds.
+# All changes take effect on the next scoring / ingestion run.
+# No Python code changes are needed.
+#
+# agent_weights must sum to 1.0 (the coordinator normalizes them,
+# but keeping them explicit makes audit trails clearer).
+
+agent_weights:
+  financial:   0.25   # Financial Anomaly Agent
+  timeline:    0.20   # Timeline & Stagnation Agent
+  duplicate:   0.22   # Duplicate & Ghost-Work Agent
+  vendor:      0.15   # Vendor & Procurement Agent
+  compliance:  0.13   # Allocation & Compliance Agent
+  geographic:  0.05   # Geographic / IDA Concentration Agent
+
+# ── Detection thresholds ──────────────────────────────────────────────────
+scoring:
+  # Weighted consensus fraction across agents that marks a work as an anomaly
+  is_anomaly_weighted_threshold: 0.40
+
+  # Risk tier cut-offs (final_risk_score is 0–100, portfolio-relative percentile)
+  high_risk_threshold:   70.0
+  medium_risk_threshold: 50.0
+
+# ── Feature engineering knobs ─────────────────────────────────────────────
+features:
+  # Financial agent
+  cost_mad_threshold:          4.0    # robust-MAD deviations to flag cost outlier
+  min_cost_peer_count:         8      # minimum peer works needed for outlier check
+  disbursement_mismatch_pct:   0.10   # >10% gap between amount_disbursed & total_fund_disbursed
+  over_allocation_tolerance:   1.05   # 5% slack before over-allocation flag fires
+
+  # Timeline agent
+  overdue_grace_days:          180    # days in stuck status before flagging
+  stuck_payment_days:          90     # days since last expenditure before flagging
+  rapid_completion_days:       15     # completion within N days of sanction is suspicious
+  post_completion_payment_days: 30    # payments >30 days after completion are suspicious
+
+  # Vendor agent
+  vendor_share_threshold:      0.30   # single vendor >30% of paid works in state
+  vendor_mp_share_threshold:   0.60   # single vendor >60% of an MP's paid works
+  vendor_multi_mp_threshold:   3      # vendor billing >=3 different MPs
+
+  # Duplicate agent
+  duplicate_similarity_threshold:      0.72   # Jaccard threshold (was 0.82; lowered to catch paraphrases)
+  duplicate_date_window_days:          90     # same-MP duplicate look-back window
+  duplicate_cross_mp_window_days:      365    # cross-MP ghost-work look-back window
+  duplicate_ngram_size:                2      # bigram overlap supplement to Jaccard
+
+  # Geographic agent
+  ida_budget_share_threshold:          0.40   # IDA receiving >40% of state MPLADS budget
+  ida_vendor_concentration_threshold:  0.80   # single vendor >80% of IDA's paid works
+  ida_mp_cluster_threshold:            4      # >=4 different MPs routing works to same IDA

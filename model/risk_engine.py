@@ -1,7 +1,7 @@
 """
-MPLADS AI Sentinel — Risk Engine facade (prototype edition).
+MPLADS AI Sentinel — Risk Engine facade.
 
-The engine is now a MULTI-AGENT system: five specialist agents each audit
+The engine is a MULTI-AGENT system: six specialist agents each audit
 the portfolio from one angle, and the AgentCoordinator blends their
 opinions into the unified risk score. This module is the single source of
 truth for scoring and case-packet generation; the agent implementations
@@ -13,6 +13,7 @@ used — the agent system is deterministic, explainable, and dependency-free.
 
 import ast
 import json
+from datetime import date
 
 import pandas as pd
 
@@ -20,7 +21,7 @@ from model.agents import AGENTS, AGENT_DESCRIPTIONS, get_coordinator
 from model.agents.features import CONFIG  # re-exported for backward compatibility
 
 # ==============================================================================
-# Flag explanations (shared by the priority queue and the case packet)
+# Flag explanations (static fallback — used only when row data is unavailable)
 # ==============================================================================
 
 RULE_DESCRIPTIONS = {
@@ -43,6 +44,9 @@ RULE_DESCRIPTIONS = {
     'negative_sanction': 'Sanction amount is negative and requires immediate data verification.',
     'zero_sanction_with_payments': 'Vendor payments exist against a work with no/zero sanctioned cost.',
     'completed_without_image': 'Work marked complete but the portal shows no evidence attachment.',
+    'ida_budget_capture': 'Implementing agency holds a disproportionately large share of the state MPLADS budget.',
+    'ida_vendor_monopoly': 'A single vendor accounts for nearly all paid works in this implementing agency.',
+    'ida_mp_cluster': 'An unusually high number of different MPs route their works through the same implementing agency.',
 }
 
 RENAME_MAP = {
@@ -75,6 +79,260 @@ RENAME_MAP = {
     'Calamity Name': 'calamity_name',
     'Image': 'image_marker',
 }
+
+
+# ==============================================================================
+# Currency formatter
+# ==============================================================================
+
+def _fmt_inr(amount) -> str:
+    """Format an amount in Indian Rupees with Cr/L/K suffixes."""
+    try:
+        v = float(amount)
+    except (TypeError, ValueError):
+        return '₹—'
+    if v >= 1e7:
+        return f'₹{v / 1e7:.2f} Cr'
+    if v >= 1e5:
+        return f'₹{v / 1e5:.2f} L'
+    if v >= 1e3:
+        return f'₹{v / 1e3:.1f}K'
+    return f'₹{v:,.0f}'
+
+
+def _pct(numerator, denominator, decimals=1) -> str:
+    try:
+        n, d = float(numerator), float(denominator)
+        if d == 0:
+            return '—%'
+        return f'{n / d * 100:.{decimals}f}%'
+    except (TypeError, ValueError):
+        return '—%'
+
+
+def _days_label(days) -> str:
+    try:
+        d = int(days)
+    except (TypeError, ValueError):
+        return '— days'
+    if d >= 365:
+        return f'{d // 365}y {d % 365}d'
+    return f'{d} day{"s" if d != 1 else ""}'
+
+
+def _date_str(val) -> str:
+    if val is None:
+        return '—'
+    try:
+        if pd.isna(val):
+            return '—'
+    except Exception:
+        pass
+    try:
+        return pd.Timestamp(val).strftime('%d %b %Y')
+    except Exception:
+        return str(val)
+
+
+# ==============================================================================
+# Quantitative Narrative Reason Generator
+# ==============================================================================
+
+def generate_narrative_reason(flag: str, row: dict) -> str:
+    """Return a rich, data-grounded narrative for a single triggered flag.
+
+    Every narrative includes actual numbers from `row` so auditors can
+    immediately understand *why* this specific work was flagged, not just
+    *that* it was flagged.
+    """
+    sanction    = float(row.get('sanction_amount') or 0)
+    disbursed   = float(row.get('total_fund_disbursed') or 0)
+    peer_median = row.get('peer_median')
+    peer_count  = int(row.get('peer_count') or 0)
+    mad_score   = float(row.get('cost_mad_score') or 0)
+    state       = row.get('state') or '—'
+    category    = row.get('work_category') or '—'
+    vendor      = row.get('primary_vendor') or 'unknown vendor'
+    ida         = row.get('ida') or '—'
+    status      = row.get('work_status') or '—'
+    mp          = row.get('mp_name') or '—'
+    days_sanction = int(row.get('days_since_sanction') or 0)
+    days_exp      = int(row.get('days_since_last_expenditure') or 0)
+    comp_speed    = int(row.get('completion_speed_days') or 0)
+    dup_count     = int(row.get('duplicate_match_count') or 1)
+    sanction_date = _date_str(row.get('sanction_date'))
+    completion_date = _date_str(row.get('completion_date'))
+    vendor_state_pct  = float(row.get('vendor_share_in_state') or 0) * 100
+    vendor_mp_pct     = float(row.get('vendor_share_per_mp') or 0) * 100
+    vendor_mp_count   = int(row.get('vendor_mp_count') or 0)
+    mismatch_ratio    = float(row.get('disbursement_mismatch_ratio') or 0) * 100
+    utilization_ratio = float(row.get('utilization_ratio') or 0) * 100
+    ida_budget_share  = float(row.get('ida_budget_share_in_state') or 0) * 100
+    ida_vendor_conc   = float(row.get('ida_vendor_concentration') or 0) * 100
+    ida_mp_count      = int(row.get('ida_mp_count') or 0)
+
+    if flag == 'cost_outlier':
+        multiple = (sanction / float(peer_median)) if peer_median and float(peer_median) > 0 else None
+        multiple_str = f'{multiple:.1f}×' if multiple else '—×'
+        return (
+            f"Sanctioned cost {_fmt_inr(sanction)} is {multiple_str} the peer median "
+            f"({_fmt_inr(peer_median)}) for '{category}' works in {state} "
+            f"(based on {peer_count} comparable works). "
+            f"Robust deviation score: {abs(mad_score):.1f}σ — "
+            f"threshold is {CONFIG['cost_mad_threshold']:.1f}σ."
+        )
+
+    if flag == 'disbursement_mismatch':
+        diff = abs(float(row.get('amount_disbursed') or 0) - disbursed)
+        return (
+            f"Disbursement mismatch of {_fmt_inr(diff)} ({mismatch_ratio:.1f}%) "
+            f"between recorded payments ({_fmt_inr(row.get('amount_disbursed') or 0)}) "
+            f"and total fund disbursed ({_fmt_inr(disbursed)}). "
+            f"Tolerance is {CONFIG['disbursement_mismatch_pct'] * 100:.0f}%."
+        )
+
+    if flag == 'over_utilization':
+        excess = disbursed - sanction
+        return (
+            f"Expenditure {_fmt_inr(disbursed)} is "
+            f"{_pct(excess, sanction)} ({_fmt_inr(excess)}) over "
+            f"the sanctioned amount {_fmt_inr(sanction)}. "
+            f"Permitted tolerance is 5%."
+        )
+
+    if flag == 'negative_sanction':
+        return (
+            f"Sanction amount recorded as {_fmt_inr(sanction)} (negative value). "
+            f"This is a data integrity error requiring immediate portal correction."
+        )
+
+    if flag == 'zero_sanction_with_payments':
+        return (
+            f"Vendor payment of {_fmt_inr(disbursed)} exists against this work, "
+            f"but the sanctioned amount is {_fmt_inr(sanction)} (zero / not set). "
+            f"Payments without a valid sanction violate MPLADS guidelines."
+        )
+
+    if flag == 'impossible_timeline':
+        gap = int(row.get('completion_speed_days') or 0)
+        return (
+            f"Completion date ({completion_date}) is recorded BEFORE the sanction date "
+            f"({sanction_date}) — a chronological impossibility. "
+            f"Temporal gap: {abs(gap)} days."
+        )
+
+    if flag == 'rapid_completion':
+        return (
+            f"Work was marked completed in {_days_label(comp_speed)} of sanction "
+            f"(sanctioned {sanction_date}). "
+            f"Minimum plausible delivery window is {CONFIG['rapid_completion_days']} days."
+        )
+
+    if flag == 'stuck_status':
+        return (
+            f"Work status '{status}' has remained unchanged for "
+            f"{_days_label(days_sanction)} since sanction ({sanction_date}). "
+            f"Overdue grace period is {CONFIG['overdue_grace_days']} days."
+        )
+
+    if flag == 'stuck_payment':
+        return (
+            f"Disbursed work ({_fmt_inr(disbursed)}) has had no payment activity for "
+            f"{_days_label(days_exp)}. "
+            f"Stuck-payment threshold is {CONFIG['stuck_payment_days']} days."
+        )
+
+    if flag == 'payment_after_completion':
+        days_after = int(row.get('days_payment_after_completion') or 0)
+        return (
+            f"Vendor payments continued {_days_label(days_after)} AFTER the work completion "
+            f"date ({completion_date}). "
+            f"Post-completion payment window is {CONFIG['post_completion_payment_days']} days."
+        )
+
+    if flag == 'duplicate_description':
+        return (
+            f"Work description matches {dup_count} other work(s) in {state} "
+            f"submitted by the same MP within {CONFIG['duplicate_date_window_days']} days of sanction. "
+            f"Similarity threshold: {CONFIG['duplicate_similarity_threshold']:.0%}."
+        )
+
+    if flag == 'duplicate_across_mp':
+        return (
+            f"Work description is nearly identical to works submitted by DIFFERENT MPs "
+            f"in {state} within a {CONFIG['duplicate_cross_mp_window_days']}-day window — "
+            f"a classic ghost-work or template-submission signal. "
+            f"Similarity threshold: {CONFIG['duplicate_similarity_threshold']:.0%}."
+        )
+
+    if flag == 'vendor_concentration':
+        return (
+            f"'{vendor}' accounts for {vendor_state_pct:.1f}% of all paid works in {state}. "
+            f"Concentration threshold is {CONFIG['vendor_share_threshold'] * 100:.0f}%."
+        )
+
+    if flag == 'vendor_dominates_mp':
+        return (
+            f"'{vendor}' handles {vendor_mp_pct:.1f}% of this MP's ({mp}) paid works. "
+            f"Single-vendor dominance threshold per MP is {CONFIG['vendor_mp_share_threshold'] * 100:.0f}%."
+        )
+
+    if flag == 'vendor_multi_mp':
+        return (
+            f"'{vendor}' bills paid works across {vendor_mp_count} different MPs — "
+            f"threshold for organised-capture risk is {CONFIG['vendor_multi_mp_threshold']} MPs."
+        )
+
+    if flag == 'missing_vendor':
+        return (
+            f"Vendor information is missing from expenditure records despite "
+            f"{_fmt_inr(disbursed)} having been disbursed. "
+            f"MPLADS mandates contractor attribution for all payments."
+        )
+
+    if flag == 'over_allocation':
+        return (
+            f"MP {mp}'s total sanctioned works in this portfolio exceed their allocated "
+            f"MPLADS fund ceiling. Tolerance allowed: "
+            f"{(CONFIG['over_allocation_tolerance'] - 1) * 100:.0f}%."
+        )
+
+    if flag == 'trust_society_routing':
+        return (
+            f"Work category '{category}' (Trust & Society / Bar Associations) requires "
+            f"enhanced compliance documentation and MoSPI approval before disbursement."
+        )
+
+    if flag == 'completed_without_image':
+        return (
+            f"Work marked as completed ({completion_date}) but no photographic "
+            f"evidence attachment is recorded on the MPLADS portal. "
+            f"Image upload is mandatory for work completion certification."
+        )
+
+    if flag == 'ida_budget_capture':
+        return (
+            f"Implementing agency '{ida}' in {state} holds {ida_budget_share:.1f}% of the "
+            f"state's total MPLADS sanctioned budget. "
+            f"Capture threshold: {CONFIG['ida_budget_share_threshold'] * 100:.0f}%."
+        )
+
+    if flag == 'ida_vendor_monopoly':
+        return (
+            f"'{vendor}' accounts for {ida_vendor_conc:.1f}% of all paid works under "
+            f"implementing agency '{ida}'. "
+            f"Monopoly threshold: {CONFIG['ida_vendor_concentration_threshold'] * 100:.0f}%."
+        )
+
+    if flag == 'ida_mp_cluster':
+        return (
+            f"Implementing agency '{ida}' is used by {ida_mp_count} different MPs — "
+            f"an implausibly high clustering indicative of pre-arranged procurement. "
+            f"Threshold: {CONFIG['ida_mp_cluster_threshold']} MPs."
+        )
+
+    # Fallback for any unknown future flag
+    return RULE_DESCRIPTIONS.get(flag, f"Anomaly signal triggered: '{flag}'.")
 
 
 # ==============================================================================
@@ -129,8 +387,12 @@ def _parse_flags(raw):
     return []
 
 
-def _agent_findings(row) -> list:
-    """Per-agent findings for the case packet, ordered by weight then score."""
+def _agent_findings(row, work_row: dict) -> list:
+    """Per-agent findings for the case packet, ordered by score then weight.
+
+    Each finding now includes quantitative narrative reasons built from the
+    actual row data, not just a static description lookup.
+    """
     breakdown = row.get('agent_breakdown')
     agents_payload = None
     if breakdown:
@@ -158,6 +420,8 @@ def _agent_findings(row) -> list:
     for entry in agents_payload:
         meta = AGENT_DESCRIPTIONS.get(entry.get('key'), {})
         flags = entry.get('flags', [])
+        # Generate quantitative narratives for each triggered flag
+        flag_narratives = [generate_narrative_reason(f, work_row) for f in flags]
         findings.append({
             'key': entry.get('key'),
             'title': entry.get('title') or meta.get('title', entry.get('key')),
@@ -165,7 +429,7 @@ def _agent_findings(row) -> list:
             'weight': float(entry.get('weight', 0.0)),
             'score': round(float(entry.get('score', 0.0)), 3),
             'flags': flags,
-            'flag_notes': [RULE_DESCRIPTIONS.get(f, f"Flag triggered: {f}") for f in flags],
+            'flag_notes': flag_narratives,   # quantitative narratives
         })
     findings.sort(key=lambda f: (-f['score'], -f['weight']))
     return findings
@@ -201,12 +465,15 @@ def generate_case_packet(work_id, work_row=None, df=None):
         row = work_row if isinstance(work_row, dict) else work_row.to_dict()
 
     raw_flags = _parse_flags(row.get('rule_flags_triggered', []))
-    causes = [RULE_DESCRIPTIONS.get(r, f"Flag triggered: {r}") for r in raw_flags]
+
+    # Build quantitative narrative causes from actual row data
+    causes = [generate_narrative_reason(f, row) for f in raw_flags]
 
     agents_flagged = _parse_agent_count(row)
     if agents_flagged:
         causes.append(
-            f"Consensus anomaly: flagged by {agents_flagged} of {len(AGENTS)} specialist agents."
+            f"Multi-agent consensus: {agents_flagged} of {len(AGENTS)} specialist agents "
+            f"independently raised signals on this work."
         )
 
     impact_pct = round(float(row.get('impact_score', 0.5)) * 100)
@@ -231,8 +498,8 @@ def generate_case_packet(work_id, work_row=None, df=None):
         'recommended_action': row.get('recommended_action'),
         'rule_flag_count': int(row.get('rule_flag_count', len(raw_flags))),
         'rule_flags_triggered': raw_flags,
-        'causes': causes if causes else ['No agent raised a signal; record prioritized for routine monitoring.'],
-        'agent_findings': _agent_findings(row),
+        'causes': causes if causes else ['No agent raised a signal; record prioritized for routine statistical monitoring.'],
+        'agent_findings': _agent_findings(row, row),
         'agents_flagged': agents_flagged,
         'agents_total': len(AGENTS),
         'impact_note': f"Sanctioned value is around the {impact_pct}th percentile of this portfolio.",

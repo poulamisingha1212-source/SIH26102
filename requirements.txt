@@ -11,3 +11,4 @@ bcrypt>=4.0.0
 pyjwt>=2.8.0
 python-multipart>=0.0.9
 requests>=2.32.0
+pyyaml>=6.0.0

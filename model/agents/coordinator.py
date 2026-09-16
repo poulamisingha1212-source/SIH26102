@@ -12,6 +12,9 @@ Scoring model (no pretrained ML artifacts, fully deterministic):
 Risk tiers are portfolio-relative (the engine is a PRIORITIZATION tool):
 top 10% of priority → 'High Risk - Review', next 20% → 'Medium Risk - Monitor',
 rest → 'Low Risk'.
+
+is_anomaly uses a weighted-consensus fraction (configurable) rather than a
+raw agent count, so low-weight agents cannot artificially inflate the signal.
 """
 
 import json
@@ -20,7 +23,9 @@ import numpy as np
 import pandas as pd
 
 from model.agents.features import build_features
+from model._config import get_config
 
+_scoring_cfg = get_config().get('scoring', {})
 
 # Ordered fallback for the recommended action directive — the first matching
 # flag family wins, mirroring audit triage urgency.
@@ -30,6 +35,8 @@ ACTION_PRIORITY = [
     ({'duplicate_across_mp'}, 'Ghost-work field verification'),
     ({'disbursement_mismatch', 'over_allocation', 'over_utilization', 'payment_after_completion'},
      'Financial reconciliation'),
+    ({'ida_budget_capture', 'ida_vendor_monopoly', 'ida_mp_cluster'},
+     'Geographic/IDA procurement audit'),
     ({'duplicate_description'}, 'Duplicate-work verification'),
     ({'vendor_concentration', 'vendor_dominates_mp', 'vendor_multi_mp', 'missing_vendor'},
      'Vendor/procurement verification'),
@@ -47,6 +54,13 @@ class AgentCoordinator:
         total_weight = sum(a.weight for a in self.agents) or 1.0
         self.weights = {a.key: a.weight / total_weight for a in self.agents}
 
+        # Configurable thresholds
+        self._anomaly_threshold = float(
+            _scoring_cfg.get('is_anomaly_weighted_threshold', 0.40)
+        )
+        self._high_risk  = float(_scoring_cfg.get('high_risk_threshold', 70.0))
+        self._medium_risk = float(_scoring_cfg.get('medium_risk_threshold', 50.0))
+
     # ------------------------------------------------------------------ #
     def coordinate(self, df: pd.DataFrame, mp_allocations: dict = None) -> pd.DataFrame:
         work = build_features(df, mp_allocations=mp_allocations)
@@ -57,7 +71,7 @@ class AgentCoordinator:
             work[opinion.columns] = opinion
 
         score_cols = [f'{a.key}_score' for a in self.agents if f'{a.key}_score' in work.columns]
-        flag_cols = [f'{a.key}_flags' for a in self.agents if f'{a.key}_flags' in work.columns]
+        flag_cols  = [f'{a.key}_flags' for a in self.agents if f'{a.key}_flags' in work.columns]
 
         # ---- consensus likelihood ---------------------------------------
         work['likelihood_score'] = sum(
@@ -73,9 +87,13 @@ class AgentCoordinator:
         work['rule_flag_count'] = work['rule_flags_triggered'].apply(len)
         work['weighted_rule_score'] = work['likelihood_score']
 
-        # Agents that raised at least one signal → consensus anomaly marker
+        # ---- weighted anomaly consensus (replaces raw count >= 3) ------
         work['agents_flagged'] = work[score_cols].gt(0).sum(axis=1)
-        work['is_anomaly'] = work['agents_flagged'] >= 3
+        weighted_consensus = sum(
+            self.weights[a.key] * work[f'{a.key}_score'].gt(0).astype(float)
+            for a in self.agents if f'{a.key}_score' in work.columns
+        )
+        work['is_anomaly'] = weighted_consensus > self._anomaly_threshold
         work['anomaly_percentile'] = work[score_cols].max(axis=1).rank(pct=True, method='average')
 
         # ---- impact & priority ------------------------------------------
@@ -85,8 +103,10 @@ class AgentCoordinator:
         work['final_risk_score'] = (raw_priority.rank(pct=True, method='average') * 100).round(1)
         work['priority_rank'] = raw_priority.rank(ascending=False, method='min').astype(int)
 
-        # ---- score-based risk tiers (<=50 Low, 50-70 Medium, >70 High) ----
-        work['risk_tier'] = work['final_risk_score'].apply(self._tier)
+        # ---- risk tiers -------------------------------------------------
+        work['risk_tier'] = work['final_risk_score'].apply(
+            lambda s: self._tier(s, self._high_risk, self._medium_risk)
+        )
 
         work['recommended_action'] = work['rule_flags_triggered'].apply(self._action)
         work['agent_breakdown'] = work.apply(self._breakdown_json, axis=1)
@@ -96,12 +116,8 @@ class AgentCoordinator:
 
     # ------------------------------------------------------------------ #
     @staticmethod
-    def _tier(score, high=70.0, medium=50.0):
-        """Map final risk score (0-100) to audit risk tier:
-        - > 70: High Risk - Review
-        - 50 to 70: Medium Risk - Monitor
-        - <= 50: Low Risk
-        """
+    def _tier(score, high: float = 70.0, medium: float = 50.0):
+        """Map final risk score (0-100) to audit risk tier."""
         try:
             s = float(score)
         except (TypeError, ValueError):

@@ -2,7 +2,8 @@ import React, { useState } from 'react';
 import {
   ShieldAlert, AlertTriangle, FileCheck,
   Building2, User, MapPin, Layers, Activity, Scale, Send, Loader2,
-  Camera, CheckCircle2, XCircle, MessageSquareText, Image as ImageIcon
+  Camera, CheckCircle2, XCircle, MessageSquareText, Image as ImageIcon,
+  ChevronDown, ChevronRight, CheckCircle, Bot
 } from 'lucide-react';
 import {
   Dialog, DialogContent, DialogTitle, DialogDescription,
@@ -225,35 +226,43 @@ export default function CasePacketModal({
               </div>
             </div>
 
-            {/* Explainability dossier */}
+            {/* Explainability dossier — per-agent breakdown */}
             <div className="space-y-3">
               <div className="flex items-center justify-between">
                 <h3 className="text-sm font-bold flex items-center gap-2">
                   <ShieldAlert className="w-4 h-4 text-amber-400" />
-                  Explainability Dossier — Triggered Anomaly Signals
+                  Explainability Dossier — Agent Findings
                 </h3>
                 <span className="text-xs text-muted-foreground">
-                  {packet.rule_flag_count} signal{packet.rule_flag_count !== 1 ? 's' : ''} detected
+                  {packet.rule_flag_count} signal{packet.rule_flag_count !== 1 ? 's' : ''} · {packet.agents_flagged || 0}/{packet.agents_total || 6} agents flagged
                 </span>
               </div>
 
+              {/* Per-agent breakdown cards */}
               <div className="space-y-2.5">
-                {packet.causes && packet.causes.length > 0 ? (
-                  packet.causes.map((cause, idx) => (
-                    <div key={idx} className="p-3.5 rounded-xl bg-background/60 border border-amber-200 flex items-start gap-3">
-                      <div className="w-6 h-6 rounded-lg bg-amber-500/10 flex items-center justify-center shrink-0 mt-0.5">
-                        <AlertTriangle className="w-3.5 h-3.5 text-amber-400" />
-                      </div>
-                      <div className="space-y-0.5 text-xs">
-                        <span className="font-semibold text-foreground/90 block">Evidence Factor #{idx + 1}</span>
-                        <p className="text-foreground/75 leading-relaxed">{cause}</p>
-                      </div>
-                    </div>
+                {packet.agent_findings && packet.agent_findings.length > 0 ? (
+                  packet.agent_findings.map((finding) => (
+                    <AgentFindingCard key={finding.key} finding={finding} />
                   ))
                 ) : (
-                  <div className="p-4 rounded-xl bg-background/60 border text-xs text-muted-foreground italic">
-                    No individual rule violated; prioritized based on statistical portfolio modeling.
-                  </div>
+                  /* Fallback: flat causes list for rows without agent_findings */
+                  packet.causes && packet.causes.length > 0 ? (
+                    packet.causes.map((cause, idx) => (
+                      <div key={idx} className="p-3.5 rounded-xl bg-background/60 border border-amber-200 flex items-start gap-3">
+                        <div className="w-6 h-6 rounded-lg bg-amber-500/10 flex items-center justify-center shrink-0 mt-0.5">
+                          <AlertTriangle className="w-3.5 h-3.5 text-amber-400" />
+                        </div>
+                        <div className="space-y-0.5 text-xs">
+                          <span className="font-semibold text-foreground/90 block">Evidence Factor #{idx + 1}</span>
+                          <p className="text-foreground/75 leading-relaxed">{cause}</p>
+                        </div>
+                      </div>
+                    ))
+                  ) : (
+                    <div className="p-4 rounded-xl bg-background/60 border text-xs text-muted-foreground italic">
+                      No individual rule violated; prioritized based on statistical portfolio modeling.
+                    </div>
+                  )
                 )}
               </div>
 
@@ -549,6 +558,119 @@ function Field({ label, icon, children }) {
         {icon}
         {children}
       </span>
+    </div>
+  );
+}
+
+/** Per-agent breakdown card shown in the Explainability Dossier. */
+function AgentFindingCard({ finding }) {
+  const [open, setOpen] = useState(finding.score > 0);
+  const hasFired = finding.score > 0;
+  const scorePct = Math.round(finding.score * 100);
+
+  const scoreColor = scorePct >= 70
+    ? 'bg-red-500'
+    : scorePct >= 40
+      ? 'bg-amber-500'
+      : 'bg-emerald-500';
+
+  const borderColor = hasFired
+    ? scorePct >= 70
+      ? 'border-red-200 dark:border-red-900/60'
+      : 'border-amber-200 dark:border-amber-900/60'
+    : 'border-border/40';
+
+  const bgColor = hasFired
+    ? scorePct >= 70
+      ? 'bg-red-50/60 dark:bg-red-950/30'
+      : scorePct >= 40
+        ? 'bg-amber-50/60 dark:bg-amber-950/30'
+        : 'bg-orange-50/40 dark:bg-orange-950/20'
+    : 'bg-muted/30';
+
+  return (
+    <div className={`rounded-xl border ${borderColor} ${bgColor} overflow-hidden`}>
+      {/* Card header — always visible */}
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        className="w-full flex items-center gap-3 px-4 py-3 text-left cursor-pointer hover:bg-white/30 dark:hover:bg-white/5 transition-colors"
+      >
+        {/* Agent icon */}
+        <div className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 ${
+          hasFired ? 'bg-amber-500/15' : 'bg-emerald-500/10'
+        }`}>
+          {hasFired
+            ? <AlertTriangle className="w-3.5 h-3.5 text-amber-500" />
+            : <CheckCircle className="w-3.5 h-3.5 text-emerald-500" />
+          }
+        </div>
+
+        {/* Title + score bar */}
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center justify-between gap-2">
+            <span className="text-xs font-bold text-foreground truncate">{finding.title}</span>
+            <span className={`text-xs font-mono font-bold shrink-0 ${
+              hasFired ? (scorePct >= 70 ? 'text-red-600' : 'text-amber-600') : 'text-emerald-600'
+            }`}>
+              {hasFired ? `${scorePct}%` : 'Clear'}
+            </span>
+          </div>
+          {/* Score progress bar */}
+          <div className="mt-1.5 h-1.5 rounded-full bg-black/10 dark:bg-white/10 overflow-hidden">
+            <div
+              className={`h-full rounded-full transition-all ${hasFired ? scoreColor : 'bg-emerald-500'}`}
+              style={{ width: hasFired ? `${scorePct}%` : '100%', opacity: hasFired ? 1 : 0.3 }}
+            />
+          </div>
+        </div>
+
+        {/* Expand toggle */}
+        <div className="shrink-0 text-muted-foreground">
+          {open
+            ? <ChevronDown className="w-3.5 h-3.5" />
+            : <ChevronRight className="w-3.5 h-3.5" />
+          }
+        </div>
+      </button>
+
+      {/* Expanded detail */}
+      {open && (
+        <div className="px-4 pb-3.5 space-y-2.5 border-t border-inherit">
+          {/* Agent description */}
+          <p className="text-[11px] text-muted-foreground pt-2.5 leading-relaxed italic">
+            {finding.description}
+          </p>
+
+          {hasFired && finding.flag_notes && finding.flag_notes.length > 0 ? (
+            <div className="space-y-2">
+              {finding.flag_notes.map((note, i) => (
+                <div
+                  key={i}
+                  className="flex items-start gap-2.5 p-2.5 rounded-lg bg-background/60 border border-amber-200/60 dark:border-amber-900/40"
+                >
+                  <div className="w-5 h-5 rounded-md bg-amber-500/10 flex items-center justify-center shrink-0 mt-0.5">
+                    <Bot className="w-3 h-3 text-amber-500" />
+                  </div>
+                  <p className="text-[11px] text-foreground/80 leading-relaxed">{note}</p>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="flex items-center gap-2 text-[11px] text-emerald-600 dark:text-emerald-400 font-medium">
+              <CheckCircle className="w-3.5 h-3.5" />
+              No signals raised by this agent for this work.
+            </div>
+          )}
+
+          {/* Weight indicator */}
+          <div className="flex items-center justify-end">
+            <span className="text-[10px] text-muted-foreground/60">
+              Agent weight in final score: {Math.round(finding.weight * 100)}%
+            </span>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
