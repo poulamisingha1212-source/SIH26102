@@ -98,6 +98,13 @@ def seed_database(force: bool = False, purge_preloaded: Optional[bool] = None):
 
     existing_count = works.count_documents({})
 
+    if settings.ENVIRONMENT not in ("development", "test") and not force and not settings.AUTO_SEED:
+        print(
+            f"Production environment detected: automated background live sync skipped. "
+            f"Current live works in database: {existing_count}. Use POST /api/sync/run or feed_live_data script."
+        )
+        return existing_count
+
     if existing_count >= 100 and not force:
         print(
             f"Database already contains {existing_count} live works. "
