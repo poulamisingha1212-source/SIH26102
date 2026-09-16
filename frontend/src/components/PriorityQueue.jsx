@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import {
   AlertCircle, Search, ChevronLeft, ChevronRight, ExternalLink,
-  User, MapPin, Building2, CheckCircle2, X, FileDown, ListChecks,
+  User, MapPin, Building2, CheckCircle2, X, ListChecks,
 } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -57,17 +57,6 @@ export default function PriorityQueue({
     return () => clearTimeout(t);
   }, [searchInput]);
 
-  const exportUrl = () => {
-    const params = new URLSearchParams({ sort_by: 'priority_rank', order: 'asc', row_limit: '50000' });
-    if (house) params.append('house', house);
-    if (filters.state) params.append('state', filters.state);
-    if (filters.mp_name) params.append('mp_name', filters.mp_name);
-    if (filters.risk_tier) params.append('risk_tier', filters.risk_tier);
-    if (filters.work_category) params.append('work_category', filters.work_category);
-    if (filters.search) params.append('search', filters.search);
-    return `/api/export/works?${params.toString()}`;
-  };
-
   return (
     <div className="space-y-5">
 
@@ -101,12 +90,6 @@ export default function PriorityQueue({
               <span className="text-[10px] text-muted-foreground uppercase tracking-wider block font-semibold leading-none">Page</span>
               <span className="text-xs font-bold text-primary font-mono mt-0.5 leading-none">{page} / {totalPages || 1}</span>
             </div>
-            <Button asChild variant="outline" className="h-10 px-3.5 rounded-xl border-emerald-200/90 bg-emerald-50/80 text-emerald-700 hover:bg-emerald-100 hover:text-emerald-800 text-xs font-semibold gap-1.5 shadow-2xs">
-              <a href={exportUrl()} title="Download the current filtered view as a CSV open-data file">
-                <FileDown className="w-3.5 h-3.5" />
-                Export CSV
-              </a>
-            </Button>
           </div>
         </div>
 
@@ -282,35 +265,12 @@ export default function PriorityQueue({
                     </div>
                   </div>
 
-                  {/* Explainability preview */}
-                  <div className="lg:max-w-md xl:max-w-lg bg-muted/50 p-3 rounded-xl border">
-                    <div className="flex items-center justify-between mb-1">
-                      <span className="text-[11px] font-semibold text-amber-600 flex items-center gap-1">
-                        <AlertCircle className="w-3 h-3" />
-                        Key Detection Causes:
-                      </span>
-                      <span className="text-[10px] text-muted-foreground">
-                        {work.rule_flag_count} signal{work.rule_flag_count !== 1 ? 's' : ''} triggered
-                      </span>
-                    </div>
-
-                    <div className="space-y-1 text-xs text-foreground/90">
-                      {work.causes && work.causes.length > 0 ? (
-                        work.causes.slice(0, 2).map((cause, i) => (
-                          <div key={i} className="flex items-start gap-1.5 leading-snug">
-                            <span className="text-primary font-bold">•</span>
-                            <span className="line-clamp-1">{cause}</span>
-                          </div>
-                        ))
-                      ) : (
-                        <span className="text-muted-foreground text-xs italic">Routine administrative monitoring</span>
-                      )}
-                      {work.causes && work.causes.length > 2 && (
-                        <span className="text-[10px] text-primary hover:underline block pt-0.5">
-                          +{work.causes.length - 2} more evidence factors in Case Packet
-                        </span>
-                      )}
-                    </div>
+                  {/* Signal indicator */}
+                  <div className="flex items-center gap-2 self-start lg:self-center">
+                    <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold border border-amber-200 bg-amber-50/80 text-amber-800 shadow-2xs">
+                      <AlertCircle className="w-3.5 h-3.5 text-amber-600 shrink-0" />
+                      <span>{work.rule_flag_count} Anomaly Signal{work.rule_flag_count !== 1 ? 's' : ''}</span>
+                    </span>
                   </div>
 
                   {/* Financial context & action */}

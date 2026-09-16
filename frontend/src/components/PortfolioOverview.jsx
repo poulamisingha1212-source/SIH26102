@@ -1,13 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react';
 import {
   Building2, Users, MapPin, AlertTriangle, CheckCircle,
-  TrendingUp, Wallet, Layers, Activity, FileDown, Landmark, Gauge, Info,
+  TrendingUp, Wallet, Layers, Activity, Landmark, Gauge, Info,
 } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Doughnut, Bar } from 'react-chartjs-2';
-import { ShimmerButton } from '@/components/magicui/shimmer-button';
 import { BorderBeam } from '@/components/magicui/border-beam';
 import { BlurFade } from '@/components/magicui/blur-fade';
 import { paletteColor, formatINR, formatNumber } from '@/lib/format';
@@ -152,29 +151,105 @@ export default function PortfolioOverview({
         <StateAllocationChart states={statesData} />
       </BlurFade>
 
-      {/* Open-data download strip */}
-      <Card className="glass-panel p-4 rounded-2xl border-emerald-500/15 flex flex-col sm:flex-row items-center justify-between gap-3">
-        <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-xl bg-emerald-500/15 flex items-center justify-center shrink-0">
-            <FileDown className="w-5 h-5 text-emerald-400" />
-          </div>
+      {/* Fund Flow & Project Progression Pipeline */}
+      <Card className="glass-panel p-5 rounded-2xl space-y-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b pb-3">
           <div>
-            <span className="text-xs font-bold uppercase tracking-wider text-emerald-700 block">
-              Open Data Access
-            </span>
-            <p className="text-xs text-muted-foreground mt-0.5">
-              Download the full machine-readable scored dataset (CSV, first 50,000 rows) for independent scrutiny and research.
-            </p>
+            <h3 className="text-sm font-bold flex items-center gap-2">
+              <TrendingUp className="w-4 h-4 text-indigo-600" />
+              Fund Lifecycle & Conversion Pipeline
+            </h3>
+            <span className="text-[11px] text-muted-foreground">Progression from MoSPI allocation to on-ground completion</span>
+          </div>
+          <Badge variant="outline" className="w-fit text-xs font-mono font-semibold border-indigo-200 bg-indigo-50 text-indigo-700">
+            {stats.fund_utilization_pct ?? 0}% Allocated Utilized
+          </Badge>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 pt-1">
+          {/* Stage 1: Allocated */}
+          <div className="p-4 rounded-xl bg-indigo-50/50 border border-indigo-100 flex flex-col justify-between space-y-2">
+            <div>
+              <div className="flex items-center justify-between text-xs text-indigo-800 font-semibold mb-1">
+                <span>1. Scheme Ceiling</span>
+                <span className="text-[10px] uppercase font-bold text-indigo-600">100% Base</span>
+              </div>
+              <span className="text-xl font-black font-mono text-indigo-900 block">
+                ₹{formatNumber(Math.round((stats.total_allocated_amount ?? 0) / 1e7))} Cr
+              </span>
+              <p className="text-[11px] text-indigo-700/80 mt-1">Total entitlement allocated by MoSPI</p>
+            </div>
+            <div className="w-full bg-indigo-200/60 h-1.5 rounded-full overflow-hidden">
+              <div className="bg-indigo-600 h-full w-full rounded-full" />
+            </div>
+          </div>
+
+          {/* Stage 2: Sanctioned */}
+          <div className="p-4 rounded-xl bg-sky-50/50 border border-sky-100 flex flex-col justify-between space-y-2">
+            <div>
+              <div className="flex items-center justify-between text-xs text-sky-800 font-semibold mb-1">
+                <span>2. Sanctioned Works</span>
+                <span className="text-[10px] uppercase font-bold text-sky-600">{stats.fund_utilization_pct ?? 0}%</span>
+              </div>
+              <span className="text-xl font-black font-mono text-sky-900 block">
+                ₹{formatNumber(Math.round((stats.total_sanctioned_amount ?? 0) / 1e7))} Cr
+              </span>
+              <p className="text-[11px] text-sky-700/80 mt-1">Approved by District Authorities</p>
+            </div>
+            <div className="w-full bg-sky-200/60 h-1.5 rounded-full overflow-hidden">
+              <div
+                className="bg-sky-600 h-full rounded-full transition-all duration-500"
+                style={{ width: `${Math.min(100, stats.fund_utilization_pct ?? 0)}%` }}
+              />
+            </div>
+          </div>
+
+          {/* Stage 3: Disbursed */}
+          <div className="p-4 rounded-xl bg-emerald-50/50 border border-emerald-100 flex flex-col justify-between space-y-2">
+            <div>
+              <div className="flex items-center justify-between text-xs text-emerald-800 font-semibold mb-1">
+                <span>3. Expenditure Paid</span>
+                <span className="text-[10px] uppercase font-bold text-emerald-600">{stats.expenditure_rate_pct ?? 0}%</span>
+              </div>
+              <span className="text-xl font-black font-mono text-emerald-900 block">
+                ₹{formatNumber(Math.round((stats.total_disbursed_amount ?? 0) / 1e7))} Cr
+              </span>
+              <p className="text-[11px] text-emerald-700/80 mt-1">Disbursed for project execution</p>
+            </div>
+            <div className="w-full bg-emerald-200/60 h-1.5 rounded-full overflow-hidden">
+              <div
+                className="bg-emerald-600 h-full rounded-full transition-all duration-500"
+                style={{ width: `${Math.min(100, stats.expenditure_rate_pct ?? 0)}%` }}
+              />
+            </div>
+          </div>
+
+          {/* Stage 4: Works Completed */}
+          <div className="p-4 rounded-xl bg-purple-50/50 border border-purple-100 flex flex-col justify-between space-y-2">
+            <div>
+              <div className="flex items-center justify-between text-xs text-purple-800 font-semibold mb-1">
+                <span>4. Completion Rate</span>
+                <span className="text-[10px] uppercase font-bold text-purple-600">
+                  {stats.total_works > 0 ? ((stats.works_completed / stats.total_works) * 100).toFixed(0) : 0}%
+                </span>
+              </div>
+              <span className="text-xl font-black font-mono text-purple-900 block">
+                {formatNumber(stats.works_completed)} Works
+              </span>
+              <p className="text-[11px] text-purple-700/80 mt-1">
+                {formatNumber(stats.works_pending)} projects in progress
+              </p>
+            </div>
+            <div className="w-full bg-purple-200/60 h-1.5 rounded-full overflow-hidden">
+              <div
+                className="bg-purple-600 h-full rounded-full transition-all duration-500"
+                style={{
+                  width: `${Math.min(100, stats.total_works > 0 ? (stats.works_completed / stats.total_works) * 100 : 0)}%`
+                }}
+              />
+            </div>
           </div>
         </div>
-        <ShimmerButton
-          onClick={() => window.open('/api/export/works?row_limit=50000', '_blank')}
-          className="text-xs font-semibold px-4 py-2 shrink-0"
-          borderRadius="12px"
-        >
-          <FileDown className="w-3.5 h-3.5 mr-1.5" />
-          Download CSV
-        </ShimmerButton>
       </Card>
 
       {/* Fund allocation & execution charts */}
@@ -366,23 +441,36 @@ export default function PortfolioOverview({
         />
       </div>
 
-      {/* About */}
-      <Card className="glass-panel p-6 rounded-2xl space-y-2">
+      {/* About JanNidhi */}
+      <Card className="glass-panel p-6 rounded-2xl border-slate-200/80 space-y-4">
         <div className="flex items-center gap-2">
-          <Info className="w-4 h-4 text-primary" />
-          <h3 className="text-sm font-bold uppercase tracking-wider">About JanNidhi</h3>
+          <Info className="w-4 h-4 text-indigo-600" />
+          <h3 className="text-sm font-bold uppercase tracking-wider text-slate-800">About JanNidhi Portal</h3>
         </div>
-        <p className="text-xs text-foreground/80 leading-relaxed">
-          JanNidhi is an AI-driven audit-prioritization platform for MPLADS (MoSPI, SIH26102).
-          Every work is scored by a hybrid rule-based + machine-learning risk engine that surfaces
-          cost anomalies, vendor concentration, duplicate descriptions, timeline violations, and
-          utilization mismatches — so reviewers see the highest-risk cases first.
+        <p className="text-xs text-slate-600 leading-relaxed max-w-4xl">
+          JanNidhi is an open transparency and decision-support portal for the Members of Parliament Local Area Development Scheme (MPLADS).
+          It bridges official public records with automated anomaly detection to ensure public funds translate directly into completed community development.
         </p>
-        <p className="text-[11px] text-muted-foreground">
-          Live data is pulled directly from the official MPLADS dashboard (mplads.mospi.gov.in)
-          and risk-scored on every sync. Risk scores are prioritization indicators, not definitive
-          fraud verdicts.
-        </p>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3.5 pt-1 text-xs">
+          <div className="p-3.5 rounded-xl bg-slate-50/80 border border-slate-200/60 space-y-1">
+            <span className="font-bold text-slate-800 block">Citizen Transparency</span>
+            <p className="text-slate-600 text-[11px] leading-relaxed">
+              Explore public expenditures, MP allocations, and project statuses across all parliamentary constituencies with transparent data visualizations.
+            </p>
+          </div>
+          <div className="p-3.5 rounded-xl bg-slate-50/80 border border-slate-200/60 space-y-1">
+            <span className="font-bold text-slate-800 block">Audit Prioritization</span>
+            <p className="text-slate-600 text-[11px] leading-relaxed">
+              Assists district authorities and reviewers in prioritizing high-risk cases — such as cost deviation, timeline slippage, and vendor concentration.
+            </p>
+          </div>
+          <div className="p-3.5 rounded-xl bg-slate-50/80 border border-slate-200/60 space-y-1">
+            <span className="font-bold text-slate-800 block">Verified Official Data</span>
+            <p className="text-slate-600 text-[11px] leading-relaxed">
+              Synchronized directly with the official portal (mplads.mospi.gov.in). Risk scores serve as audit decision filters, not legal verdicts.
+            </p>
+          </div>
+        </div>
       </Card>
 
     </div>

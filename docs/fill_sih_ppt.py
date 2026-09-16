@@ -51,7 +51,7 @@ def set_body(slide, blocks, new_top=None, new_height=None):
 s1 = slides[0]
 tb = [sh for sh in s1.shapes if sh.has_text_frame and sh.name == 'TextBox 9'][0]
 fields = [
-    ('Problem Statement ID –', 'SIH26102'),
+    ('Problem Statement ID –', ''),
     ('Problem Statement Title-', 'MPLADS Audit & Anomaly Prioritization Platform'),
     ('Theme-', '(as registered on SIH portal)'),
     ('PS Category-', 'Software'),

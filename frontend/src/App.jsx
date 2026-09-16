@@ -403,10 +403,6 @@ export default function App() {
             <span className="font-semibold text-slate-700">JanNidhi</span>
             <span className="text-slate-300">•</span>
             <span>Ministry of Statistics and Programme Implementation (MoSPI)</span>
-            <span className="text-slate-300">•</span>
-            <span className="font-mono text-[10px] font-semibold bg-indigo-50 text-indigo-700 border border-indigo-200/60 px-1.5 py-0.5 rounded-md">
-              SIH26102
-            </span>
           </div>
           <p className="text-[11px] text-slate-500">
             Decision Support System — Risk Scores are audit prioritization indicators, not definitive fraud verdicts.

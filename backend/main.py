@@ -101,7 +101,7 @@ async def lifespan(app: FastAPI):
 app = FastAPI(
     title=settings.PROJECT_NAME,
     version=settings.VERSION,
-    description="MoSPI (SIH26102) MPLADS AI Sentinel — Audit & Anomaly Prioritization Platform",
+    description="MoSPI MPLADS AI Sentinel — Audit & Anomaly Prioritization Platform",
     lifespan=lifespan
 )
 

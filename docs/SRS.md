@@ -1,6 +1,6 @@
 # Software Requirements Specification (SRS)
 ## MPLADS AI Sentinel — Audit & Anomaly Prioritization System
-**Project Identifier:** SIH26102 | Ministry of Statistics and Programme Implementation (MoSPI)  
+**Project Identifier:** Ministry of Statistics and Programme Implementation (MoSPI)  
 **Document Version:** 1.0.0  
 **Status:** Approved for Implementation
 

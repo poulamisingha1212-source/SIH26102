@@ -131,10 +131,9 @@ export default function MPDirectory({
               <Globe2 className="w-3 h-3" />
               Public Transparency
             </Badge>
-            <h2 className="text-2xl font-bold tracking-tight mt-1.5">MP Fund Directory</h2>
-            <p className="text-sm text-muted-foreground mt-0.5 max-w-2xl">
-              Every rupee routed through MPLADS, aggregated per Member of Parliament —
-              sanctioned vs disbursed, utilization and audit-risk profile in one view.
+            <h2 className="text-2xl font-bold tracking-tight mt-1.5">MP Directory</h2>
+            <p className="text-xs text-muted-foreground mt-0.5">
+              MPLADS allocations, sanctioned amounts, expenditure, and risk profile per Member of Parliament.
             </p>
           </div>
 
@@ -207,6 +206,7 @@ export default function MPDirectory({
               <Skeleton className="h-8 w-8 rounded-lg" />
               <Skeleton className="h-8 flex-1 rounded-lg" />
               <Skeleton className="h-8 w-24 rounded-lg" />
+              <Skeleton className="h-8 w-24 rounded-lg" />
               <Skeleton className="h-8 w-32 rounded-lg" />
               <Skeleton className="h-8 w-16 rounded-lg hidden lg:block" />
             </div>
@@ -232,6 +232,7 @@ export default function MPDirectory({
                   <TableRow className="bg-muted/60 hover:bg-muted/60 border-b">
                     <TableHead className="w-12 pl-5">#</TableHead>
                     <TableHead className="min-w-[220px]">Member of Parliament</TableHead>
+                    <SortHead label="Allocated" colKey="total_allocated" sortBy={sortBy} order={order} onClick={handleSortClick} className="text-right" />
                     <SortHead label="Sanctioned" colKey="total_sanctioned" sortBy={sortBy} order={order} onClick={handleSortClick} className="text-right" />
                     <TableHead className="text-right hidden lg:table-cell">Disbursed</TableHead>
                     <TableHead>
@@ -267,8 +268,15 @@ export default function MPDirectory({
                         </span>
                       </TableCell>
                       <TableCell className="text-right">
+                        <span className="font-bold font-mono text-xs text-indigo-700">
+                          {formatINR(mp.allocated_amount || mp.total_allocated || 0)}
+                        </span>
+                      </TableCell>
+                      <TableCell className="text-right">
                         <span className="font-bold font-mono text-xs">{formatINR(mp.total_sanctioned)}</span>
-                        <span className="block text-[10px] text-muted-foreground lg:hidden">{formatINR(mp.total_disbursed)} disbursed</span>
+                        <span className="block text-[10px] text-muted-foreground lg:hidden">
+                          Alloc: {formatINR(mp.allocated_amount || mp.total_allocated || 0)} • {formatINR(mp.total_disbursed)} disbursed
+                        </span>
                       </TableCell>
                       <TableCell className="text-right hidden lg:table-cell">
                         <span className="font-medium text-foreground/80 font-mono text-xs">{formatINR(mp.total_disbursed)}</span>

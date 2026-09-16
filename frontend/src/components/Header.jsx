@@ -46,16 +46,27 @@ export default function Header({
           
           {/* Left Section: Brand Logo */}
           <div className="flex items-center justify-between lg:justify-start shrink-0">
-            <div className="flex items-center gap-2 sm:gap-3 shrink-0 select-none cursor-pointer" onClick={() => setActiveTab('overview')}>
+            <div
+              className="flex items-center gap-2 sm:gap-3 shrink-0 select-none cursor-pointer group py-0.5"
+              onClick={() => setActiveTab('overview')}
+              title="JanNidhi — Return to Dashboard"
+            >
               <img
                 src="/brand/jannidhi-brand.png"
                 alt="JanNidhi brand logo"
-                className="h-9 sm:h-10 w-auto object-contain"
+                className="h-12 sm:h-14 lg:h-16 w-auto max-w-[260px] sm:max-w-[320px] lg:max-w-[380px] object-contain drop-shadow-xs transition-transform duration-200 group-hover:scale-[1.02]"
               />
             </div>
 
             {/* Compact Mobile Quick-Status (< lg only) */}
-            <div className="flex lg:hidden items-center gap-2 shrink-0">
+            <div className="flex lg:hidden items-center gap-1.5 shrink-0">
+              <span className={`px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider border ${
+                currentRole === 'Read-Only Public Tier'
+                  ? 'border-emerald-200 bg-emerald-50 text-emerald-700'
+                  : 'border-indigo-200 bg-indigo-50 text-indigo-700'
+              }`}>
+                {currentRole === 'Read-Only Public Tier' ? 'Public' : 'Auditor'}
+              </span>
               <div
                 className={`h-7 px-2 rounded-lg border text-[11px] font-medium inline-flex items-center gap-1.5 ${
                   syncStatus?.is_data_stale
@@ -136,14 +147,20 @@ export default function Header({
 
             {/* RBAC Role Switcher */}
             <Select value={currentRole} onValueChange={handleRoleChange}>
-              <SelectTrigger className="h-9 min-w-[150px] px-3 gap-2 rounded-xl border-slate-200/90 bg-white text-xs font-medium shadow-2xs hover:bg-slate-50 transition-colors focus:ring-primary/20 cursor-pointer">
+              <SelectTrigger className="h-9 min-w-[170px] px-3 gap-2 rounded-xl border-slate-200/90 bg-white text-xs font-medium shadow-2xs hover:bg-slate-50 transition-colors focus:ring-primary/20 cursor-pointer">
                 <UserCheck className="w-3.5 h-3.5 text-indigo-600 shrink-0" />
                 <SelectValue />
               </SelectTrigger>
               <SelectContent align="end" className="rounded-xl shadow-lg border-slate-200/80">
-                <SelectItem value="MoSPI Reviewer" className="text-xs cursor-pointer">MoSPI Reviewer (Admin)</SelectItem>
-                <SelectItem value="District Authority Auditor" className="text-xs cursor-pointer">District Auditor</SelectItem>
-                <SelectItem value="Read-Only Public Tier" className="text-xs cursor-pointer">Public Tier (Read-Only)</SelectItem>
+                <SelectItem value="Read-Only Public Tier" className="text-xs cursor-pointer font-medium text-emerald-700">
+                  🌐 Public Transparency (Citizen)
+                </SelectItem>
+                <SelectItem value="District Authority Auditor" className="text-xs cursor-pointer">
+                  🛡️ District Auditor
+                </SelectItem>
+                <SelectItem value="MoSPI Reviewer" className="text-xs cursor-pointer">
+                  🏛️ MoSPI Reviewer (Admin)
+                </SelectItem>
               </SelectContent>
             </Select>
 
@@ -161,8 +178,8 @@ export default function Header({
           </div>
 
           {/* Mobile Secondary Controls Bar (< lg only) */}
-          <div className="flex lg:hidden items-center justify-between gap-2 pt-2 border-t border-slate-200/60">
-            <div className="flex items-center gap-1.5 flex-1">
+          <div className="flex lg:hidden flex-col gap-2 pt-2 border-t border-slate-200/60">
+            <div className="flex items-center gap-1.5 w-full">
               <Select value={house || "ALL"} onValueChange={(v) => setHouse(v === "ALL" ? '' : v)}>
                 <SelectTrigger className="h-8 text-xs rounded-lg flex-1 border-slate-200/90 bg-white">
                   <Landmark className="w-3.5 h-3.5 text-indigo-600 shrink-0" />
@@ -182,9 +199,9 @@ export default function Header({
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="MoSPI Reviewer" className="text-xs">MoSPI Reviewer</SelectItem>
-                  <SelectItem value="District Authority Auditor" className="text-xs">District Auditor</SelectItem>
-                  <SelectItem value="Read-Only Public Tier" className="text-xs">Public Tier</SelectItem>
+                  <SelectItem value="Read-Only Public Tier" className="text-xs text-emerald-700 font-medium">🌐 Public View</SelectItem>
+                  <SelectItem value="District Authority Auditor" className="text-xs">🛡️ District Auditor</SelectItem>
+                  <SelectItem value="MoSPI Reviewer" className="text-xs">🏛️ MoSPI Reviewer</SelectItem>
                 </SelectContent>
               </Select>
 
@@ -194,12 +211,39 @@ export default function Header({
                   size="sm"
                   onClick={() => onTriggerSync('live')}
                   disabled={isSyncing}
-                  className="h-8 px-2.5 rounded-lg border-indigo-200 bg-indigo-50 text-indigo-700 text-xs font-semibold gap-1"
+                  className="h-8 px-2.5 rounded-lg border-indigo-200 bg-indigo-50 text-indigo-700 text-xs font-semibold gap-1 shrink-0"
                 >
                   <RefreshCw className={`w-3 h-3 ${isSyncing ? 'animate-spin' : ''}`} />
                   <span>{isSyncing ? 'Syncing...' : 'Sync'}</span>
                 </Button>
               )}
+
+              {loggedInUser && currentRole !== 'Read-Only Public Tier' && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={onLogout}
+                  className="h-8 px-2 text-[11px] font-medium text-slate-500 hover:text-slate-800"
+                >
+                  Logout
+                </Button>
+              )}
+            </div>
+
+            <div className="flex items-center justify-between gap-2">
+              <a
+                href="https://frontend-steel-psi-55.vercel.app/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="h-7 px-2.5 rounded-lg bg-gradient-to-r from-rose-500 to-indigo-600 text-white text-[11px] font-semibold inline-flex items-center gap-1.5 shadow-2xs select-none"
+              >
+                <Heart className="w-3 h-3 text-rose-100 fill-rose-100/30" />
+                <span>Contribute to Society</span>
+                <ExternalLink className="w-2.5 h-2.5 text-white/80" />
+              </a>
+              <span className="text-[10px] text-muted-foreground">
+                {currentRole === 'Read-Only Public Tier' ? 'Public Transparency Mode' : `Auditor: ${loggedInUser || 'Session'}`}
+              </span>
             </div>
           </div>
 

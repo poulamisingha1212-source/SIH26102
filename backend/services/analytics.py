@@ -34,6 +34,7 @@ WORK_SORTABLE_FIELDS = {
 DIRECTORY_SORTABLE_FIELDS = {
     "name", "works_count", "total_sanctioned", "total_disbursed",
     "avg_utilization", "avg_risk_score", "high_risk_count", "mp_count",
+    "total_allocated", "allocated_amount",
 }
 
 # Directory sort key -> grouped-document field produced by _group_works()
@@ -42,6 +43,8 @@ _DIRECTORY_SORT_KEY = {
     "works_count": "count",
     "total_sanctioned": "total_sanctioned",
     "total_disbursed": "total_disbursed",
+    "total_allocated": "total_sanctioned",
+    "allocated_amount": "total_sanctioned",
     "avg_utilization": "avg_utilization",
     "avg_risk_score": "avg_risk_score",
     "high_risk_count": "high_risk_count",

@@ -50,4 +50,4 @@ Copy-paste these into Canva AI (Magic Design) to generate better designs for the
 2. **Generate in parts:** Canva's AI handles shorter instructions better. If the full prompt overloads it, generate section-by-section (e.g., just "KPI stat cards row" or "risk badge list row") and assemble manually.
 3. **Lock the palette first:** Create a Canva Brand Kit with #4F46E5, #1E293B, #F8FAFC, #EEF2FF, #DC2626 and the Outfit / Work Sans fonts so every generation stays on-theme.
 4. **Iterate with follow-ups:** After generation, refine with short follow-ups like "make the cards more rounded", "reduce chart clutter to 6 slices", "make risk badges softer tints instead of solid red".
-5. **Use it for assets, not just pages:** The same prompts work for Canva presentations — great for the SIH26102 pitch deck using the landing-page prompt above.
+5. **Use it for assets, not just pages:** The same prompts work for Canva presentations — great for the pitch deck using the landing-page prompt above.

@@ -5,7 +5,7 @@ app_port: 7860
 ---
 
 # MPLADS AI Sentinel — Audit & Anomaly Prioritization Platform
-**MoSPI (SIH26102)** — Ministry of Statistics and Programme Implementation
+**MoSPI** — Ministry of Statistics and Programme Implementation
 
 ---
 
