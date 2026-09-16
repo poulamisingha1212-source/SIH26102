@@ -84,6 +84,13 @@ def test_house_classification_explicit_and_safe():
     assert _classify_house("RS") == "Rajya Sabha"
     assert _classify_house("LS") == "Lok Sabha"
 
+    assert _classify_house("18th Lok Sabha") == "18th Lok Sabha"
+    assert _classify_house("18th lok sabha") == "18th Lok Sabha"
+    assert _classify_house("lok_sabha_18") == "18th Lok Sabha"
+    assert _classify_house("17th Lok Sabha") == "17th Lok Sabha"
+    assert _classify_house("17th lok sabha") == "17th Lok Sabha"
+    assert _classify_house("lok_sabha_17") == "17th Lok Sabha"
+
     # Missing / None / NaN / empty values must classify as Unknown, NEVER Lok Sabha
     assert _classify_house(None) == "Unknown / Unclassified"
     assert _classify_house("") == "Unknown / Unclassified"
