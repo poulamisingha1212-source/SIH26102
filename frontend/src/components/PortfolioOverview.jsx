@@ -74,7 +74,7 @@ export default function PortfolioOverview({
         </div>
         <Badge variant="outline" className="gap-1.5 w-fit border-primary/30 bg-primary/5 text-primary text-xs font-semibold">
           <Landmark className="w-3.5 h-3.5" />
-          {house || 'Both Houses'}
+          {house || 'All Houses / Terms'}
         </Badge>
       </div>
 
