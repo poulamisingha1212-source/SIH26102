@@ -232,20 +232,24 @@ export default function MPDirectory({
                   <TableRow className="bg-muted/60 hover:bg-muted/60 border-b">
                     <TableHead className="w-12 pl-5">#</TableHead>
                     <TableHead className="min-w-[220px]">Member of Parliament</TableHead>
-                    <SortHead label="Allocated" colKey="total_allocated" sortBy={sortBy} order={order} onClick={handleSortClick} className="text-right" />
-                    <SortHead label="Sanctioned" colKey="total_sanctioned" sortBy={sortBy} order={order} onClick={handleSortClick} className="text-right" />
+                    <TableHead className="text-right">
+                      <SortHead label="Allocated" colKey="total_allocated" sortBy={sortBy} order={order} onClick={handleSortClick} className="justify-end" />
+                    </TableHead>
+                    <TableHead className="text-right">
+                      <SortHead label="Sanctioned" colKey="total_sanctioned" sortBy={sortBy} order={order} onClick={handleSortClick} className="justify-end" />
+                    </TableHead>
                     <TableHead className="text-right hidden lg:table-cell">Disbursed</TableHead>
-                    <TableHead>
+                    <TableHead className="min-w-[140px]">
                       <SortHead label="Utilization" colKey="avg_utilization" sortBy={sortBy} order={order} onClick={handleSortClick} />
                     </TableHead>
                     <TableHead className="text-right">
-                      <SortHead label="Works" colKey="works_count" sortBy={sortBy} order={order} onClick={handleSortClick} className="text-right" />
+                      <SortHead label="Works" colKey="works_count" sortBy={sortBy} order={order} onClick={handleSortClick} className="justify-end" />
                     </TableHead>
                     <TableHead className="text-right">
-                      <SortHead label="Avg Risk" colKey="avg_risk_score" sortBy={sortBy} order={order} onClick={handleSortClick} className="text-right" />
+                      <SortHead label="Avg Risk" colKey="avg_risk_score" sortBy={sortBy} order={order} onClick={handleSortClick} className="justify-end" />
                     </TableHead>
                     <TableHead className="text-right">
-                      <SortHead label="High-Risk" colKey="high_risk_count" sortBy={sortBy} order={order} onClick={handleSortClick} className="text-right" />
+                      <SortHead label="High-Risk" colKey="high_risk_count" sortBy={sortBy} order={order} onClick={handleSortClick} className="justify-end" />
                     </TableHead>
                     <TableHead className="text-right w-16 pr-5">Profile</TableHead>
                   </TableRow>
