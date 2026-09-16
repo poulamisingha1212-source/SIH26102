@@ -11,8 +11,10 @@ from backend.config import settings
 _client = MongoClient(
     settings.MONGODB_URI,
     appname="mplads-ai-sentinel",
-    serverSelectionTimeoutMS=15000,
-    connectTimeoutMS=15000,
+    # Short server-selection timeout: fail fast if MONGODB_URI is wrong so the
+    # startup error is logged immediately (Render dashboard shows it clearly).
+    serverSelectionTimeoutMS=5000,
+    connectTimeoutMS=5000,
     # Live-sync bulk writes and long-running aggregation cursors must not
     # time out mid-flight; the driver default (30s idle) is too tight.
     socketTimeoutMS=600000,
