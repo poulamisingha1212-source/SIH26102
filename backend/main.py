@@ -755,7 +755,7 @@ def _start_background_sync(mode: str) -> dict:
 @app.post("/api/sync/run")
 def trigger_manual_sync(
     request: Request,
-    mode: str = Query("auto", description="Ingestion mode: auto | live"),
+    mode: str = Query("live", description="Ingestion mode: live"),
     user: Optional[dict] = Depends(get_current_user_optional)
 ):
     """
@@ -783,7 +783,7 @@ def trigger_manual_sync(
 @app.get("/api/cron/sync")
 def cron_sync(
     request: Request,
-    mode: str = Query("auto", description="Ingestion mode: auto | live"),
+    mode: str = Query("live", description="Ingestion mode: live"),
 ):
     """
     Platform-cron entry point. Requires valid CRON_SECRET.
