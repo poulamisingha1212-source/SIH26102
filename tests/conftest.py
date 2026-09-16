@@ -73,10 +73,19 @@ if not use_real_mongo and mongomock is not None:
             if hasattr(mod, col):
                 setattr(mod, col, mock_db[col])
 
-    # Seed users and sample works into isolated mock DB
+    # Seed users and sample works into isolated mock DB using the bundled
+    # sample CSV directly (avoids run_ingestion which is now live-only).
     seeder.seed_users()
     if mock_db["works"].count_documents({}) == 0:
-        ingestion.run_ingestion(mode="auto", source_file_path=settings.RAW_SAMPLE_PATH)
+        import pandas as pd
+        from backend.services.ingestion import _reshape_long_format, _upsert_dataframe
+        from model.risk_engine import score_dataset
+        sample_path = settings.RAW_SAMPLE_PATH
+        if sample_path.exists():
+            raw = pd.read_csv(sample_path)
+            reshaped = _reshape_long_format(raw)
+            scored = score_dataset(reshaped, model_dir=settings.MODEL_DIR)
+            _upsert_dataframe(scored)
 
 
 @pytest.fixture(autouse=True)
