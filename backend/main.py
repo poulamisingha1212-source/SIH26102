@@ -417,7 +417,9 @@ def get_stats_overview(
 
     alloc_match: dict = {}
     if house:
-        alloc_match["house"] = house.strip()
+        hm = analytics.house_match(house)
+        if hm is not None:
+            alloc_match["house"] = hm
     alloc_rows = mp_allocations.aggregate([
         {"$match": alloc_match},
         {"$group": {"_id": None, "total": {"$sum": {"$ifNull": ["$allocated_amount", 0.0]}}}},
@@ -684,13 +686,18 @@ def get_filter_options(
     db=Depends(get_db)
 ):
     """Returns unique filter values for the frontend dropdowns."""
-    house_filter = {"house": house.strip()} if house else {}
+    house_filter = {}
+    if house:
+        hm = analytics.house_match(house)
+        if hm is not None:
+            house_filter = {"house": hm}
 
     def _sorted_distinct(field: str) -> list:
         values = works.distinct(field, house_filter)
         return sorted(v for v in values if v)
 
     return {
+        "houses": ["18th Lok Sabha", "17th Lok Sabha", "Rajya Sabha"],
         "states": _sorted_distinct("state"),
         "categories": _sorted_distinct("work_category"),
         "statuses": _sorted_distinct("work_status"),
