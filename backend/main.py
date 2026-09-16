@@ -156,7 +156,22 @@ def get_works(
     total = works.count_documents(filt)
 
     direction = DESCENDING if order.lower() == "desc" else ASCENDING
-    cursor = works.find(filt).sort([(sort_by, direction), ("work_id", ASCENDING)])
+    if sort_by == "priority_rank" and order.lower() == "asc":
+        cursor = works.find(filt).sort([
+            ("priority_rank", ASCENDING),
+            ("final_risk_score", DESCENDING),
+            ("sanction_amount", DESCENDING),
+            ("work_id", ASCENDING)
+        ])
+    elif sort_by == "final_risk_score" and order.lower() == "desc":
+        cursor = works.find(filt).sort([
+            ("final_risk_score", DESCENDING),
+            ("sanction_amount", DESCENDING),
+            ("priority_rank", ASCENDING),
+            ("work_id", ASCENDING)
+        ])
+    else:
+        cursor = works.find(filt).sort([(sort_by, direction), ("priority_rank", ASCENDING), ("work_id", ASCENDING)])
 
     offset = (page - 1) * page_size
     items_raw = cursor.skip(offset).limit(page_size)
