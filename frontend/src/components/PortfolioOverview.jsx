@@ -321,7 +321,7 @@ export default function PortfolioOverview({
                     <span className="text-right shrink-0">
                       <strong className="font-mono">{formatNumber(s.count)}</strong>
                       <span className="text-muted-foreground ml-1.5">({(s.share * 100).toFixed(1)}%)</span>
-                      <span className={`block text-[10px] font-mono ${s.avg_risk_score >= 70 ? 'text-red-600' : s.avg_risk_score >= 40 ? 'text-amber-600' : 'text-emerald-600'}`}>
+                      <span className={`block text-[10px] font-mono ${s.avg_risk_score > 70 ? 'text-red-600' : s.avg_risk_score >= 50 ? 'text-amber-600' : 'text-emerald-600'}`}>
                         avg risk {s.avg_risk_score}
                       </span>
                     </span>
