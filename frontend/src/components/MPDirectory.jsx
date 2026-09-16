@@ -266,15 +266,6 @@ export default function MPDirectory({
                           <MapPin className="w-3 h-3" />
                           {mp.constituency || '—'}{mp.state ? ` • ${mp.state}` : ''}
                         </span>
-                        {/* Always-visible financial summary chips for immediate visibility on all viewports */}
-                        <div className="flex flex-wrap items-center gap-1.5 mt-1.5">
-                          <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-indigo-50 border border-indigo-200/80 text-[10px] font-mono font-semibold text-indigo-700">
-                            <span className="text-[9px] uppercase font-bold text-indigo-500">Allocated:</span> {formatINR(mp.allocated_amount || mp.total_allocated || 0)}
-                          </span>
-                          <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-emerald-50 border border-emerald-200/80 text-[10px] font-mono font-semibold text-emerald-700">
-                            <span className="text-[9px] uppercase font-bold text-emerald-500">Sanctioned:</span> {formatINR(mp.total_sanctioned)}
-                          </span>
-                        </div>
                       </TableCell>
                       <TableCell className="text-right whitespace-nowrap">
                         <span className="font-bold font-mono text-xs text-indigo-700 block">
