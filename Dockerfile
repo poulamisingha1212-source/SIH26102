@@ -12,9 +12,8 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
     PORT=7860 \
     ENVIRONMENT=production \
-    MONGODB_URI=mongodb://localhost:27017 \
     MONGO_DB_NAME=mplads_sentinel \
-    CORS_ORIGINS=http://localhost:3000,http://localhost:5173,http://127.0.0.1:3000,http://127.0.0.1:5173
+    CORS_ORIGINS=http://localhost:7860,http://127.0.0.1:7860
 
 WORKDIR /app
 COPY requirements.txt ./
