@@ -1,0 +1,33 @@
+# Never uploaded to Vercel.
+.git
+.mimosa
+.env
+.vscode
+.idea
+.claude
+
+# Local Python state
+__pycache__
+*.pyc
+.venv
+.pytest_cache
+.mypy_cache
+
+# Local databases and caches
+*.db
+*.db-shm
+*.db-wal
+data/last_live_feed.csv
+
+# Not part of the deployment
+tests
+docs
+frontend/node_modules
+frontend/dist
+template_check
+*.pptx
+*.pdf
+Dockerfile
+.dockerignore
+DEPLOYMENT.md
+README_HUGGINGFACE.md
