@@ -332,8 +332,8 @@ def main():
     parser = argparse.ArgumentParser(description="Feed live MPLADS portal data into MongoDB in chunks.")
     parser.add_argument(
         "--houses",
-        default="rajya_sabha,lok_sabha_18",
-        help="Comma-separated houses to feed: rajya_sabha,lok_sabha_18 (or 'all'/'both')",
+        default="rajya_sabha,lok_sabha_18,lok_sabha_17",
+        help="Comma-separated houses to feed: rajya_sabha,lok_sabha_18,lok_sabha_17 (or 'all'/'both')",
     )
     parser.add_argument(
         "--chunk-size",
@@ -360,7 +360,7 @@ def main():
     args = parser.parse_args()
 
     if args.houses.strip().lower() in ("all", "both"):
-        target_houses = ["rajya_sabha", "lok_sabha_18"]
+        target_houses = ["rajya_sabha", "lok_sabha_18", "lok_sabha_17"]
     else:
         target_houses = [h.strip().lower() for h in args.houses.split(",") if h.strip()]
 
