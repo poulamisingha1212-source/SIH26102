@@ -1,4 +1,4 @@
-name: Deploy Frontend to Vercel
+name: Build Check (Frontend)
 
 on:
   push:
@@ -7,13 +7,18 @@ on:
       - 'frontend/**'
       - 'vercel.json'
       - '.github/workflows/deploy-frontend.yml'
-  workflow_dispatch:
+  pull_request:
+    branches: [main]
+
+# Actual deployment to Vercel is handled automatically by Vercel's native
+# GitHub integration — connect the repo at https://vercel.com/new and set
+# VITE_API_URL in the Vercel project environment variables.
+# This workflow only verifies the build succeeds before Vercel picks it up.
 
 jobs:
-  deploy:
-    name: Build & Deploy
+  build:
+    name: Verify Frontend Build
     runs-on: ubuntu-latest
-    environment: production
 
     steps:
       - name: Checkout
@@ -34,13 +39,12 @@ jobs:
         run: npm run build
         working-directory: frontend
         env:
-          VITE_API_URL: ${{ secrets.VITE_API_URL }}
+          # VITE_API_URL is injected by Vercel at deploy time.
+          # Set a placeholder here so the build doesn't break in CI.
+          VITE_API_URL: https://placeholder.onrender.com
 
-      - name: Deploy to Vercel
-        uses: amondnet/vercel-action@v25
-        with:
-          vercel-token: ${{ secrets.VERCEL_TOKEN }}
-          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
-          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
-          vercel-args: '--prod'
-          working-directory: ./
+      - name: Check build output
+        run: |
+          echo "Build artifacts:"
+          ls -lh frontend/dist/
+          ls -lh frontend/dist/assets/
