@@ -1,0 +1,39 @@
+services:
+  - type: web
+    name: mplads-sentinel-api
+    runtime: python
+    region: oregon
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn backend.main:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /api/health
+
+    envVars:
+      - key: ENVIRONMENT
+        value: production
+      - key: MONGODB_URI
+        sync: false          # Set manually in Render dashboard — never commit secrets
+      - key: MONGO_DB_NAME
+        value: mplads_sentinel
+      - key: JWT_SECRET
+        generateValue: true  # Render auto-generates a cryptographically strong secret
+      - key: CORS_ORIGINS
+        sync: false          # Set to your Vercel URL, e.g. https://mplads-sentinel.vercel.app
+      - key: CRON_SECRET
+        generateValue: true
+      - key: MPLADS_LIVE_HOUSE
+        value: rajya_sabha
+      - key: MPLADS_LIVE_TIMEOUT
+        value: "300"
+      - key: SEED_FROM_SAMPLE
+        value: "1"
+      - key: IS_SERVERLESS
+        value: "0"
+      - key: DEMO_ADMIN_USER
+        sync: false          # Override in dashboard; default "admin" is for dev only
+      - key: DEMO_ADMIN_PASSWORD
+        sync: false          # Override with a strong unique password
+
+    # Render free tier spins down after 15 min of inactivity — no persistent disk.
+    # All state lives in MongoDB Atlas. Ephemeral process state (APScheduler, locks)
+    # resets on spin-up; the nightly cron re-acquires the distributed lock cleanly.
