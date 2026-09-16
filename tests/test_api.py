@@ -297,3 +297,71 @@ def test_sync_run_requires_reviewer_role_for_all_modes():
         res = client.post(f"/api/sync/run?mode={mode}")
         assert res.status_code == 401
 
+
+# ------------------------------------------------------------------------------
+# Production Hardening & Canonical Routes Tests
+# ------------------------------------------------------------------------------
+
+def test_cron_sync_requires_post_and_authorization(monkeypatch):
+    """GET /api/cron/sync must return 405 Method Not Allowed; POST requires CRON_SECRET."""
+    # GET is rejected
+    get_res = client.get("/api/cron/sync")
+    assert get_res.status_code == 405
+
+    # POST without secret is 403
+    unauth_res = client.post("/api/cron/sync?mode=live")
+    assert unauth_res.status_code == 403
+
+    # POST with valid secret executes ingestion
+    monkeypatch.setattr("backend.main._cron_authorized", lambda req: True)
+    monkeypatch.setattr("backend.main.run_ingestion", lambda mode: {"status": "success", "processed": 0})
+    auth_res = client.post("/api/cron/sync?mode=live")
+    assert auth_res.status_code == 200
+    assert auth_res.json()["status"] == "success"
+
+
+def test_non_api_routes_are_removed():
+    """Duplicate non-/api routes have been removed in favor of canonical /api/* endpoints."""
+    assert client.get("/works").status_code == 404
+    assert client.get("/stats/overview").status_code == 404
+    assert client.get("/health").status_code == 404
+    assert client.get("/sync/status").status_code == 404
+
+
+def test_cors_configuration():
+    """CORS middleware returns explicit allowed methods and headers on preflight."""
+    res = client.options(
+        "/api/works",
+        headers={
+            "Origin": "http://localhost:5173",
+            "Access-Control-Request-Method": "GET",
+            "Access-Control-Request-Headers": "Authorization, Content-Type",
+        }
+    )
+    assert res.status_code == 200
+    allow_methods = res.headers.get("access-control-allow-methods", "")
+    assert "GET" in allow_methods
+    assert "POST" in allow_methods
+    assert "*" not in allow_methods
+
+
+def test_production_config_validation_fails_fast(monkeypatch):
+    """In production, default JWT secret or localhost Mongo must fail fast with ValueError."""
+    from backend.config import Settings
+
+    # Case 1: Default JWT secret in production
+    monkeypatch.setenv("ENVIRONMENT", "production")
+    monkeypatch.setenv("JWT_SECRET", "mplads-sentinel-jwt-secret-key-32-chars-min!")
+    monkeypatch.setenv("MONGODB_URI", "mongodb+srv://user:pass@cluster.mongodb.net/test")
+    monkeypatch.setenv("DEMO_ADMIN_PASSWORD", "SecureUniquePassword2026!")
+    with pytest.raises(ValueError, match="JWT_SECRET must be explicitly set"):
+        Settings()
+
+    # Case 2: Localhost Mongo URI in production
+    monkeypatch.setenv("ENVIRONMENT", "production")
+    monkeypatch.setenv("JWT_SECRET", "cryptographically-strong-secret-key-12345!")
+    monkeypatch.setenv("MONGODB_URI", "mongodb://localhost:27017")
+    with pytest.raises(ValueError, match="MONGODB_URI must be explicitly set to a production database"):
+        Settings()
+
+
