@@ -43,6 +43,7 @@ from backend.services.ingestion import (
     purge_preloaded_data,
     acquire_sync_lock,
     release_sync_lock,
+    recompute_global_priority_ranks,
     SOURCE_LIVE,
 )
 from model.risk_engine import score_dataset
@@ -291,6 +292,11 @@ def run_full_feed(
             grand_totals["inserted"], grand_totals["updated"]
         )
         logger.info("=" * 70)
+
+        # Recompute strict global priority ranking 1..N across all works in MongoDB
+        logger.info("Recomputing global priority ranking across all works...")
+        recompute_global_priority_ranks()
+        logger.info("Global priority ranks updated successfully.")
 
         # Write final sync log
         db.sync_logs.insert_one({
