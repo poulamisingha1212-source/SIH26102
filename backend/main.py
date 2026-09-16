@@ -48,13 +48,29 @@ scheduler = BackgroundScheduler()
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Startup: ensure indexes and bootstrap database.
+    # Failures here are logged but never crash the process so that Render's
+    # health-check endpoint (/api/health) can return a "degraded" response
+    # and the operator can diagnose connection problems without a restart loop.
     try:
         ensure_indexes()
+        logger.info("MongoDB indexes verified.")
     except Exception as e:
-        logger.error("Error creating database indexes: %s", e)
+        logger.error(
+            "MongoDB index creation failed — check MONGODB_URI. "
+            "Configured URI prefix: %s... Error: %s",
+            settings.MONGODB_URI[:30],
+            e,
+        )
 
     if not settings.IS_SERVERLESS:
-        seed_database()
+        try:
+            seed_database()
+        except Exception as e:
+            logger.error(
+                "Database seeding failed — check MONGODB_URI. "
+                "The API will start in degraded mode. Error: %s",
+                e,
+            )
         # Daily live sync at 19:00 Indian Standard Time (7:00 PM IST).
         scheduler.add_job(
             run_ingestion,
