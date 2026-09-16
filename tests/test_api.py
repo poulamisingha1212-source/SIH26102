@@ -9,12 +9,18 @@ client = TestClient(app)
 
 def pytest_configure(config):
     """Portal-only pipeline: if the database is empty (fresh environment),
-    seed it from the bundled sample feed via the offline replay path so the
-    API tests never depend on the network."""
-    from backend.services.ingestion import run_ingestion
+    seed it from the bundled sample feed directly so tests never depend on network."""
     count = works.count_documents({})
     if count == 0:
-        run_ingestion(mode="auto", source_file_path=settings.RAW_SAMPLE_PATH)
+        import pandas as pd
+        from backend.services.ingestion import _reshape_long_format, _upsert_dataframe
+        from model.risk_engine import score_dataset
+        sample_path = settings.RAW_SAMPLE_PATH
+        if sample_path.exists():
+            raw = pd.read_csv(sample_path)
+            reshaped = _reshape_long_format(raw)
+            scored = score_dataset(reshaped, model_dir=settings.MODEL_DIR)
+            _upsert_dataframe(scored)
 
 
 def test_get_works_pagination_and_priority_order():
