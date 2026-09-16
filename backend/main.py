@@ -62,7 +62,7 @@ async def lifespan(app: FastAPI):
             e,
         )
 
-    if not settings.IS_SERVERLESS:
+    if not settings.IS_SERVERLESS and settings.AUTO_SEED:
         try:
             seed_database()
         except Exception as e:
@@ -109,8 +109,16 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.CORS_ORIGINS,
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    allow_headers=[
+        "Content-Type",
+        "Authorization",
+        "X-Requested-With",
+        "Accept",
+        "Origin",
+        "X-Cron-Secret",
+        "X-Client-Role",
+    ],
 )
 app.add_middleware(GZipMiddleware, minimum_size=1024)
 
@@ -118,7 +126,6 @@ app.add_middleware(GZipMiddleware, minimum_size=1024)
 # ==============================================================================
 # 1. GET /api/works — Priority Queue & Filtered List
 # ==============================================================================
-@app.get("/works", response_model=WorkPaginationResponse)
 @app.get("/api/works", response_model=WorkPaginationResponse)
 def get_works(
     page: int = Query(1, ge=1, description="Page number"),
@@ -245,7 +252,6 @@ def export_works_csv(
 # ==============================================================================
 # 2. GET /api/works/{work_id} — Case Packet Detail View
 # ==============================================================================
-@app.get("/works/{work_id:path}", response_model=CasePacketResponse)
 @app.get("/api/works/{work_id:path}", response_model=CasePacketResponse)
 def get_work_case_packet(
     work_id: str,
@@ -395,9 +401,8 @@ def get_status_analytics(
 
 
 # ==============================================================================
-# 4. GET /api/stats/overview — Portfolio Statistics & Sync Health
+# 3. GET /api/stats/overview — Macro KPI Summary
 # ==============================================================================
-@app.get("/stats/overview", response_model=StatsOverviewResponse)
 @app.get("/api/stats/overview", response_model=StatsOverviewResponse)
 def get_stats_overview(
     house: Optional[str] = Query(None, description="Filter by House: 'Lok Sabha' or 'Rajya Sabha'"),
@@ -492,11 +497,10 @@ def get_stats_overview(
 
 
 # ==============================================================================
-# 5. POST /api/works/{work_id}/review — Human Review Feedback Loop
+# 4. POST /api/works/{work_id}/review — Submit Review Decision
 # ==============================================================================
-@app.post("/works/{work_id:path}/review", response_model=ReviewResponse)
 @app.post("/api/works/{work_id:path}/review", response_model=ReviewResponse)
-def record_human_review(
+def submit_review(
     work_id: str,
     payload: ReviewCreateRequest,
     db=Depends(get_db),
@@ -552,11 +556,10 @@ def record_human_review(
 
 
 # ==============================================================================
-# 5a. POST /api/works/{work_id}/public-review — Citizen Verification Feedback
+# 4b. POST /api/works/{work_id}/public-review — Citizen Evidence Submission
 # ==============================================================================
-@app.post("/works/{work_id:path}/public-review", response_model=PublicReviewResponse)
 @app.post("/api/works/{work_id:path}/public-review", response_model=PublicReviewResponse)
-def record_public_review(
+def submit_public_review(
     request: Request,
     work_id: str,
     payload: PublicReviewCreateRequest,
@@ -628,11 +631,10 @@ def record_public_review(
 
 
 # ==============================================================================
-# 5b. POST /api/auth/login — MongoDB Authentication with Bcrypt & JWT
+# 5. POST /api/auth/login — Auditor & Reviewer Authentication
 # ==============================================================================
-@app.post("/auth/login", response_model=LoginResponse)
 @app.post("/api/auth/login", response_model=LoginResponse)
-def login_user(request: Request, payload: LoginRequest, db=Depends(get_db)):
+def login(request: Request, body: LoginRequest, db=Depends(get_db)):
     """
     Authenticates District Auditor and MoSPI Reviewer users against MongoDB `users` collection.
     Verifies bcrypt password hash and returns signed JWT access token.
@@ -646,8 +648,8 @@ def login_user(request: Request, payload: LoginRequest, db=Depends(get_db)):
             detail=f"Too many login attempts. Please wait {wait_sec} seconds before trying again."
         )
 
-    uname = payload.username.strip()
-    pwd = payload.password.strip()
+    uname = body.username.strip()
+    pwd = body.password.strip()
 
     user = users.find_one({"username": uname})
     if not user:
@@ -721,13 +723,15 @@ def get_filter_options(
     }
 
 
-@app.get("/sync/status")
 @app.get("/api/sync/status")
-def sync_status():
+def sync_status(
+    db=Depends(get_db),
+    user_role: str = Depends(get_current_role)
+):
+    """Returns staleness indicator and last-known-good sync state."""
     return get_sync_status()
 
 
-@app.get("/sync/logs", response_model=List[SyncLogResponse])
 @app.get("/api/sync/logs", response_model=List[SyncLogResponse])
 def get_sync_logs(
     limit: int = 20,
@@ -780,9 +784,8 @@ def _start_background_sync(mode: str) -> dict:
     }
 
 
-@app.post("/sync/run")
 @app.post("/api/sync/run")
-def trigger_manual_sync(
+def trigger_sync(
     request: Request,
     mode: str = Query("live", description="Ingestion mode: live"),
     user: Optional[dict] = Depends(get_current_user_optional)
@@ -808,14 +811,13 @@ def trigger_manual_sync(
     return _start_background_sync(mode)
 
 
-@app.get("/cron/sync")
-@app.get("/api/cron/sync")
+@app.post("/api/cron/sync")
 def cron_sync(
     request: Request,
     mode: str = Query("live", description="Ingestion mode: live"),
 ):
     """
-    Platform-cron entry point. Requires valid CRON_SECRET.
+    Platform-cron entry point. Requires HTTP POST and valid CRON_SECRET.
     Returns HTTP 502 or 500 on failure, or HTTP 409 if locked.
     """
     if not _cron_authorized(request):
@@ -845,7 +847,6 @@ def cron_sync(
     return result
 
 
-@app.get("/health")
 @app.get("/api/health", response_model=HealthResponse)
 def health_check(db=Depends(get_db)):
     """Liveness probe: verifies API + database connectivity."""
