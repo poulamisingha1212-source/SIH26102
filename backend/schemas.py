@@ -63,6 +63,11 @@ class CasePacketResponse(BaseModel):
     weighted_rule_score: float = 0.0
     anomaly_percentile: float = 0.0
     is_anomaly: bool = False
+    # Per-agent breakdown (powers the UI explainability cards)
+    agent_findings: List[Any] = []
+    agents_flagged: int = 0
+    agents_total: int = 0
+    # Legacy / supplementary numeric fields
     cost_mad_score: Optional[float] = 0.0
     vendor_share_in_state: Optional[float] = 0.0
     disbursement_mismatch_ratio: Optional[float] = 0.0
@@ -72,6 +77,7 @@ class CasePacketResponse(BaseModel):
     human_review_outcome: Optional[str] = None
     prior_reviews: List[dict] = []
     public_reviews: List[dict] = []
+
 
 
 class PublicReviewCreateRequest(BaseModel):

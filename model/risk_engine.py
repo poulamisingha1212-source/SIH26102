@@ -172,27 +172,41 @@ def generate_narrative_reason(flag: str, row: dict) -> str:
     ida_mp_count      = int(row.get('ida_mp_count') or 0)
 
     if flag == 'cost_outlier':
-        multiple = (sanction / float(peer_median)) if peer_median and float(peer_median) > 0 else None
-        multiple_str = f'{multiple:.1f}×' if multiple else '—×'
-        return (
-            f"Sanctioned cost {_fmt_inr(sanction)} is {multiple_str} the peer median "
-            f"({_fmt_inr(peer_median)}) for '{category}' works in {state} "
-            f"(based on {peer_count} comparable works). "
-            f"Robust deviation score: {abs(mad_score):.1f}σ — "
-            f"threshold is {CONFIG['cost_mad_threshold']:.1f}σ."
-        )
+        if peer_median and float(peer_median) > 0 and peer_count > 0:
+            multiple = sanction / float(peer_median)
+            return (
+                f"Sanctioned cost {_fmt_inr(sanction)} is {multiple:.1f}× the peer median "
+                f"({_fmt_inr(peer_median)}) for '{category}' works in {state} "
+                f"(based on {peer_count} comparable works). "
+                f"Robust deviation score: {abs(mad_score):.1f}σ — "
+                f"threshold is {CONFIG['cost_mad_threshold']:.1f}σ."
+            )
+        else:
+            dev_str = f" (deviation score: {abs(mad_score):.1f}σ)" if mad_score else ""
+            return (
+                f"Sanctioned cost {_fmt_inr(sanction)} is a high-cost statistical outlier "
+                f"for '{category}' works in {state}{dev_str}. "
+                f"Threshold is {CONFIG['cost_mad_threshold']:.1f}σ."
+            )
 
     if flag == 'disbursement_mismatch':
-        diff = abs(float(row.get('amount_disbursed') or 0) - disbursed)
+        amount_dis = float(row.get('amount_disbursed') or 0)
+        diff = abs(amount_dis - disbursed)
+        # Recompute ratio from raw amounts if stored ratio is zero but diff is real
+        stored_ratio = float(row.get('disbursement_mismatch_ratio') or 0)
+        pct = stored_ratio * 100 if stored_ratio > 0 else (diff / sanction * 100 if sanction > 0 else 0)
         return (
-            f"Disbursement mismatch of {_fmt_inr(diff)} ({mismatch_ratio:.1f}%) "
-            f"between recorded payments ({_fmt_inr(row.get('amount_disbursed') or 0)}) "
+            f"Disbursement mismatch of {_fmt_inr(diff)} ({pct:.1f}%) "
+            f"between recorded vendor payments ({_fmt_inr(amount_dis)}) "
             f"and total fund disbursed ({_fmt_inr(disbursed)}). "
             f"Tolerance is {CONFIG['disbursement_mismatch_pct'] * 100:.0f}%."
         )
 
     if flag == 'over_utilization':
+        # Recompute excess directly from sanction/disbursed if stored ratio is 0
         excess = disbursed - sanction
+        stored_ratio = float(row.get('utilization_ratio') or 0)
+        pct = (stored_ratio - 1) * 100 if stored_ratio > 1 else (excess / sanction * 100 if sanction > 0 else 0)
         return (
             f"Expenditure {_fmt_inr(disbursed)} is "
             f"{_pct(excess, sanction)} ({_fmt_inr(excess)}) over "
@@ -215,30 +229,39 @@ def generate_narrative_reason(flag: str, row: dict) -> str:
 
     if flag == 'impossible_timeline':
         gap = int(row.get('completion_speed_days') or 0)
+        date_info = f" ({completion_date}) is recorded BEFORE the sanction date ({sanction_date})" if completion_date != '—' and sanction_date != '—' else ""
+        gap_info = f" Temporal gap: {abs(gap)} days." if gap else ""
         return (
-            f"Completion date ({completion_date}) is recorded BEFORE the sanction date "
-            f"({sanction_date}) — a chronological impossibility. "
-            f"Temporal gap: {abs(gap)} days."
+            f"Completion date{date_info} precedes the sanction date — a chronological impossibility.{gap_info}"
         )
 
     if flag == 'rapid_completion':
+        speed_str = f"in {_days_label(comp_speed)}" if comp_speed > 0 else "within days"
+        date_clause = f" (sanctioned {sanction_date})" if sanction_date != '—' else ""
         return (
-            f"Work was marked completed in {_days_label(comp_speed)} of sanction "
-            f"(sanctioned {sanction_date}). "
+            f"Work was marked completed {speed_str} of sanction{date_clause}. "
             f"Minimum plausible delivery window is {CONFIG['rapid_completion_days']} days."
         )
 
     if flag == 'stuck_status':
-        return (
-            f"Work status '{status}' has remained unchanged for "
-            f"{_days_label(days_sanction)} since sanction ({sanction_date}). "
-            f"Overdue grace period is {CONFIG['overdue_grace_days']} days."
-        )
+        if days_sanction > 0:
+            date_clause = f" since sanction ({sanction_date})" if sanction_date != '—' else ""
+            return (
+                f"Work status '{status}' has remained unchanged for "
+                f"{_days_label(days_sanction)}{date_clause}. "
+                f"Overdue grace period is {CONFIG['overdue_grace_days']} days."
+            )
+        else:
+            date_clause = f" (sanctioned {sanction_date})" if sanction_date != '—' else ""
+            return (
+                f"Work status '{status}' has remained stalled{date_clause} beyond "
+                f"the allowable grace period of {CONFIG['overdue_grace_days']} days."
+            )
 
     if flag == 'stuck_payment':
+        exp_clause = f" for {_days_label(days_exp)}" if days_exp > 0 else ""
         return (
-            f"Disbursed work ({_fmt_inr(disbursed)}) has had no payment activity for "
-            f"{_days_label(days_exp)}. "
+            f"Disbursed work ({_fmt_inr(disbursed)}) has had no payment activity{exp_clause}. "
             f"Stuck-payment threshold is {CONFIG['stuck_payment_days']} days."
         )
 
@@ -266,20 +289,23 @@ def generate_narrative_reason(flag: str, row: dict) -> str:
         )
 
     if flag == 'vendor_concentration':
+        pct_str = f" accounts for {vendor_state_pct:.1f}% of all paid works in {state}" if vendor_state_pct > 0 else f" accounts for an unusually high share of paid works in {state}"
         return (
-            f"'{vendor}' accounts for {vendor_state_pct:.1f}% of all paid works in {state}. "
+            f"'{vendor}'{pct_str}. "
             f"Concentration threshold is {CONFIG['vendor_share_threshold'] * 100:.0f}%."
         )
 
     if flag == 'vendor_dominates_mp':
+        pct_str = f" handles {vendor_mp_pct:.1f}% of this MP's ({mp}) paid works" if vendor_mp_pct > 0 else f" handles a dominant share of this MP's ({mp}) paid works"
         return (
-            f"'{vendor}' handles {vendor_mp_pct:.1f}% of this MP's ({mp}) paid works. "
+            f"'{vendor}'{pct_str}. "
             f"Single-vendor dominance threshold per MP is {CONFIG['vendor_mp_share_threshold'] * 100:.0f}%."
         )
 
     if flag == 'vendor_multi_mp':
+        cnt_str = f"across {vendor_mp_count} different MPs" if vendor_mp_count > 0 else "across multiple different MPs"
         return (
-            f"'{vendor}' bills paid works across {vendor_mp_count} different MPs — "
+            f"'{vendor}' bills paid works {cnt_str} — "
             f"threshold for organised-capture risk is {CONFIG['vendor_multi_mp_threshold']} MPs."
         )
 
@@ -304,29 +330,31 @@ def generate_narrative_reason(flag: str, row: dict) -> str:
         )
 
     if flag == 'completed_without_image':
+        date_str = f" ({completion_date})" if completion_date != '—' else ""
         return (
-            f"Work marked as completed ({completion_date}) but no photographic "
+            f"Work marked as completed{date_str} but no photographic "
             f"evidence attachment is recorded on the MPLADS portal. "
             f"Image upload is mandatory for work completion certification."
         )
 
     if flag == 'ida_budget_capture':
+        share_str = f" holds {ida_budget_share:.1f}% of the state's total MPLADS sanctioned budget" if ida_budget_share > 0 else " holds a disproportionately high share of the state's total MPLADS sanctioned budget"
         return (
-            f"Implementing agency '{ida}' in {state} holds {ida_budget_share:.1f}% of the "
-            f"state's total MPLADS sanctioned budget. "
+            f"Implementing agency '{ida}' in {state}{share_str}. "
             f"Capture threshold: {CONFIG['ida_budget_share_threshold'] * 100:.0f}%."
         )
 
     if flag == 'ida_vendor_monopoly':
+        conc_str = f" accounts for {ida_vendor_conc:.1f}% of all paid works" if ida_vendor_conc > 0 else " accounts for the vast majority of paid works"
         return (
-            f"'{vendor}' accounts for {ida_vendor_conc:.1f}% of all paid works under "
-            f"implementing agency '{ida}'. "
+            f"'{vendor}'{conc_str} under implementing agency '{ida}'. "
             f"Monopoly threshold: {CONFIG['ida_vendor_concentration_threshold'] * 100:.0f}%."
         )
 
     if flag == 'ida_mp_cluster':
+        cnt_str = f"is used by {ida_mp_count} different MPs" if ida_mp_count > 0 else "is used by multiple different MPs in a tight cluster"
         return (
-            f"Implementing agency '{ida}' is used by {ida_mp_count} different MPs — "
+            f"Implementing agency '{ida}' {cnt_str} — "
             f"an implausibly high clustering indicative of pre-arranged procurement. "
             f"Threshold: {CONFIG['ida_mp_cluster_threshold']} MPs."
         )
@@ -390,8 +418,10 @@ def _parse_flags(raw):
 def _agent_findings(row, work_row: dict) -> list:
     """Per-agent findings for the case packet, ordered by score then weight.
 
-    Each finding now includes quantitative narrative reasons built from the
-    actual row data, not just a static description lookup.
+    Each finding includes quantitative narrative reasons built from the actual
+    row data. When agent_breakdown is missing or stale (all scores = 0 but
+    flags ARE present), scores are reconstructed from FLAG_WEIGHTS so the
+    UI always shows correct per-agent attribution.
     """
     breakdown = row.get('agent_breakdown')
     agents_payload = None
@@ -402,19 +432,34 @@ def _agent_findings(row, work_row: dict) -> list:
         except (TypeError, ValueError):
             agents_payload = None
 
-    if agents_payload is None:
-        # Legacy rows without a stored breakdown — rebuild from flags.
-        flags = _parse_flags(row.get('rule_flags_triggered', []))
-        agents_payload = [
-            {
+    all_flags = set(_parse_flags(row.get('rule_flags_triggered', [])))
+
+    # If breakdown is missing, stale (all 0 scores), or missing new agents,
+    # rebuild per-agent attribution from the stored rule_flags_triggered.
+    breakdown_is_stale = (
+        agents_payload is None
+        or len(agents_payload) != len(AGENTS)
+        or (all(float(a.get('score', 0)) == 0 for a in agents_payload) and len(all_flags) > 0)
+    )
+
+    if breakdown_is_stale:
+        agents_payload = []
+        for a in AGENTS:
+            agent_flags = sorted(f for f in all_flags if f in a.FLAG_WEIGHTS)
+            # Reconstruct score from flag weights
+            if agent_flags and a.FLAG_WEIGHTS:
+                denom = sum(a.FLAG_WEIGHTS.values()) or 1.0
+                raw = sum(a.FLAG_WEIGHTS.get(f, 0) for f in agent_flags)
+                score = min(raw / denom, 1.0)
+            else:
+                score = 0.0
+            agents_payload.append({
                 'key': a.key,
                 'title': a.title,
                 'weight': a.weight,
-                'score': 0.0,
-                'flags': sorted(f for f in flags if _flag_to_agent(f) == a.key),
-            }
-            for a in AGENTS
-        ]
+                'score': round(score, 3),
+                'flags': agent_flags,
+            })
 
     findings = []
     for entry in agents_payload:
@@ -437,19 +482,8 @@ def _agent_findings(row, work_row: dict) -> list:
 
 def _parse_agent_count(row) -> int:
     """How many specialist agents raised at least one signal."""
-    breakdown = row.get('agent_breakdown')
-    if breakdown:
-        try:
-            parsed = json.loads(breakdown) if isinstance(breakdown, str) else breakdown
-            agents = parsed.get('agents', []) if isinstance(parsed, dict) else []
-            return sum(1 for a in agents if float(a.get('score', 0)) > 0)
-        except (TypeError, ValueError):
-            pass
-    score_cols = [c for c in row.keys() if isinstance(c, str) and c.endswith('_score')
-                  and c[:-6] in AGENT_DESCRIPTIONS]
-    if score_cols:
-        return sum(1 for c in score_cols if float(row.get(c) or 0) > 0)
-    return 0
+    findings = _agent_findings(row, row)
+    return sum(1 for f in findings if f.get('score', 0) > 0 or len(f.get('flags', [])) > 0)
 
 
 def generate_case_packet(work_id, work_row=None, df=None):

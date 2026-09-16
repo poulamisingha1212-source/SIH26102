@@ -285,6 +285,28 @@ def _normalize_work(row: pd.Series) -> dict:
         "weighted_rule_score": _f("weighted_rule_score"),
         "anomaly_percentile": _f("anomaly_percentile"),
         "is_anomaly": bool(row.get("is_anomaly", False)),
+        # ── Narrative feature columns (needed by the quantitative reason generator) ──
+        "peer_median": _f("peer_median") if not pd.isna(row.get("peer_median", float("nan"))) else None,
+        "peer_count": int(_f("peer_count")),
+        "cost_mad_score": _f("cost_mad_score"),
+        "vendor_share_in_state": _f("vendor_share_in_state"),
+        "vendor_share_per_mp": _f("vendor_share_per_mp"),
+        "vendor_mp_count": int(_f("vendor_mp_count")),
+        "disbursement_mismatch_ratio": _f("disbursement_mismatch_ratio"),
+        "days_since_sanction": _f("days_since_sanction"),
+        "days_since_last_expenditure": _f("days_since_last_expenditure"),
+        "days_payment_after_completion": _f("days_payment_after_completion"),
+        "completion_speed_days": _f("completion_speed_days"),
+        "duplicate_match_count": int(_f("duplicate_match_count")),
+        "amount_disbursed": _f("amount_disbursed"),
+        # ── IDA / geographic features ──
+        "ida_budget_share_in_state": _f("ida_budget_share_in_state"),
+        "ida_vendor_concentration": _f("ida_vendor_concentration"),
+        "ida_mp_count": int(_f("ida_mp_count")),
+        # ── Agent breakdown (enables per-agent UI cards) ──
+        "agent_breakdown": _s("agent_breakdown"),
+        "agents_flagged": int(_f("agents_flagged")),
+        # ── Source metadata ──
         "source_file": _s("source_file") or "mplads_dashboard_api",
         "data_source": "live_mplads_portal",
     }

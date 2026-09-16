@@ -811,6 +811,15 @@ def trigger_sync(
     return _start_background_sync(mode)
 
 
+@app.get("/api/cron/sync")
+def cron_sync_get():
+    """GET is not allowed for cron sync. Explicitly returns HTTP 405."""
+    raise HTTPException(
+        status_code=status.HTTP_405_METHOD_NOT_ALLOWED,
+        detail="Method Not Allowed: use POST to trigger cron sync."
+    )
+
+
 @app.post("/api/cron/sync")
 def cron_sync(
     request: Request,
