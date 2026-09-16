@@ -137,7 +137,7 @@ If you prefer Vercel Cron instead, restore the `crons` block to `vercel.json`:
 ]
 ```
 
-This calls `GET /api/cron/sync` on your **backend** (not Vercel) using the `CRON_SECRET` as Bearer token.
+This calls `POST /api/cron/sync` on your **backend** using the `CRON_SECRET` as Bearer token.
 
 ---
 
@@ -153,7 +153,7 @@ npm install
 npm run dev
 ```
 
-The frontend dev server proxies `/api`, `/works`, `/stats`, and `/sync` to `localhost:8000`.
+The frontend dev server proxies `/api` to `localhost:8000`.
 Copy `.env.example` to `.env` and fill in your values.
 
 ---
