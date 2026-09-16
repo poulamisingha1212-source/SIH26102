@@ -259,26 +259,38 @@ export default function MPDirectory({
                     >
                       <TableCell className="pl-5 text-muted-foreground font-mono text-xs">{mp.rank}</TableCell>
                       <TableCell>
-                        <span className="font-semibold group-hover:text-sky-700 transition-colors block truncate max-w-[260px]">
+                        <span className="font-semibold group-hover:text-sky-700 transition-colors block truncate max-w-[280px]">
                           {mp.mp_name}
                         </span>
                         <span className="text-[11px] text-muted-foreground flex items-center gap-1 mt-0.5">
                           <MapPin className="w-3 h-3" />
                           {mp.constituency || '—'}{mp.state ? ` • ${mp.state}` : ''}
                         </span>
+                        {/* Always-visible financial summary chips for immediate visibility on all viewports */}
+                        <div className="flex flex-wrap items-center gap-1.5 mt-1.5">
+                          <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-indigo-50 border border-indigo-200/80 text-[10px] font-mono font-semibold text-indigo-700">
+                            <span className="text-[9px] uppercase font-bold text-indigo-500">Allocated:</span> {formatINR(mp.allocated_amount || mp.total_allocated || 0)}
+                          </span>
+                          <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-emerald-50 border border-emerald-200/80 text-[10px] font-mono font-semibold text-emerald-700">
+                            <span className="text-[9px] uppercase font-bold text-emerald-500">Sanctioned:</span> {formatINR(mp.total_sanctioned)}
+                          </span>
+                        </div>
                       </TableCell>
-                      <TableCell className="text-right">
-                        <span className="font-bold font-mono text-xs text-indigo-700">
+                      <TableCell className="text-right whitespace-nowrap">
+                        <span className="font-bold font-mono text-xs text-indigo-700 block">
                           {formatINR(mp.allocated_amount || mp.total_allocated || 0)}
                         </span>
+                        <span className="text-[10px] text-indigo-500/80 block">allocated ceiling</span>
                       </TableCell>
-                      <TableCell className="text-right">
-                        <span className="font-bold font-mono text-xs">{formatINR(mp.total_sanctioned)}</span>
-                        <span className="block text-[10px] text-muted-foreground lg:hidden">
-                          Alloc: {formatINR(mp.allocated_amount || mp.total_allocated || 0)} • {formatINR(mp.total_disbursed)} disbursed
+                      <TableCell className="text-right whitespace-nowrap">
+                        <span className="font-bold font-mono text-xs text-emerald-700 block">
+                          {formatINR(mp.total_sanctioned)}
+                        </span>
+                        <span className="text-[10px] text-muted-foreground block">
+                          {formatINR(mp.total_disbursed)} disbursed
                         </span>
                       </TableCell>
-                      <TableCell className="text-right hidden lg:table-cell">
+                      <TableCell className="text-right hidden lg:table-cell whitespace-nowrap">
                         <span className="font-medium text-foreground/80 font-mono text-xs">{formatINR(mp.total_disbursed)}</span>
                       </TableCell>
                       <TableCell>
