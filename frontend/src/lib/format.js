@@ -27,14 +27,14 @@ export function tierBadgeClass(tier) {
 
 // Soft light-theme score chips (WCAG-safe on white cards).
 export function scoreColorClass(score) {
-  if (score >= 90) return 'text-red-700 bg-red-50 border-red-200';
-  if (score >= 70) return 'text-amber-700 bg-amber-50 border-amber-200';
+  if (score > 70) return 'text-red-700 bg-red-50 border-red-200';
+  if (score >= 50) return 'text-amber-700 bg-amber-50 border-amber-200';
   return 'text-emerald-700 bg-emerald-50 border-emerald-200';
 }
 
 export function riskTextClass(score) {
-  if (score >= 70) return 'text-red-600';
-  if (score >= 40) return 'text-amber-600';
+  if (score > 70) return 'text-red-600';
+  if (score >= 50) return 'text-amber-600';
   return 'text-emerald-600';
 }
 
