@@ -282,7 +282,8 @@ def get_work_case_packet(
         for r in prior_reviews
     ]
 
-    # Fetch public feedback reviews
+    # Fetch public feedback reviews (location coordinates strictly confidential — auditors only)
+    is_auditor = user_role != ROLE_PUBLIC_TIER
     pub_reviews = public_reviews.find({"work_id": work_id}).sort([("created_at", DESCENDING)])
     packet['public_reviews'] = [
         {
@@ -291,6 +292,9 @@ def get_work_case_packet(
             'comment': pr.get("comment"),
             'photo_proof': pr.get("photo_proof"),
             'reporter_name': pr.get("reporter_name", "Anonymous Citizen"),
+            'latitude': pr.get("latitude") if is_auditor else None,
+            'longitude': pr.get("longitude") if is_auditor else None,
+            'location_accuracy': pr.get("location_accuracy") if is_auditor else None,
             'created_at': pr["created_at"].isoformat() if pr.get("created_at") else None
         }
         for pr in pub_reviews
@@ -615,6 +619,9 @@ def submit_public_review(
         "comment": payload.comment.strip() if payload.comment else None,
         "photo_proof": photo,
         "reporter_name": payload.reporter_name.strip() if payload.reporter_name else "Anonymous Citizen",
+        "latitude": payload.latitude,
+        "longitude": payload.longitude,
+        "location_accuracy": payload.location_accuracy,
         "created_at": now
     }
     public_reviews.insert_one(doc)
@@ -626,6 +633,9 @@ def submit_public_review(
         comment=doc["comment"],
         photo_proof=doc["photo_proof"],
         reporter_name=doc["reporter_name"],
+        latitude=doc["latitude"],
+        longitude=doc["longitude"],
+        location_accuracy=doc["location_accuracy"],
         created_at=now
     )
 

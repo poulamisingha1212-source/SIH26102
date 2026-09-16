@@ -170,6 +170,12 @@ def work_to_list_item(w: dict) -> dict:
         "rule_flag_count": int(w.get("rule_flag_count") or 0),
         "rule_flags_triggered": parse_rule_flags(w.get("rule_flags_triggered")),
         "human_review_outcome": w.get("human_review_outcome"),
+        "statutory_fail_count": int(w.get("statutory_fail_count") or 0),
+        "statutory_review_count": int(w.get("statutory_review_count") or 0),
+        "statutory_fails": w.get("statutory_fails") or [],
+        "statutory_reviews": w.get("statutory_reviews") or [],
+        "data_quality_defects": w.get("data_quality_defects") or [],
+        "auditor_action_directive": w.get("auditor_action_directive"),
     }
 
 

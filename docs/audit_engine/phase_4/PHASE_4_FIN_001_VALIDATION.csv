@@ -1,0 +1,5 @@
+work_id,status,sanction_amount,total_fund_disbursed,rule_state,reason
+141185,Pending for Sanction,800000.0,454775.0,FAIL,"Disbursement INR 454,775.00 recorded under status 'Pending for Sanction'"
+220383,Pending for Sanction,1300000.0,492960.0,FAIL,"Disbursement INR 492,960.00 recorded under status 'Pending for Sanction'"
+239748,Pending for Sanction,200000.0,200000.0,FAIL,"Disbursement INR 200,000.00 recorded under status 'Pending for Sanction'"
+239767,Pending for Sanction,200000.0,200000.0,FAIL,"Disbursement INR 200,000.00 recorded under status 'Pending for Sanction'"

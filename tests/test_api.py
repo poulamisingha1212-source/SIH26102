@@ -365,3 +365,51 @@ def test_production_config_validation_fails_fast(monkeypatch):
         Settings()
 
 
+def test_public_review_geolocation_auditor_privacy():
+    """Verify citizen geolocation is captured and strictly visible only to auditors."""
+    from backend.auth import create_access_token
+    from backend.database import public_reviews
+
+    work_res = client.get("/api/works?page_size=1")
+    work_id = work_res.json()["items"][0]["work_id"]
+
+    # 1. Submit public review with GPS location
+    sub_res = client.post(
+        f"/api/works/{work_id}/public-review",
+        json={
+            "is_completed": True,
+            "comment": "Field verification with GPS coordinates and camera",
+            "photo_proof": "data:image/jpeg;base64,dGVzdA==",
+            "reporter_name": "Citizen Audit Inspector",
+            "latitude": 28.6139,
+            "longitude": 77.2090,
+            "location_accuracy": 10.5
+        }
+    )
+    assert sub_res.status_code == 200
+    assert sub_res.json()["latitude"] == 28.6139
+
+    try:
+        # 2. Public view (unauthenticated) — Coordinates must be REDACTED
+        pub_res = client.get(f"/api/works/{work_id}")
+        assert pub_res.status_code == 200
+        pub_item = [r for r in pub_res.json()["public_reviews"] if r["reporter_name"] == "Citizen Audit Inspector"][0]
+        assert pub_item["latitude"] is None
+        assert pub_item["longitude"] is None
+        assert pub_item["location_accuracy"] is None
+
+        # 3. Auditor view (authenticated) — Coordinates must be VISIBLE
+        token = create_access_token({"sub": "admin", "role": "MoSPI Reviewer"})
+        aud_res = client.get(
+            f"/api/works/{work_id}",
+            headers={"Authorization": f"Bearer {token}"}
+        )
+        assert aud_res.status_code == 200
+        aud_item = [r for r in aud_res.json()["public_reviews"] if r["reporter_name"] == "Citizen Audit Inspector"][0]
+        assert aud_item["latitude"] == 28.6139
+        assert aud_item["longitude"] == 77.2090
+        assert aud_item["location_accuracy"] == 10.5
+    finally:
+        public_reviews.delete_many({"work_id": work_id, "reporter_name": "Citizen Audit Inspector"})
+
+

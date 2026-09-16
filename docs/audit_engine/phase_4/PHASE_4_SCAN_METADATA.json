@@ -1,0 +1,33 @@
+{
+  "scan_timestamp_start": "2026-09-16T19:15:28.684318+00:00",
+  "scan_timestamp_end": "2026-09-16T19:15:56.296248+00:00",
+  "elapsed_seconds": 26.72,
+  "database_name": "mplads_sentinel",
+  "primary_collection": "works",
+  "allocation_collection": "mp_allocations",
+  "document_count_start": 228328,
+  "document_count_end": 228328,
+  "allocations_count_start": 1318,
+  "allocations_count_end": 1318,
+  "git_commit": "29da26402ae830cf08efaaee9b90c209ca3f6b36",
+  "python_version": "3.12.10 (tags/v3.12.10:0cc8128, Apr  8 2025, 12:31:18) [MSC v.1943 64 bit (ARM64)]",
+  "mongodb_mutations": {
+    "inserts": 0,
+    "updates": 0,
+    "deletes": 0,
+    "index_changes": 0,
+    "migrations": 0
+  },
+  "counts": {
+    "total_works_scanned": 228328,
+    "unique_work_ids": 228328,
+    "duplicate_work_ids": 0,
+    "statutory_fail_findings": 7,
+    "review_findings": 110940,
+    "unique_fail_works": 7,
+    "unique_review_works": 110923,
+    "unique_unknown_works": 228328,
+    "unique_data_quality_works": 1585,
+    "rule_issues": 0
+  }
+}

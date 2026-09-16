@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import {
   ShieldAlert, AlertTriangle, FileCheck,
   Building2, User, MapPin, Layers, Activity, Scale, Send, Loader2,
   Camera, CheckCircle2, XCircle, MessageSquareText, Image as ImageIcon,
-  ChevronDown, ChevronRight, CheckCircle, Bot
+  ChevronDown, ChevronRight, CheckCircle, Bot, Upload, RefreshCw,
+  Trash2, ExternalLink, Lock, SwitchCamera, AlertCircle, Crosshair
 } from 'lucide-react';
 import {
   Dialog, DialogContent, DialogTitle, DialogDescription,
@@ -44,27 +45,145 @@ export default function CasePacketModal({
   const [pubPhotoProof, setPubPhotoProof] = useState('');
   const [isSubmittingPublicReview, setIsSubmittingPublicReview] = useState(false);
 
+  // Geolocation state
+  const [pubLocation, setPubLocation] = useState(null); // { latitude, longitude, accuracy }
+  const [isFetchingLocation, setIsFetchingLocation] = useState(false);
+  const [locationError, setLocationError] = useState(null);
+
+  // Camera capture state & refs
+  const [isCameraOpen, setIsCameraOpen] = useState(false);
+  const [cameraFacingMode, setCameraFacingMode] = useState('environment');
+  const videoRef = useRef(null);
+  const streamRef = useRef(null);
+  const fileInputRef = useRef(null);
+  const nativeCameraInputRef = useRef(null);
+
   const isPublicTier = currentRole === 'Read-Only Public Tier';
 
-  const handleReviewSubmit = async (e) => {
-    e.preventDefault();
-    if (isPublicTier) return;
-
-    const ok = await onSubmitReview(packet.work_id, outcome, notes);
-    if (ok) {
-      toast.success('Audit review outcome recorded successfully.');
-    } else {
-      toast.error('Review submission failed. Check your role and try again.');
+  // Stop camera stream tracks helper
+  const stopCameraStream = () => {
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach((track) => track.stop());
+      streamRef.current = null;
     }
   };
 
-  // Convert uploaded image to Base64 (max 1MB, image types only)
+  // Start live camera stream
+  const startCamera = async (facingMode = 'environment') => {
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+      if (nativeCameraInputRef.current) {
+        nativeCameraInputRef.current.click();
+      } else {
+        toast.error('Direct camera streaming not supported. Please use the Upload Photo option.');
+      }
+      return;
+    }
+
+    try {
+      stopCameraStream();
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: {
+          facingMode: { ideal: facingMode },
+          width: { ideal: 1280 },
+          height: { ideal: 720 },
+        },
+        audio: false,
+      });
+      streamRef.current = stream;
+      setIsCameraOpen(true);
+      if (videoRef.current) {
+        videoRef.current.srcObject = stream;
+      }
+    } catch (err) {
+      console.warn('getUserMedia error, falling back to native capture input:', err);
+      if (nativeCameraInputRef.current) {
+        nativeCameraInputRef.current.click();
+      } else {
+        toast.error('Unable to open camera. Please check camera permissions or use Upload Photo.');
+      }
+    }
+  };
+
+  const handleCloseCamera = () => {
+    stopCameraStream();
+    setIsCameraOpen(false);
+  };
+
+  const handleSnapPhoto = () => {
+    if (!videoRef.current) return;
+    const video = videoRef.current;
+    const canvas = document.createElement('canvas');
+    canvas.width = video.videoWidth || 640;
+    canvas.height = video.videoHeight || 480;
+    const ctx = canvas.getContext('2d');
+    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+    const dataUrl = canvas.toDataURL('image/jpeg', 0.82);
+    setPubPhotoProof(dataUrl);
+    stopCameraStream();
+    setIsCameraOpen(false);
+    toast.success('Photo captured successfully.');
+  };
+
+  const handleToggleCameraFacing = () => {
+    const nextMode = cameraFacingMode === 'environment' ? 'user' : 'environment';
+    setCameraFacingMode(nextMode);
+    startCamera(nextMode);
+  };
+
+  useEffect(() => {
+    if (isCameraOpen && streamRef.current && videoRef.current) {
+      videoRef.current.srcObject = streamRef.current;
+    }
+  }, [isCameraOpen]);
+
+  useEffect(() => {
+    return () => {
+      stopCameraStream();
+    };
+  }, []);
+
+  // Location Fetcher
+  const fetchLocation = useCallback(() => {
+    if (!navigator.geolocation) {
+      setLocationError('Geolocation is not supported by your browser.');
+      return;
+    }
+    setIsFetchingLocation(true);
+    setLocationError(null);
+
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        setPubLocation({
+          latitude: pos.coords.latitude,
+          longitude: pos.coords.longitude,
+          accuracy: pos.coords.accuracy,
+        });
+        setIsFetchingLocation(false);
+        setLocationError(null);
+      },
+      (err) => {
+        setIsFetchingLocation(false);
+        let msg = 'Unable to fetch GPS location.';
+        if (err.code === 1) msg = 'Location permission denied. Please enable GPS permissions.';
+        else if (err.code === 2) msg = 'Location unavailable on this device.';
+        else if (err.code === 3) msg = 'Location request timed out. Please retry.';
+        setLocationError(msg);
+      },
+      { enableHighAccuracy: true, timeout: 12000, maximumAge: 0 }
+    );
+  }, []);
+
+  useEffect(() => {
+    fetchLocation();
+  }, [fetchLocation]);
+
+  // Handle Photo File Upload
   const handlePhotoUpload = (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    if (file.size > 1024 * 1024) {
-      toast.error('File size exceeds 1MB limit.');
+    if (file.size > 2 * 1024 * 1024) {
+      toast.error('File size exceeds 2MB limit.');
       return;
     }
 
@@ -80,10 +199,46 @@ export default function CasePacketModal({
       toast.success('Photo attached successfully.');
     };
     reader.readAsDataURL(file);
+
+    if (fileInputRef.current) fileInputRef.current.value = '';
+    if (nativeCameraInputRef.current) nativeCameraInputRef.current.value = '';
   };
+
+  const handleReviewSubmit = async (e) => {
+    e.preventDefault();
+    if (isPublicTier) return;
+
+    const ok = await onSubmitReview(packet.work_id, outcome, notes);
+    if (ok) {
+      toast.success('Audit review outcome recorded successfully.');
+    } else {
+      toast.error('Review submission failed. Check your role and try again.');
+    }
+  };
+
+  // Section completeness validation: every section must be filled to submit without Name
+  const hasValidStatus = pubIsCompleted !== null && pubIsCompleted !== undefined;
+  const hasValidComment = Boolean(pubComment && pubComment.trim().length >= 5);
+  const hasValidPhoto = Boolean(pubPhotoProof);
+  const hasValidLocation = Boolean(pubLocation && pubLocation.latitude !== null && pubLocation.longitude !== null);
+  const canSubmitPublicReview = hasValidStatus && hasValidComment && hasValidPhoto && hasValidLocation && !isSubmittingPublicReview;
 
   const handlePublicReviewSubmit = async (e) => {
     e.preventDefault();
+
+    if (!hasValidComment) {
+      toast.error('Please enter verification remarks (minimum 5 characters).');
+      return;
+    }
+    if (!hasValidPhoto) {
+      toast.error('Please attach photo proof using Capture or Upload.');
+      return;
+    }
+    if (!hasValidLocation) {
+      toast.error('GPS location is required for ground verification. Please allow location access or click Retry.');
+      return;
+    }
+
     setIsSubmittingPublicReview(true);
 
     try {
@@ -92,9 +247,12 @@ export default function CasePacketModal({
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           is_completed: pubIsCompleted,
-          comment: pubComment.trim() || 'Citizen ground verification',
-          photo_proof: pubPhotoProof || null,
+          comment: pubComment.trim(),
+          photo_proof: pubPhotoProof,
           reporter_name: pubReporterName.trim() || 'Anonymous Citizen',
+          latitude: pubLocation.latitude,
+          longitude: pubLocation.longitude,
+          location_accuracy: pubLocation.accuracy,
         }),
       });
 
@@ -105,7 +263,7 @@ export default function CasePacketModal({
         return;
       }
 
-      toast.success('Thank you! Your public work verification has been submitted.');
+      toast.success('Thank you! Your citizen verification with photo and location has been submitted.');
       setPubComment('');
       setPubPhotoProof('');
       setIsSubmittingPublicReview(false);
@@ -277,22 +435,27 @@ export default function CasePacketModal({
             {/* Public Citizen Verification Form (Public Tier Option) */}
             {isPublicTier ? (
               <div className="p-5 rounded-2xl bg-indigo-50/70 dark:bg-indigo-950/40 border border-indigo-200/80 dark:border-indigo-900 space-y-4">
-                <div className="flex items-center gap-2">
-                  <Camera className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
-                  <div>
-                    <h3 className="text-sm font-bold text-slate-900 dark:text-slate-100">Public Citizen Verification</h3>
-                    <p className="text-[11px] text-slate-500 dark:text-slate-400">
-                      Verify whether this ground work is completed or incomplete, and attach photo proof for MoSPI auditors.
-                    </p>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Camera className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
+                    <div>
+                      <h3 className="text-sm font-bold text-slate-900 dark:text-slate-100">Public Citizen Verification</h3>
+                      <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                        Verify whether this ground work is completed or incomplete, attach photo proof, and record verified GPS location.
+                      </p>
+                    </div>
                   </div>
+                  <Badge variant="outline" className="text-[10px] bg-white dark:bg-slate-900 text-indigo-700 dark:text-indigo-300 border-indigo-200 dark:border-indigo-800">
+                    Field Evidence Protocol
+                  </Badge>
                 </div>
 
-                <form onSubmit={handlePublicReviewSubmit} className="space-y-3 text-xs">
+                <form onSubmit={handlePublicReviewSubmit} className="space-y-3.5 text-xs">
 
-                  {/* Status Selection Buttons */}
+                  {/* Section 1: Work Completion Status */}
                   <div>
                     <label className="text-slate-700 dark:text-slate-300 font-semibold block mb-1.5">
-                      Work Completion Status:
+                      1. Work Completion Status <span className="text-rose-500 font-bold">*</span>
                     </label>
                     <div className="flex items-center gap-2">
                       <button
@@ -323,66 +486,278 @@ export default function CasePacketModal({
                     </div>
                   </div>
 
-                  {/* Comments */}
+                  {/* Section 2: Verification Remarks / Ground Feedback */}
                   <div>
-                    <label className="text-slate-700 dark:text-slate-300 font-semibold block mb-1">
-                      Verification Remarks / Ground Feedback:
-                    </label>
+                    <div className="flex items-center justify-between mb-1">
+                      <label className="text-slate-700 dark:text-slate-300 font-semibold">
+                        2. Verification Remarks / Ground Feedback <span className="text-rose-500 font-bold">*</span>
+                      </label>
+                      <span className={`text-[10px] ${pubComment.trim().length >= 5 ? 'text-emerald-600 font-semibold' : 'text-slate-400'}`}>
+                        {pubComment.trim().length >= 5 ? '✓ Remarks entered' : 'Min 5 characters required'}
+                      </span>
+                    </div>
                     <Textarea
                       rows={2}
                       value={pubComment}
                       onChange={(e) => setPubComment(e.target.value)}
-                      placeholder="Specify ground observation details (e.g. site location, visible progress, missing materials)..."
+                      placeholder="Specify ground observation details (e.g. site location, visible progress, quality, contractor presence)..."
                       className="bg-white dark:bg-slate-900 text-xs rounded-xl"
                     />
                   </div>
 
-                  {/* Photo Proof Upload */}
+                  {/* Section 3: Photo Proof (Capture & Upload both options) */}
                   <div>
-                    <label className="text-slate-700 dark:text-slate-300 font-semibold block mb-1">
-                      Attach Photo Proof (Image File or Capture):
-                    </label>
-                    <div className="flex items-center gap-3">
-                      <Input
-                        type="file"
-                        accept="image/*"
-                        onChange={handlePhotoUpload}
-                        className="bg-white dark:bg-slate-900 text-xs rounded-xl cursor-pointer"
-                      />
-                      {pubPhotoProof && (
-                        <div className="flex items-center gap-1.5 text-xs text-emerald-600 font-semibold shrink-0">
-                          <ImageIcon className="w-4 h-4" />
-                          <span>Photo Attached</span>
+                    <div className="flex items-center justify-between mb-1.5">
+                      <label className="text-slate-700 dark:text-slate-300 font-semibold">
+                        3. Attached Photo Proof <span className="text-rose-500 font-bold">*</span>
+                      </label>
+                      <span className="text-[10px] text-slate-500">
+                        {pubPhotoProof ? '✓ Photo attached' : 'Choose Capture or Upload'}
+                      </span>
+                    </div>
+
+                    {/* Hidden Native / File Inputs */}
+                    <input
+                      ref={fileInputRef}
+                      type="file"
+                      accept="image/jpeg,image/png,image/webp"
+                      onChange={handlePhotoUpload}
+                      className="hidden"
+                    />
+                    <input
+                      ref={nativeCameraInputRef}
+                      type="file"
+                      accept="image/*"
+                      capture="environment"
+                      onChange={handlePhotoUpload}
+                      className="hidden"
+                    />
+
+                    {/* Interactive Live Camera Viewfinder */}
+                    {isCameraOpen ? (
+                      <div className="p-3 rounded-2xl bg-black border border-slate-700 space-y-2">
+                        <div className="relative rounded-xl overflow-hidden bg-slate-950 flex items-center justify-center">
+                          <video
+                            ref={videoRef}
+                            autoPlay
+                            playsInline
+                            muted
+                            className="w-full h-52 sm:h-60 object-cover"
+                          />
+                          <div className="absolute top-2 left-2 px-2 py-0.5 rounded-md bg-black/60 text-white text-[10px] flex items-center gap-1 backdrop-blur-xs">
+                            <Camera className="w-3 h-3 text-red-400 animate-pulse" /> Live Camera Stream
+                          </div>
+                        </div>
+
+                        <div className="flex items-center justify-between gap-2 pt-1">
+                          <Button
+                            type="button"
+                            size="sm"
+                            variant="outline"
+                            onClick={handleCloseCamera}
+                            className="text-white border-slate-600 hover:bg-slate-800 text-xs cursor-pointer"
+                          >
+                            Cancel
+                          </Button>
+                          <Button
+                            type="button"
+                            size="sm"
+                            onClick={handleSnapPhoto}
+                            className="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold gap-1.5 cursor-pointer px-4 shadow-sm"
+                          >
+                            <Camera className="w-3.5 h-3.5" />
+                            <span>Snap Photo</span>
+                          </Button>
+                          <Button
+                            type="button"
+                            size="sm"
+                            variant="outline"
+                            onClick={handleToggleCameraFacing}
+                            className="text-white border-slate-600 hover:bg-slate-800 text-xs cursor-pointer gap-1"
+                            title="Switch Camera"
+                          >
+                            <SwitchCamera className="w-3.5 h-3.5" />
+                            <span className="hidden sm:inline">Flip</span>
+                          </Button>
+                        </div>
+                      </div>
+                    ) : pubPhotoProof ? (
+                      /* Photo Preview with Remove/Retake Option */
+                      <div className="p-3 rounded-xl bg-white dark:bg-slate-900 border border-emerald-200 dark:border-emerald-800/60 flex items-center justify-between gap-3">
+                        <div className="flex items-center gap-3">
+                          <img
+                            src={pubPhotoProof}
+                            alt="Captured verification photo"
+                            className="w-14 h-14 object-cover rounded-lg border border-slate-200 dark:border-slate-700 shadow-2xs"
+                          />
+                          <div>
+                            <div className="flex items-center gap-1 text-emerald-700 dark:text-emerald-400 font-bold text-xs">
+                              <CheckCircle2 className="w-3.5 h-3.5" />
+                              <span>Photo Proof Attached</span>
+                            </div>
+                            <p className="text-[10px] text-slate-500">Ready for auditor inspection</p>
+                          </div>
+                        </div>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setPubPhotoProof('')}
+                          className="text-rose-600 border-rose-200 hover:bg-rose-50 dark:hover:bg-rose-950/40 text-xs gap-1 cursor-pointer"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                          <span>Remove</span>
+                        </Button>
+                      </div>
+                    ) : (
+                      /* Two Clear Buttons: Capture and Upload */
+                      <div className="grid grid-cols-2 gap-2.5">
+                        <Button
+                          type="button"
+                          onClick={() => startCamera(cameraFacingMode)}
+                          className="h-10 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-xs flex items-center justify-center gap-2 cursor-pointer shadow-2xs"
+                        >
+                          <Camera className="w-4 h-4" />
+                          <span>Capture Photo</span>
+                        </Button>
+
+                        <Button
+                          type="button"
+                          variant="outline"
+                          onClick={() => fileInputRef.current?.click()}
+                          className="h-10 rounded-xl bg-white dark:bg-slate-900 border-slate-300 dark:border-slate-700 hover:border-indigo-400 text-slate-700 dark:text-slate-200 font-semibold text-xs flex items-center justify-center gap-2 cursor-pointer"
+                        >
+                          <Upload className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
+                          <span>Upload Photo</span>
+                        </Button>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Section 4: Geolocation (Fetched & Confidential for Auditors) */}
+                  <div>
+                    <div className="flex items-center justify-between mb-1.5">
+                      <label className="text-slate-700 dark:text-slate-300 font-semibold flex items-center gap-1.5">
+                        <MapPin className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" />
+                        <span>4. Ground GPS Location</span>
+                        <span className="text-rose-500 font-bold">*</span>
+                      </label>
+                      <span className="text-[10px] text-indigo-600 dark:text-indigo-400 flex items-center gap-1 font-medium">
+                        <Lock className="w-3 h-3" /> Confidential to Auditors
+                      </span>
+                    </div>
+
+                    <div className="p-3 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 space-y-2">
+                      {isFetchingLocation ? (
+                        <div className="flex items-center gap-2 text-indigo-600 dark:text-indigo-400 py-1">
+                          <Loader2 className="w-4 h-4 animate-spin shrink-0" />
+                          <span className="text-xs font-medium">Acquiring GPS ground coordinates...</span>
+                        </div>
+                      ) : pubLocation ? (
+                        <div className="space-y-1.5">
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-1.5 text-emerald-700 dark:text-emerald-400 font-semibold text-xs">
+                              <CheckCircle2 className="w-3.5 h-3.5" />
+                              <span>GPS Coordinates Captured & Attached</span>
+                            </div>
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="sm"
+                              onClick={fetchLocation}
+                              className="h-6 px-2 text-[10px] text-indigo-600 hover:text-indigo-700 gap-1 cursor-pointer"
+                            >
+                              <RefreshCw className="w-3 h-3" /> Re-fetch
+                            </Button>
+                          </div>
+                          <p className="text-[10px] text-slate-500 dark:text-slate-400 leading-normal flex items-start gap-1">
+                            <Lock className="w-3 h-3 text-slate-400 shrink-0 mt-0.5" />
+                            <span>
+                              <strong>Privacy Protection:</strong> Your exact GPS coordinates will be encrypted and made available <em>only to authorized MoSPI / District Auditors</em>. Other public visitors will NOT see your location.
+                            </span>
+                          </p>
+                        </div>
+                      ) : (
+                        <div className="space-y-2">
+                          <div className="flex items-center justify-between">
+                            <span className="text-xs text-rose-600 dark:text-rose-400 font-medium">
+                              {locationError || 'GPS location not acquired yet.'}
+                            </span>
+                            <Button
+                              type="button"
+                              size="sm"
+                              onClick={fetchLocation}
+                              className="h-7 px-3 text-xs bg-indigo-600 hover:bg-indigo-700 text-white gap-1 cursor-pointer"
+                            >
+                              <Crosshair className="w-3 h-3" />
+                              <span>Fetch Location</span>
+                            </Button>
+                          </div>
+                          <p className="text-[10px] text-slate-400">
+                            Location access is required to authenticate ground verification and deter fictitious reporting.
+                          </p>
                         </div>
                       )}
                     </div>
                   </div>
 
-                  {/* Reporter Name (Optional) */}
+                  {/* Section 5: Reporter Name (Optional) */}
                   <div>
                     <label className="text-slate-700 dark:text-slate-300 font-semibold block mb-1">
-                      Your Name / Designation (Optional):
+                      5. Your Name / Designation <span className="text-slate-400 font-normal">(Optional — submit with name or anonymously)</span>
                     </label>
                     <Input
                       type="text"
-                      placeholder="e.g. Local Resident / Ward Member"
+                      placeholder="e.g. Local Resident / Ward Member / Student (Leave empty for Anonymous)"
                       value={pubReporterName}
                       onChange={(e) => setPubReporterName(e.target.value)}
                       className="bg-white dark:bg-slate-900 text-xs rounded-xl"
                     />
                   </div>
 
-                  {/* Submit Button */}
-                  <div className="pt-1 flex justify-end">
-                    <Button
-                      type="submit"
-                      size="sm"
-                      disabled={isSubmittingPublicReview}
-                      className="h-9 px-5 rounded-xl text-xs font-semibold bg-indigo-600 hover:bg-indigo-700 text-white gap-2 cursor-pointer"
-                    >
-                      {isSubmittingPublicReview ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Send className="w-3.5 h-3.5" />}
-                      <span>{isSubmittingPublicReview ? 'Submitting...' : 'Submit Verification'}</span>
-                    </Button>
+                  {/* Real-time Checklist Badges & Submit Button */}
+                  <div className="pt-2 border-t border-indigo-100 dark:border-indigo-900/60 space-y-2">
+                    <div className="flex flex-wrap items-center gap-1.5 text-[10px]">
+                      <span className="text-slate-500 font-medium mr-1">Required to Submit:</span>
+                      <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md font-semibold ${
+                        hasValidStatus ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-slate-100 text-slate-500'
+                      }`}>
+                        {hasValidStatus ? <CheckCircle2 className="w-2.5 h-2.5 text-emerald-600" /> : '○'} Status
+                      </span>
+                      <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md font-semibold ${
+                        hasValidComment ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-rose-50 text-rose-700 border border-rose-200'
+                      }`}>
+                        {hasValidComment ? <CheckCircle2 className="w-2.5 h-2.5 text-emerald-600" /> : '○'} Remarks
+                      </span>
+                      <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md font-semibold ${
+                        hasValidPhoto ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-rose-50 text-rose-700 border border-rose-200'
+                      }`}>
+                        {hasValidPhoto ? <CheckCircle2 className="w-2.5 h-2.5 text-emerald-600" /> : '○'} Photo Proof
+                      </span>
+                      <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md font-semibold ${
+                        hasValidLocation ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-rose-50 text-rose-700 border border-rose-200'
+                      }`}>
+                        {hasValidLocation ? <CheckCircle2 className="w-2.5 h-2.5 text-emerald-600" /> : '○'} GPS Location
+                      </span>
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md font-normal bg-slate-100 dark:bg-slate-800 text-slate-500">
+                        Name (Optional)
+                      </span>
+                    </div>
+
+                    <div className="flex items-center justify-between pt-1">
+                      <span className="text-[11px] text-slate-500">
+                        {!canSubmitPublicReview ? 'Fill all required sections to enable submit.' : 'All sections ready for verification.'}
+                      </span>
+                      <Button
+                        type="submit"
+                        size="sm"
+                        disabled={!canSubmitPublicReview}
+                        className="h-9 px-5 rounded-xl text-xs font-semibold bg-indigo-600 hover:bg-indigo-700 text-white gap-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
+                      >
+                        {isSubmittingPublicReview ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Send className="w-3.5 h-3.5" />}
+                        <span>{isSubmittingPublicReview ? 'Submitting...' : 'Submit Verification'}</span>
+                      </Button>
+                    </div>
                   </div>
 
                 </form>
@@ -431,6 +806,41 @@ export default function CasePacketModal({
                             alt="Public photo proof"
                             className="max-h-48 w-auto rounded-lg border border-slate-200 object-cover shadow-2xs"
                           />
+                        </div>
+                      )}
+
+                      {/* Location Display: Visible ONLY to Auditors */}
+                      {rev.latitude != null && rev.longitude != null ? (
+                        <div className="mt-2 p-2.5 rounded-xl bg-indigo-50 dark:bg-indigo-950/50 border border-indigo-200 dark:border-indigo-800/60 flex flex-wrap items-center justify-between gap-2">
+                          <div className="flex items-center gap-1.5 text-[11px] text-indigo-900 dark:text-indigo-200">
+                            <MapPin className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400 shrink-0" />
+                            <span className="font-semibold">GPS Ground Location:</span>
+                            <span className="font-mono">{rev.latitude.toFixed(5)}° N, {rev.longitude.toFixed(5)}° E</span>
+                            {rev.location_accuracy && (
+                              <span className="text-[10px] text-indigo-600 dark:text-indigo-400">
+                                (±{Math.round(rev.location_accuracy)}m)
+                              </span>
+                            )}
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <span className="text-[10px] font-semibold text-indigo-700 dark:text-indigo-300 bg-indigo-100/70 dark:bg-indigo-900/50 px-2 py-0.5 rounded-md border border-indigo-200/60 dark:border-indigo-700">
+                              🔒 Auditor View Only
+                            </span>
+                            <a
+                              href={`https://www.google.com/maps?q=${rev.latitude},${rev.longitude}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="inline-flex items-center gap-1 text-[11px] font-semibold text-indigo-600 dark:text-indigo-400 hover:underline"
+                            >
+                              <ExternalLink className="w-3 h-3" /> Map
+                            </a>
+                          </div>
+                        </div>
+                      ) : (
+                        /* For Public Users: Location coordinates are strictly concealed for citizen privacy */
+                        <div className="mt-1.5 flex items-center gap-1 text-[10px] text-slate-400 dark:text-slate-500">
+                          <Lock className="w-3 h-3" />
+                          <span>GPS location verified & confidential (accessible only to authorized MoSPI auditors).</span>
                         </div>
                       )}
                     </div>

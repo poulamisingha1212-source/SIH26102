@@ -1,0 +1,219 @@
+[
+  {
+    "work_id": "262075",
+    "rule_id": "MPLADS23-SOC-001",
+    "rule_name": "Trust/Society Work Single Financial Ceiling (₹50 Lakh)",
+    "rule_category": "TRUST_SOCIETY",
+    "legal_strength": "MANDATORY_FINANCIAL_LIMIT",
+    "state": "Kerala",
+    "constituency": "Sitting Rajya Sabha",
+    "mp_name": "Dr. V. Sivadasan",
+    "house": "Rajya Sabha",
+    "ida": "KANNUR(DISTRICT COLLECTOR KANNUR_IDA)",
+    "work_type": "NA-Construction of stadiums",
+    "work_category": "Trust and Society",
+    "sanction_amount": 9500000.0,
+    "total_fund_disbursed": 0.0,
+    "work_status": "Pending for Sanction",
+    "rule_state": "FAIL",
+    "reason": "Sanctioned amount of INR 9,500,000.00 exceeds the statutory ceiling of INR 50.00 Lakh for a single Trust/Society work under MPLADS Guidelines 2023 Para 3.23.",
+    "source_fields": [
+      "work_category",
+      "sanction_amount",
+      "threshold_inr"
+    ],
+    "data_gaps": [],
+    "auditor_verification_items": [
+      "NITI Aayog NGO Darpan Registration Certificate",
+      "Society Registration Certificate / Trust Deed",
+      "3-year audited financial statements of the beneficiary Trust/Society",
+      "District Authority sanction approval minutes"
+    ]
+  },
+  {
+    "work_id": "290981",
+    "rule_id": "MPLADS23-SOC-001",
+    "rule_name": "Trust/Society Work Single Financial Ceiling (₹50 Lakh)",
+    "rule_category": "TRUST_SOCIETY",
+    "legal_strength": "MANDATORY_FINANCIAL_LIMIT",
+    "state": "Kerala",
+    "constituency": "Nominated Rajya Sabha",
+    "mp_name": "Smt. P. T. Usha",
+    "house": "Rajya Sabha",
+    "ida": "KOZHIKODE(DISTRICT COLLECTOR KOZHIKODE_IDA)",
+    "work_type": "NA-Construction of rooms and halls in school and colleges",
+    "work_category": "Trust and Society",
+    "sanction_amount": 7500000.0,
+    "total_fund_disbursed": 0.0,
+    "work_status": "Pending for Sanction",
+    "rule_state": "FAIL",
+    "reason": "Sanctioned amount of INR 7,500,000.00 exceeds the statutory ceiling of INR 50.00 Lakh for a single Trust/Society work under MPLADS Guidelines 2023 Para 3.23.",
+    "source_fields": [
+      "work_category",
+      "sanction_amount",
+      "threshold_inr"
+    ],
+    "data_gaps": [],
+    "auditor_verification_items": [
+      "NITI Aayog NGO Darpan Registration Certificate",
+      "Society Registration Certificate / Trust Deed",
+      "3-year audited financial statements of the beneficiary Trust/Society",
+      "District Authority sanction approval minutes"
+    ]
+  },
+  {
+    "work_id": "141185",
+    "rule_id": "MPLADS23-FIN-001",
+    "rule_name": "Disbursement Without Administrative Sanction",
+    "rule_category": "FINANCIAL",
+    "legal_strength": "MANDATORY_PROHIBITION",
+    "state": "Punjab",
+    "constituency": "FARIDKOT(SC)",
+    "mp_name": "SARABJEET SINGH KHALSA",
+    "house": "18th Lok Sabha",
+    "ida": "MOGA(Deputy Commissioner Moga)",
+    "work_type": "Construction of buildings for multi-gym",
+    "work_category": "Normal/Others",
+    "sanction_amount": 800000.0,
+    "total_fund_disbursed": 454775.0,
+    "work_status": "Pending for Sanction",
+    "rule_state": "FAIL",
+    "reason": "Disbursement of INR 454,775.00 has been recorded while the work status remains 'Pending for Sanction'. MoSPI Guidelines Para 3.11 prohibit fund release prior to formal Administrative Sanction.",
+    "source_fields": [
+      "work_status",
+      "sanction_amount",
+      "total_fund_disbursed"
+    ],
+    "data_gaps": [],
+    "auditor_verification_items": [
+      "Signed Administrative Sanction Order",
+      "Sanction approval date and sanction number",
+      "District Authority disbursement release register",
+      "Payment voucher authorization docket"
+    ]
+  },
+  {
+    "work_id": "220383",
+    "rule_id": "MPLADS23-FIN-001",
+    "rule_name": "Disbursement Without Administrative Sanction",
+    "rule_category": "FINANCIAL",
+    "legal_strength": "MANDATORY_PROHIBITION",
+    "state": "Punjab",
+    "constituency": "FARIDKOT(SC)",
+    "mp_name": "SARABJEET SINGH KHALSA",
+    "house": "18th Lok Sabha",
+    "ida": "MOGA(Deputy Commissioner Moga)",
+    "work_type": "Providing CCTV camera system for security of public areas",
+    "work_category": "Normal/Others",
+    "sanction_amount": 1300000.0,
+    "total_fund_disbursed": 492960.0,
+    "work_status": "Pending for Sanction",
+    "rule_state": "FAIL",
+    "reason": "Disbursement of INR 492,960.00 has been recorded while the work status remains 'Pending for Sanction'. MoSPI Guidelines Para 3.11 prohibit fund release prior to formal Administrative Sanction.",
+    "source_fields": [
+      "work_status",
+      "sanction_amount",
+      "total_fund_disbursed"
+    ],
+    "data_gaps": [],
+    "auditor_verification_items": [
+      "Signed Administrative Sanction Order",
+      "Sanction approval date and sanction number",
+      "District Authority disbursement release register",
+      "Payment voucher authorization docket"
+    ]
+  },
+  {
+    "work_id": "239748",
+    "rule_id": "MPLADS23-FIN-001",
+    "rule_name": "Disbursement Without Administrative Sanction",
+    "rule_category": "FINANCIAL",
+    "legal_strength": "MANDATORY_PROHIBITION",
+    "state": "Punjab",
+    "constituency": "FARIDKOT(SC)",
+    "mp_name": "SARABJEET SINGH KHALSA",
+    "house": "18th Lok Sabha",
+    "ida": "MOGA(Deputy Commissioner Moga)",
+    "work_type": "Purchase of mobile water tankers",
+    "work_category": "Normal/Others",
+    "sanction_amount": 200000.0,
+    "total_fund_disbursed": 200000.0,
+    "work_status": "Pending for Sanction",
+    "rule_state": "FAIL",
+    "reason": "Disbursement of INR 200,000.00 has been recorded while the work status remains 'Pending for Sanction'. MoSPI Guidelines Para 3.11 prohibit fund release prior to formal Administrative Sanction.",
+    "source_fields": [
+      "work_status",
+      "sanction_amount",
+      "total_fund_disbursed"
+    ],
+    "data_gaps": [],
+    "auditor_verification_items": [
+      "Signed Administrative Sanction Order",
+      "Sanction approval date and sanction number",
+      "District Authority disbursement release register",
+      "Payment voucher authorization docket"
+    ]
+  },
+  {
+    "work_id": "239767",
+    "rule_id": "MPLADS23-FIN-001",
+    "rule_name": "Disbursement Without Administrative Sanction",
+    "rule_category": "FINANCIAL",
+    "legal_strength": "MANDATORY_PROHIBITION",
+    "state": "Punjab",
+    "constituency": "FARIDKOT(SC)",
+    "mp_name": "SARABJEET SINGH KHALSA",
+    "house": "18th Lok Sabha",
+    "ida": "MOGA(Deputy Commissioner Moga)",
+    "work_type": "Purchase of mobile water tankers",
+    "work_category": "Normal/Others",
+    "sanction_amount": 200000.0,
+    "total_fund_disbursed": 200000.0,
+    "work_status": "Pending for Sanction",
+    "rule_state": "FAIL",
+    "reason": "Disbursement of INR 200,000.00 has been recorded while the work status remains 'Pending for Sanction'. MoSPI Guidelines Para 3.11 prohibit fund release prior to formal Administrative Sanction.",
+    "source_fields": [
+      "work_status",
+      "sanction_amount",
+      "total_fund_disbursed"
+    ],
+    "data_gaps": [],
+    "auditor_verification_items": [
+      "Signed Administrative Sanction Order",
+      "Sanction approval date and sanction number",
+      "District Authority disbursement release register",
+      "Payment voucher authorization docket"
+    ]
+  },
+  {
+    "work_id": "114399",
+    "rule_id": "MPLADS23-FIN-002",
+    "rule_name": "Cumulative Disbursement Exceeding Sanction",
+    "rule_category": "FINANCIAL",
+    "legal_strength": "MANDATORY_FINANCIAL_LIMIT",
+    "state": "Uttarakhand",
+    "constituency": "TEHRI GARHWAL",
+    "mp_name": "Mala Rajya Laxmi Shah",
+    "house": "17th Lok Sabha",
+    "ida": "DEHRADUN(DISTRICT MAGISTRATE DEHRADUN_IDA)",
+    "work_type": "Construction of footpaths and pedestrian ways",
+    "work_category": "Normal/Others",
+    "sanction_amount": 200000.0,
+    "total_fund_disbursed": 202350.0,
+    "work_status": "Work Completed",
+    "rule_state": "FAIL",
+    "reason": "Total fund disbursed (INR 202,350.00) exceeds the sanctioned amount (INR 200,000.00) by INR 2,350.00, exceeding the numerical tolerance of INR 100. MoSPI Para 3.11 requires revised sanction approval for cost escalations.",
+    "source_fields": [
+      "sanction_amount",
+      "total_fund_disbursed",
+      "excess_inr",
+      "epsilon_inr"
+    ],
+    "data_gaps": [],
+    "auditor_verification_items": [
+      "Revised Administrative Sanction Order (if cost escalated)",
+      "Technical Sanction and Variation Order",
+      "Contractor final bill and Measurement Book (MB) sign-off"
+    ]
+  }
+]

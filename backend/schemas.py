@@ -24,6 +24,12 @@ class WorkListItem(BaseModel):
     rule_flags_triggered: List[str] = []
     causes: List[str] = []
     human_review_outcome: Optional[str] = None
+    statutory_fail_count: int = 0
+    statutory_review_count: int = 0
+    statutory_fails: List[str] = []
+    statutory_reviews: List[str] = []
+    data_quality_defects: List[str] = []
+    auditor_action_directive: Optional[str] = None
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -94,6 +100,9 @@ class PublicReviewCreateRequest(BaseModel):
     comment: Optional[str] = Field(None, max_length=1000, description="Verification comment from citizen")
     photo_proof: Optional[str] = Field(None, max_length=2000000, description="Base64 encoded image or image URL")
     reporter_name: Optional[str] = Field("Anonymous Citizen", max_length=100, description="Citizen reporter name")
+    latitude: Optional[float] = Field(None, ge=-90.0, le=90.0, description="Citizen GPS latitude")
+    longitude: Optional[float] = Field(None, ge=-180.0, le=180.0, description="Citizen GPS longitude")
+    location_accuracy: Optional[float] = Field(None, ge=0.0, description="GPS accuracy in meters")
 
 
 class PublicReviewResponse(BaseModel):
@@ -103,6 +112,9 @@ class PublicReviewResponse(BaseModel):
     comment: Optional[str] = None
     photo_proof: Optional[str] = None
     reporter_name: str
+    latitude: Optional[float] = None
+    longitude: Optional[float] = None
+    location_accuracy: Optional[float] = None
     created_at: datetime
 
 
