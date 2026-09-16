@@ -10,6 +10,7 @@ export function BlurFade({
   delay = 0,
   offset = 8,
   blur = "4px",
+  inView: _inViewProp,
   ...props
 }) {
   const ref = useRef(null)
