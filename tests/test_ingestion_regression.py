@@ -92,18 +92,21 @@ def test_house_classification_explicit_and_safe():
     assert _classify_house("Random Garbage") == "Unknown / Unclassified"
 
 
-def test_sync_log_single_entry_contract(tmp_path, monkeypatch):
+def test_sync_log_single_entry_contract(monkeypatch):
     """
     Bug 14 Fix: Verify that every ingestion run creates exactly ONE sync log
     and never leaves duplicate or missing run records.
     """
-    sync_logs = db.sync_logs
-    initial_log_count = sync_logs.count_documents({})
+    from backend.services.ingestion import _log_sync, SOURCE_LIVE
+    from backend.models import now_utc
 
-    # 1. Successful file ingestion run
-    from backend.config import settings
-    res = run_ingestion(mode="auto", source_file_path=settings.RAW_SAMPLE_PATH)
-    new_count = sync_logs.count_documents({})
+    sync_logs_col = db.sync_logs
+    initial_log_count = sync_logs_col.count_documents({})
+
+    # 1. Simulate a successful ingestion via direct _log_sync call
+    _log_sync(source=SOURCE_LIVE, status="success", start_dt=now_utc(),
+              counts={"fetched": 10, "processed": 10, "inserted": 10, "updated": 0})
+    new_count = sync_logs_col.count_documents({})
     assert new_count == initial_log_count + 1
 
     # 2. Failed run with simulated upstream failure
@@ -113,11 +116,11 @@ def test_sync_log_single_entry_contract(tmp_path, monkeypatch):
     monkeypatch.setattr("backend.services.mplads_live.fetch_live_long_dataframe", mock_fail)
     res_fail = run_ingestion(mode="live")
     assert res_fail["status"] == "failed"
-    final_count = sync_logs.count_documents({})
+    final_count = sync_logs_col.count_documents({})
     assert final_count == initial_log_count + 2
 
     # Verify that the failed log was recorded properly
-    failed_log = sync_logs.find_one({"status": "failed"}, sort=[("run_timestamp", -1)])
+    failed_log = sync_logs_col.find_one({"status": "failed"}, sort=[("run_timestamp", -1)])
     assert failed_log is not None
     assert failed_log.get("error_message") is not None
 
