@@ -217,8 +217,8 @@ export default function App() {
     }
   };
 
-  // Trigger ingestion. Mode: auto | live (runs in the background server-side)
-  const handleTriggerSync = async (mode = 'auto') => {
+  // Trigger ingestion. Mode: live (runs in the background server-side)
+  const handleTriggerSync = async (mode = 'live') => {
     setIsSyncing(true);
     const toastId = toast.loading(`Starting ${mode} ingestion…`);
     try {
