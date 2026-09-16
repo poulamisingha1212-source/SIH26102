@@ -1,0 +1,15 @@
+.git
+.env
+.venv
+__pycache__
+*.pyc
+.pytest_cache
+frontend/node_modules
+frontend/dist
+*.db
+*.db-shm
+*.db-wal
+*.log
+template_check
+docs/*.pptx
+docs/*.pdf
