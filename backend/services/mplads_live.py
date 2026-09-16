@@ -58,8 +58,8 @@ LONG_COLUMNS = [
 
 HOUSE_LABELS = {
     "rajya_sabha": "Rajya Sabha",
-    "lok_sabha_17": "Lok Sabha",
-    "lok_sabha_18": "Lok Sabha",
+    "lok_sabha_17": "17th Lok Sabha",
+    "lok_sabha_18": "18th Lok Sabha",
 }
 
 _DATE_COLUMNS = [
@@ -89,17 +89,22 @@ _BROWSER_HEADERS = {
 
 def resolve_house_selection(spec: Optional[str] = None) -> List[str]:
     """Map a house spec string to combo keys. Accepts rajya_sabha, lok_sabha
-    (defaults to the current 18th term), lok_sabha_17/18, and both/all."""
-    s = (spec or settings.MPLADS_LIVE_HOUSE or "rajya_sabha").strip().lower().replace(" ", "_")
+    (both terms), lok_sabha_18 / 18th_lok_sabha, lok_sabha_17 / 17th_lok_sabha,
+    and both/all."""
+    s = (spec or settings.MPLADS_LIVE_HOUSE or "rajya_sabha").strip().lower().replace(" ", "_").replace("-", "_")
     if s in ("both", "all"):
-        return ["lok_sabha_18", "rajya_sabha"]
-    if s == "lok_sabha":
+        return ["lok_sabha_18", "lok_sabha_17", "rajya_sabha"]
+    if s in ("lok_sabha", "loksabha"):
+        return ["lok_sabha_18", "lok_sabha_17"]
+    if s in ("lok_sabha_18", "18th_lok_sabha", "18th_loksabha", "18"):
         return ["lok_sabha_18"]
+    if s in ("lok_sabha_17", "17th_lok_sabha", "17th_loksabha", "17"):
+        return ["lok_sabha_17"]
     if s in HOUSE_COMBOS:
         return [s]
     raise ValueError(
         f"Invalid MPLADS_LIVE_HOUSE '{spec}'. Must be one of: "
-        f"rajya_sabha, lok_sabha, lok_sabha_17, lok_sabha_18, both."
+        f"rajya_sabha, lok_sabha, lok_sabha_17, lok_sabha_18, both, all."
     )
 
 
