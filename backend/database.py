@@ -31,6 +31,39 @@ distributed_locks = db["distributed_locks"]
 _counters = db["counters"]
 
 
+def init_database(uri: str, db_name: str = None):
+    """Rebind MongoClient and collections to a new URI (used by scripts and runtime overrides)."""
+    global _client, db, works, mp_allocations, review_logs, public_reviews, sync_logs, users, distributed_locks, _counters
+    import sys
+    settings.MONGODB_URI = uri
+    if db_name:
+        settings.MONGO_DB_NAME = db_name
+    _client = MongoClient(
+        uri,
+        appname="mplads-ai-sentinel",
+        serverSelectionTimeoutMS=10000,
+        connectTimeoutMS=10000,
+        socketTimeoutMS=600000,
+    )
+    db = _client[settings.MONGO_DB_NAME]
+    works = db["works"]
+    mp_allocations = db["mp_allocations"]
+    review_logs = db["review_logs"]
+    public_reviews = db["public_reviews"]
+    sync_logs = db["sync_logs"]
+    users = db["users"]
+    distributed_locks = db["distributed_locks"]
+    _counters = db["counters"]
+
+    # Also update any modules that have already imported collection references
+    for mod_name in ("backend.database", "backend.services.ingestion", "backend.seeder", "backend.main", "backend.services.analytics"):
+        if mod_name in sys.modules:
+            mod = sys.modules[mod_name]
+            for attr in ("works", "mp_allocations", "review_logs", "public_reviews", "sync_logs", "users", "distributed_locks", "_counters", "db"):
+                if hasattr(mod, attr):
+                    setattr(mod, attr, locals().get(attr, getattr(sys.modules["backend.database"], attr, None)))
+
+
 def next_id(sequence: str) -> int:
     """Sequential integer ids for documents surfaced with int ids (sync logs,
     review logs), matching the previous autoincrement columns."""
