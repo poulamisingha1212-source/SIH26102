@@ -71,16 +71,23 @@ async def lifespan(app: FastAPI):
                 "The API will start in degraded mode. Error: %s",
                 e,
             )
-        # Daily live sync at 19:00 Indian Standard Time (7:00 PM IST).
+        # Daily live sync between 3:00 AM and 6:00 AM Indian Standard Time (3:00 AM IST + 4:30 AM fallback)
         scheduler.add_job(
             run_ingestion,
-            CronTrigger(hour=19, minute=0, timezone="Asia/Kolkata"),
+            CronTrigger(hour=3, minute=0, timezone="Asia/Kolkata"),
             kwargs={"mode": "live"},
-            id="daily_mplads_sync",
+            id="daily_mplads_sync_primary",
+            replace_existing=True,
+        )
+        scheduler.add_job(
+            run_ingestion,
+            CronTrigger(hour=4, minute=30, timezone="Asia/Kolkata"),
+            kwargs={"mode": "live"},
+            id="daily_mplads_sync_fallback",
             replace_existing=True,
         )
         scheduler.start()
-        logger.info("APScheduler started: daily MPLADS sync at 19:00 IST.")
+        logger.info("APScheduler started: daily MPLADS sync at 03:00 IST and 04:30 IST.")
     else:
         logger.info("Serverless environment detected: in-process scheduler and auto-seeding disabled.")
 
