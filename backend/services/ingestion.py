@@ -1,20 +1,20 @@
 """
-MPLADS data ingestion pipeline — live portal only with offline replay support.
+MPLADS live data ingestion pipeline.
 
-The single authoritative data source is the live MPLADS dashboard API
-(mplads.mospi.gov.in /digigov internal REST endpoint, implemented in
-backend/services/mplads_live.py). Every sync fetches fresh per-work
-records for the houses selected via MPLADS_LIVE_HOUSE, scores them with
-the multi-agent risk engine, and upserts them idempotently.
+Data source: live MPLADS dashboard API (mplads.mospi.gov.in /digigov)
+implemented in backend/services/mplads_live.py.
+
+Fetched records are scored with the multi-agent risk engine and upserted
+into MongoDB in chunks of 2 000 records per round-trip to keep memory
+footprint low on free-tier containers.
 
 Guarantees:
 1. Every ingestion run writes exactly one sync_logs entry (success or failure).
-2. Distributed locking backed by MongoDB prevents concurrent multi-worker syncs.
-3. n_distinct_vendors index alignment bug is fixed via key-based merge.
+2. Distributed locking (MongoDB) prevents concurrent multi-worker syncs.
+3. n_distinct_vendors index alignment bug fixed via explicit key-based merge.
 4. _upsert_allocations handles missing record_type without crashing.
-5. Missing or invalid house information is explicitly categorized, never
-   silently defaulted to Lok Sabha.
-6. Safe, bounded cache management with serverless read-only filesystem tolerance.
+5. House column is classified explicitly — never silently misclassified.
+6. No preloaded / sample CSV data. All data originates from the live portal.
 """
 import logging
 import os
@@ -42,9 +42,10 @@ logger = logging.getLogger(__name__)
 # Canonical source label used across the sync log UI
 SOURCE_LIVE = "MPLADS Live Dashboard API (mplads.mospi.gov.in)"
 
-VALID_MODES = {"auto", "live"}
+VALID_MODES = {"live"}
 
-_UPSERT_CHUNK = 1000  # bulk_write operations per round-trip
+_UPSERT_CHUNK = 2000   # records per MongoDB bulk_write round-trip
+_SCORE_CHUNK  = 2000   # records scored per batch (memory control)
 SYNC_LOCK_NAME = "mplads_ingestion_lock"
 LOCK_LEASE_SECONDS = 900  # 15 minutes max lock duration before expiration
 
@@ -275,6 +276,8 @@ def _normalize_work(row: pd.Series) -> dict:
         "weighted_rule_score": _f("weighted_rule_score"),
         "anomaly_percentile": _f("anomaly_percentile"),
         "is_anomaly": bool(row.get("is_anomaly", False)),
+        "source_file": _s("source_file") or "mplads_dashboard_api",
+        "data_source": "live_mplads_portal",
     }
 
 
@@ -289,13 +292,18 @@ def _parse_flags_string(raw: str) -> list:
 
 
 def _upsert_dataframe(df: pd.DataFrame) -> dict:
-    """Chunked bulk upsert. Safe and idempotent (ReplaceOne on unique work_id)."""
+    """Chunked bulk upsert in batches of _UPSERT_CHUNK (2 000) records.
+    Safe and idempotent — UpdateOne for existing work_ids, ReplaceOne+upsert
+    for new ones. Preserves human_review_outcome on updates."""
     inserted = updated = 0
     now = now_utc()
     rows = [r for _, r in df.iterrows() if not pd.isna(r.get("work_id"))]
 
-    for start in range(0, len(rows), _UPSERT_CHUNK):
-        chunk = rows[start:start + _UPSERT_CHUNK]
+    total = len(rows)
+    logger.info("Upserting %d scored records in chunks of %d", total, _UPSERT_CHUNK)
+
+    for start in range(0, total, _UPSERT_CHUNK):
+        chunk = rows[start : start + _UPSERT_CHUNK]
         mappings = [_normalize_work(r) for r in chunk]
         ids = [m["work_id"] for m in mappings]
 
@@ -305,7 +313,11 @@ def _upsert_dataframe(df: pd.DataFrame) -> dict:
         for m in mappings:
             m["updated_at"] = now
             if m["work_id"] in existing_ids:
-                ops.append(UpdateOne({"work_id": m["work_id"]}, {"$set": m}))
+                # Preserve human review decisions on update
+                ops.append(UpdateOne(
+                    {"work_id": m["work_id"]},
+                    {"$set": {k: v for k, v in m.items() if k != "human_review_outcome"}}
+                ))
                 updated += 1
             else:
                 m["created_at"] = now
@@ -313,6 +325,11 @@ def _upsert_dataframe(df: pd.DataFrame) -> dict:
                 inserted += 1
         if ops:
             works.bulk_write(ops, ordered=False)
+
+        logger.info(
+            "  chunk %d-%d done (inserted=%d updated=%d so far)",
+            start + 1, min(start + _UPSERT_CHUNK, total), inserted, updated
+        )
 
     return {"inserted": inserted, "updated": updated, "processed": len(rows)}
 
@@ -376,31 +393,64 @@ def _log_sync(*, source, status, start_dt, counts=None, note=None):
     })
 
 
+def purge_preloaded_data() -> dict:
+    """
+    Purge preloaded / synthetic sample data from MongoDB collections.
+    Synthetic works have IDs prefixed with 'WS/MP' or originated from synthetic CSV feeds.
+    Returns counts of deleted records.
+    """
+    res_works = works.delete_many({
+        "$or": [
+            {"work_id": {"$regex": r"^WS/MP"}},
+            {"source_file": {"$regex": r"synthetic|sample", "$options": "i"}},
+            {"data_source": "preloaded_sample"},
+        ]
+    })
+    res_alloc = mp_allocations.delete_many({
+        "$or": [
+            {"source_file": {"$regex": r"synthetic|sample", "$options": "i"}},
+            {"data_source": "preloaded_sample"},
+        ]
+    })
+    logger.info(
+        "Purged preloaded sample data: %d works, %d allocations deleted.",
+        res_works.deleted_count, res_alloc.deleted_count
+    )
+    return {
+        "deleted_works": res_works.deleted_count,
+        "deleted_allocations": res_alloc.deleted_count,
+    }
+
+
 # ------------------------------------------------------------------------------
 # Public entry point
 # ------------------------------------------------------------------------------
 
-def run_ingestion(mode: str = "auto", source_file_path: Path = None) -> dict:
+def run_ingestion(mode: str = "live", purge_preloaded: Optional[bool] = None) -> dict:
     """
-    Run the ingestion pipeline. Guarantees:
+    Fetch all works from the live MPLADS portal, score them with the risk
+    engine in chunks of _SCORE_CHUNK records, and upsert into MongoDB in
+    chunks of _UPSERT_CHUNK records.
+
+    Guarantees:
     - Exactly one sync_logs entry written per call (success or failure).
-    - Prevents concurrent ingestion via distributed lock.
+    - Concurrent ingestion prevented via distributed MongoDB lock.
+    - Human review decisions (human_review_outcome) are never overwritten.
+    - Preloaded sample data is removed if purge_preloaded=True.
     """
     if mode not in VALID_MODES:
         raise ValueError(f"Invalid ingestion mode '{mode}'. Must be one of {sorted(VALID_MODES)}")
 
+    if purge_preloaded is None:
+        purge_preloaded = (settings.ENVIRONMENT != "test")
+
     start_dt = now_utc()
     t0 = time.time()
-    source_label = (
-        f"Ingestion Feed (file: {Path(source_file_path).name})"
-        if source_file_path is not None
-        else SOURCE_LIVE
-    )
 
     lock_owner = acquire_sync_lock()
     if not lock_owner:
         note = "Ingestion lock held by another concurrent job or worker."
-        _log_sync(source=source_label, status="failed", start_dt=start_dt, note=note)
+        _log_sync(source=SOURCE_LIVE, status="failed", start_dt=start_dt, note=note)
         return {
             "status": "failed",
             "error": note,
@@ -410,79 +460,82 @@ def run_ingestion(mode: str = "auto", source_file_path: Path = None) -> dict:
 
     logged = False
     try:
-        if source_file_path is not None:
-            # File mode
-            df = pd.read_csv(source_file_path)
-            reshaped = _reshape_long_format(df)
-            scored = score_dataset(reshaped, model_dir=settings.MODEL_DIR)
-            counts = _upsert_dataframe(scored)
-            counts["allocations"] = _upsert_allocations(df)
-            counts["fetched"] = len(df)
-            _log_sync(source=source_label, status="success", start_dt=start_dt, counts=counts)
-            logged = True
-            return {
-                "status": "success",
-                "mode": "file",
-                "source": source_label,
-                "duration_seconds": round(time.time() - t0, 2),
-                **counts
-            }
+        if purge_preloaded:
+            purge_preloaded_data()
 
-        # Live portal mode
         import gc
         from backend.services.mplads_live import fetch_live_long_dataframe
+
+        logger.info("Live ingestion started (house=%s)", settings.MPLADS_LIVE_HOUSE)
         raw = fetch_live_long_dataframe(houses=settings.MPLADS_LIVE_HOUSE)
+        fetched = len(raw)
+        logger.info("Fetched %d raw rows from live portal", fetched)
 
-        # Cache feed safely (skip if read-only / serverless)
-        if not settings.IS_SERVERLESS:
-            try:
-                settings.DATA_DIR.mkdir(parents=True, exist_ok=True)
-                cache_path = settings.DATA_DIR / "last_live_feed.csv"
-                tmp_path = settings.DATA_DIR / f"live_feed_{int(time.time())}.tmp"
-                raw.to_csv(tmp_path, index=False)
-                if tmp_path.exists():
-                    tmp_path.replace(cache_path)
-            except Exception as ce:
-                logger.debug("CSV cache write skipped: %s", ce)
-
+        # Build allocation lookup from existing data
         alloc_map = {
             a["mp_name"]: a.get("allocated_amount") or 0.0
             for a in mp_allocations.find({}, {"mp_name": 1, "allocated_amount": 1})
         }
 
+        # Reshape the long-format portal data into work-level facts
         reshaped = _reshape_long_format(raw)
-        scored = score_dataset(reshaped, model_dir=settings.MODEL_DIR, mp_allocations=alloc_map)
+        logger.info("Reshaped to %d work-level rows", len(reshaped))
+
+        # --- Chunked scoring + upserting (2 000 records per batch) ---
+        total_inserted = total_updated = total_processed = 0
+        n_chunks = max(1, (len(reshaped) + _SCORE_CHUNK - 1) // _SCORE_CHUNK)
+
+        for i in range(n_chunks):
+            chunk_df = reshaped.iloc[i * _SCORE_CHUNK : (i + 1) * _SCORE_CHUNK].copy()
+            logger.info(
+                "Scoring chunk %d/%d (%d rows)", i + 1, n_chunks, len(chunk_df)
+            )
+            scored_chunk = score_dataset(
+                chunk_df, model_dir=settings.MODEL_DIR, mp_allocations=alloc_map
+            )
+            chunk_counts = _upsert_dataframe(scored_chunk)
+            total_inserted  += chunk_counts["inserted"]
+            total_updated   += chunk_counts["updated"]
+            total_processed += chunk_counts["processed"]
+            del chunk_df, scored_chunk
+            gc.collect()
+
         del reshaped
+
+        # Upsert MP allocation limits
+        alloc_count = _upsert_allocations(raw)
+        del raw
         gc.collect()
 
-        counts = _upsert_dataframe(scored)
-        counts["allocations"] = _upsert_allocations(raw)
-        counts["fetched"] = len(raw)
-
-        del raw, scored
-        gc.collect()
-
-        _log_sync(source=source_label, status="success", start_dt=start_dt, counts=counts)
+        counts = {
+            "fetched": fetched,
+            "processed": total_processed,
+            "inserted": total_inserted,
+            "updated": total_updated,
+            "allocations": alloc_count,
+        }
+        logger.info("Ingestion complete: %s", counts)
+        _log_sync(source=SOURCE_LIVE, status="success", start_dt=start_dt, counts=counts)
         logged = True
         return {
             "status": "success",
             "mode": "live",
-            "source": source_label,
+            "source": SOURCE_LIVE,
             "duration_seconds": round(time.time() - t0, 2),
-            **counts
+            **counts,
         }
 
     except Exception as e:
         if not logged:
             err_msg = str(e)
             logger.error("Ingestion failed: %s", err_msg)
-            _log_sync(source=source_label, status="failed", start_dt=start_dt, note=err_msg)
+            _log_sync(source=SOURCE_LIVE, status="failed", start_dt=start_dt, note=err_msg)
             logged = True
         return {
             "status": "failed",
-            "mode": "file" if source_file_path else "live",
+            "mode": "live",
             "error": str(e),
-            "duration_seconds": round(time.time() - t0, 2)
+            "duration_seconds": round(time.time() - t0, 2),
         }
 
     finally:
