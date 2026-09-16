@@ -87,6 +87,11 @@ def ensure_indexes() -> None:
     works.create_index([("work_category", ASCENDING)])
     works.create_index([("work_status", ASCENDING)])
     works.create_index([("final_risk_score", ASCENDING)])
+    works.create_index(
+        [("final_risk_score", DESCENDING), ("sanction_amount", DESCENDING),
+         ("rule_flag_count", DESCENDING), ("work_id", ASCENDING)],
+        name="rank_order_idx"
+    )
     mp_allocations.create_index(
         [("mp_name", ASCENDING), ("house", ASCENDING),
          ("constituency", ASCENDING), ("state", ASCENDING)],
