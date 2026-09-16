@@ -30,9 +30,11 @@ _scoring_cfg = get_config().get('scoring', {})
 # Ordered fallback for the recommended action directive — the first matching
 # flag family wins, mirroring audit triage urgency.
 ACTION_PRIORITY = [
+    ({'disbursement_without_sanction'}, 'Immediate administrative sanction verification'),
+    ({'trust_single_cap_breach'}, 'Trust ceiling statutory verification'),
     ({'impossible_timeline', 'negative_sanction', 'zero_sanction_with_payments'},
      'Immediate data/document verification'),
-    ({'duplicate_across_mp'}, 'Ghost-work field verification'),
+    ({'duplicate_across_mp'}, 'Multi-constituency duplicate verification'),
     ({'disbursement_mismatch', 'over_allocation', 'over_utilization', 'payment_after_completion'},
      'Financial reconciliation'),
     ({'ida_budget_capture', 'ida_vendor_monopoly', 'ida_mp_cluster'},

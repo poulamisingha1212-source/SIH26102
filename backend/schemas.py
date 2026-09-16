@@ -77,6 +77,15 @@ class CasePacketResponse(BaseModel):
     human_review_outcome: Optional[str] = None
     prior_reviews: List[dict] = []
     public_reviews: List[dict] = []
+    # Phase 3: Explainable Audit Engine Findings & Checklists
+    compliance_findings: List[Any] = []
+    financial_control_findings: List[Any] = []
+    execution_anomalies: List[Any] = []
+    audit_heuristics: List[Any] = []
+    data_quality_findings: List[Any] = []
+    data_gaps: List[str] = []
+    auditor_evidence_checklist: List[str] = []
+    rule_results: List[Any] = []
 
 
 

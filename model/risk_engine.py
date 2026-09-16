@@ -19,34 +19,38 @@ import pandas as pd
 
 from model.agents import AGENTS, AGENT_DESCRIPTIONS, get_coordinator
 from model.agents.features import CONFIG  # re-exported for backward compatibility
+from model.rules.evaluator import evaluate_all_rules
+from backend.engines.data_quality_engine import evaluate_data_quality
 
 # ==============================================================================
 # Flag explanations (static fallback — used only when row data is unavailable)
 # ==============================================================================
 
 RULE_DESCRIPTIONS = {
-    'vendor_concentration': 'One vendor accounts for an unusually large share of paid works in the state.',
-    'vendor_dominates_mp': "A single vendor handles most of this MP's paid works — favouritism risk.",
-    'vendor_multi_mp': 'The same vendor bills works for several different MPs — organised capture risk.',
+    'disbursement_without_sanction': 'Disbursement recorded while work status is Pending for Sanction (statutory prohibition Para 3.11).',
+    'trust_single_cap_breach': 'Sanctioned amount exceeds the statutory ceiling of INR 50.00 Lakh for a single Trust/Society work (Para 3.23).',
+    'vendor_concentration': 'One contractor accounts for an unusually large share of paid works in the state.',
+    'vendor_dominates_mp': "A single contractor handles a dominant share of this MP's paid works — contractor concentration heuristic.",
+    'vendor_multi_mp': 'The same contractor bills works for several different MPs — cross-constituency exposure heuristic.',
     'trust_society_routing': 'Work category (Trust & Society / Bar associations) requires enhanced compliance review.',
-    'disbursement_mismatch': 'Completed amount and summed vendor payments do not reconcile within tolerance.',
+    'disbursement_mismatch': 'Completed amount and summed contractor payments do not reconcile within tolerance.',
     'cost_outlier': 'Sanctioned cost is a statistical outlier vs similar works in the same state and category.',
     'stuck_status': 'Work remains in an early workflow status well beyond the expected period.',
     'stuck_payment': 'In-progress payments have shown no movement for over 90 days.',
     'impossible_timeline': 'Completion date is recorded before the sanction date.',
     'rapid_completion': 'Work was marked completed within days of sanction — implausible delivery speed.',
-    'payment_after_completion': 'Vendor payments continued well after the work was marked complete.',
+    'payment_after_completion': 'Contractor payments continued well after the work was marked complete.',
     'duplicate_description': 'A near-identical work description appears in the same state and time window.',
-    'duplicate_across_mp': 'Near-identical description submitted by a DIFFERENT MP — classic ghost-work signal.',
+    'duplicate_across_mp': 'Near-identical description submitted under different MPs — candidate duplicate requiring site verification.',
     'over_allocation': "MP's total sanctioned works exceed their allocated fund ceiling.",
-    'missing_vendor': 'Vendor information is missing from expenditure records.',
-    'over_utilization': 'Summed expenditure exceeds the sanctioned amount beyond tolerance.',
+    'missing_vendor': 'Contractor information is missing from expenditure records.',
+    'over_utilization': 'Cumulative disbursement exceeds the sanctioned amount beyond numerical tolerance.',
     'negative_sanction': 'Sanction amount is negative and requires immediate data verification.',
-    'zero_sanction_with_payments': 'Vendor payments exist against a work with no/zero sanctioned cost.',
-    'completed_without_image': 'Work marked complete but the portal shows no evidence attachment.',
+    'zero_sanction_with_payments': 'Contractor payments exist against a work with no/zero sanctioned cost.',
+    'completed_without_image': 'Work marked complete but the portal shows no photographic attachment.',
     'ida_budget_capture': 'Implementing agency holds a disproportionately large share of the state MPLADS budget.',
-    'ida_vendor_monopoly': 'A single vendor accounts for nearly all paid works in this implementing agency.',
-    'ida_mp_cluster': 'An unusually high number of different MPs route their works through the same implementing agency.',
+    'ida_vendor_monopoly': 'A single contractor accounts for nearly all paid works in this implementing agency.',
+    'ida_mp_cluster': 'An unusually high number of different MPs route works through the same implementing agency.',
 }
 
 RENAME_MAP = {
@@ -202,16 +206,25 @@ def generate_narrative_reason(flag: str, row: dict) -> str:
             f"Tolerance is {CONFIG['disbursement_mismatch_pct'] * 100:.0f}%."
         )
 
-    if flag == 'over_utilization':
-        # Recompute excess directly from sanction/disbursed if stored ratio is 0
-        excess = disbursed - sanction
-        stored_ratio = float(row.get('utilization_ratio') or 0)
-        pct = (stored_ratio - 1) * 100 if stored_ratio > 1 else (excess / sanction * 100 if sanction > 0 else 0)
+    if flag == 'disbursement_without_sanction':
         return (
-            f"Expenditure {_fmt_inr(disbursed)} is "
-            f"{_pct(excess, sanction)} ({_fmt_inr(excess)}) over "
-            f"the sanctioned amount {_fmt_inr(sanction)}. "
-            f"Permitted tolerance is 5%."
+            f"Disbursement of {_fmt_inr(disbursed)} has been recorded while the work status "
+            f"remains '{status}'. MoSPI Guidelines Para 3.11 prohibit fund release prior to "
+            f"formal Administrative Sanction."
+        )
+
+    if flag == 'trust_single_cap_breach':
+        return (
+            f"Sanctioned amount of {_fmt_inr(sanction)} exceeds the statutory ceiling of "
+            f"INR 50.00 Lakh for a single Trust/Society work under MPLADS Guidelines 2023 Para 3.23."
+        )
+
+    if flag == 'over_utilization':
+        excess = disbursed - sanction
+        return (
+            f"Expenditure {_fmt_inr(disbursed)} exceeds the sanctioned amount {_fmt_inr(sanction)} "
+            f"by {_fmt_inr(excess)} beyond the configured numerical tolerance of INR 100. "
+            f"Para 3.11 requires revised administrative sanction approval for cost variations."
         )
 
     if flag == 'negative_sanction':
@@ -282,9 +295,9 @@ def generate_narrative_reason(flag: str, row: dict) -> str:
 
     if flag == 'duplicate_across_mp':
         return (
-            f"Work description is nearly identical to works submitted by DIFFERENT MPs "
+            f"Work description is nearly identical to works submitted under DIFFERENT MPs "
             f"in {state} within a {CONFIG['duplicate_cross_mp_window_days']}-day window — "
-            f"a classic ghost-work or template-submission signal. "
+            f"a candidate duplicate or standardized multi-constituency allocation requiring site verification. "
             f"Similarity threshold: {CONFIG['duplicate_similarity_threshold']:.0%}."
         )
 
@@ -306,7 +319,7 @@ def generate_narrative_reason(flag: str, row: dict) -> str:
         cnt_str = f"across {vendor_mp_count} different MPs" if vendor_mp_count > 0 else "across multiple different MPs"
         return (
             f"'{vendor}' bills paid works {cnt_str} — "
-            f"threshold for organised-capture risk is {CONFIG['vendor_multi_mp_threshold']} MPs."
+            f"threshold for cross-constituency concentration review is {CONFIG['vendor_multi_mp_threshold']} MPs."
         )
 
     if flag == 'missing_vendor':
@@ -512,6 +525,44 @@ def generate_case_packet(work_id, work_row=None, df=None):
 
     impact_pct = round(float(row.get('impact_score', 0.5)) * 100)
 
+    # Phase 3: Five-state rule evaluation and data quality separation
+    rule_results = evaluate_all_rules(row)
+    data_quality_defects = evaluate_data_quality(row)
+
+    compliance_findings = []
+    financial_control_findings = []
+    execution_anomalies = []
+    audit_heuristics = []
+    all_data_gaps = set()
+    all_checklists = set()
+
+    for r in rule_results:
+        r_dict = r.to_dict()
+        if r.data_gaps:
+            all_data_gaps.update(r.data_gaps)
+        if r.state in ("FAIL", "REVIEW", "UNKNOWN") and r.auditor_evidence_checklist:
+            all_checklists.update(r.auditor_evidence_checklist)
+
+        if r.category in ("JURISDICTION", "TRUST_SOCIETY", "PROHIBITED_WORKS"):
+            compliance_findings.append(r_dict)
+        elif r.category == "FINANCIAL":
+            financial_control_findings.append(r_dict)
+        elif r.category in ("TIMELINES", "MONITORING"):
+            execution_anomalies.append(r_dict)
+        else:
+            audit_heuristics.append(r_dict)
+
+    data_quality_findings = [
+        {
+            "defect_code": d.defect_code,
+            "severity": d.severity,
+            "field_name": d.field_name,
+            "description": d.description,
+            "suggested_action": d.suggested_action
+        }
+        for d in data_quality_defects
+    ]
+
     return {
         'work_id': str(row.get('work_id')),
         'mp_name': row.get('mp_name'),
@@ -543,6 +594,15 @@ def generate_case_packet(work_id, work_row=None, df=None):
         'anomaly_percentile': float(row.get('anomaly_percentile', 0)),
         'is_anomaly': bool(row.get('is_anomaly', False)),
         'human_review_outcome': row.get('human_review_outcome'),
+        # Phase 3 structured findings & checklists
+        'compliance_findings': compliance_findings,
+        'financial_control_findings': financial_control_findings,
+        'execution_anomalies': execution_anomalies,
+        'audit_heuristics': audit_heuristics,
+        'data_quality_findings': data_quality_findings,
+        'data_gaps': sorted(list(all_data_gaps)),
+        'auditor_evidence_checklist': sorted(list(all_checklists)),
+        'rule_results': [r.to_dict() for r in rule_results],
     }
 
 

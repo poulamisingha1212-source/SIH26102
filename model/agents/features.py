@@ -339,15 +339,39 @@ def build_features(df: pd.DataFrame, mp_allocations: dict = None) -> pd.DataFram
     # --- duplicates (Jaccard + bigram, no ML) --------------------------------
     work = _detect_description_duplicates(work)
 
-    # --- MP allocation ceiling ----------------------------------------------
+    # --- MP allocation ceiling (supports composite tenure join (mp_name, house)) ---
     work['flag_over_allocation'] = False
     if mp_allocations and 'mp_name' in work.columns:
-        sanctioned_per_mp = work.groupby('mp_name')['sanction_amount'].sum()
-        over = {
-            mp for mp, total in sanctioned_per_mp.items()
-            if mp in mp_allocations
-            and total > float(mp_allocations[mp]) * CONFIG['over_allocation_tolerance']
-        }
-        work['flag_over_allocation'] = work['mp_name'].isin(over)
+        has_composite = any(isinstance(k, tuple) for k in mp_allocations.keys())
+        if has_composite and 'house' in work.columns:
+            sanctioned_grouped = work.groupby(['mp_name', 'house'])['sanction_amount'].sum()
+            over_pairs = set()
+            for (mp, house), total in sanctioned_grouped.items():
+                alloc = mp_allocations.get((mp, house)) or mp_allocations.get(mp)
+                if alloc and total > float(alloc) * CONFIG['over_allocation_tolerance']:
+                    over_pairs.add((mp, house))
+            if over_pairs:
+                work['flag_over_allocation'] = [
+                    (r['mp_name'], r.get('house')) in over_pairs
+                    for _, r in work[['mp_name', 'house']].iterrows()
+                ]
+        else:
+            sanctioned_per_mp = work.groupby('mp_name')['sanction_amount'].sum()
+            over = {
+                mp for mp, total in sanctioned_per_mp.items()
+                if mp in mp_allocations
+                and total > float(mp_allocations[mp]) * CONFIG['over_allocation_tolerance']
+            }
+            work['flag_over_allocation'] = work['mp_name'].isin(over)
+
+    # --- Financial overrun with mandatory INR 100 epsilon tolerance ---
+    disbursed = work.get('total_fund_disbursed', 0.0).fillna(0.0)
+    sanction = work.get('sanction_amount', 0.0).fillna(0.0)
+    work['flag_real_overrun'] = (disbursed > (sanction + 100.0)) & (sanction > 0)
+
+    # --- Disbursement without administrative sanction (FIN-001) ---
+    status_str = work.get('work_status', '').astype(str).str.strip().str.lower()
+    work['flag_pending_with_disbursement'] = (status_str == 'pending for sanction') & (disbursed > 0)
 
     return work
+

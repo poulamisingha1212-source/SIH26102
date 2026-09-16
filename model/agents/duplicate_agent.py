@@ -7,11 +7,10 @@ from model.agents.base import BaseAgent
 
 class DuplicateAgent(BaseAgent):
     key = 'duplicate'
-    title = 'Duplicate & Ghost-Work Agent'
+    title = 'Duplicate & Multiple Allocation Agent'
     description = (
-        'Cross-matches every work description against the rest of the portfolio: '
-        'near-identical works inside a state, and the classic ghost-work pattern '
-        'where different MPs submit the same description.'
+        'Identifies candidate work clusters sharing near-identical descriptions, '
+        'standardized amounts, or multiple allocations across constituencies for field verification.'
     )
     weight = 0.25
     max_severity = 3.0

@@ -10,9 +10,8 @@ class VendorAgent(BaseAgent):
     key = 'vendor'
     title = 'Vendor & Procurement Agent'
     description = (
-        'Watches the contractor landscape: single vendors dominating a state or an '
-        'MP, the same vendor billing many MPs, and paid works with no vendor '
-        'recorded at all.'
+        'Analyzes procurement exposure: high contractor monetary concentration across '
+        'constituencies or implementing agencies, and active works lacking contractor attribution.'
     )
     weight = 0.15
     max_severity = 3.0
