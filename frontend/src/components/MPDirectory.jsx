@@ -158,7 +158,7 @@ export default function MPDirectory({
           <div className="relative md:col-span-2">
             <Search className="w-4 h-4 text-muted-foreground absolute left-3 top-1/2 -translate-y-1/2" />
             <Input
-              placeholder="Search by MP or constituency..."
+              placeholder="Search by MP or constituency…"
               value={searchInput}
               onChange={(e) => setSearchInput(e.target.value)}
               className="pl-9"
@@ -225,7 +225,7 @@ export default function MPDirectory({
         </Card>
       ) : (
         <BlurFade>
-          <Card className="glass-panel rounded-2xl overflow-hidden py-0 gap-0">
+          <Card className="glass-panel rounded-xl overflow-hidden py-0 gap-0 border border-border/80">
             <div className="overflow-x-auto">
               <Table>
                 <TableHeader>

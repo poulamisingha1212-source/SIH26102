@@ -14,15 +14,19 @@ import { LIGHT_TOOLTIP, TICK_FONT, AXIS_LABEL_FONT } from '@/lib/chart';
 import UtilizationGauge from '@/components/dashboard/UtilizationGauge';
 import StateAllocationChart from '@/components/dashboard/StateAllocationChart';
 import RiskTierDonut from '@/components/dashboard/RiskTierDonut';
+import RiskWatchlist from '@/components/dashboard/RiskWatchlist';
 import { apiFetch } from '@/lib/api';
+import { Button } from '@/components/ui/button';
+import { RefreshCw, Database, ShieldAlert, CheckCircle2 } from 'lucide-react';
+import CitizenProblemsView from './dashboard/CitizenProblemsView';
 
 export default function PortfolioOverview({
   stats,
   house,
-  _syncStatus,
-  _onTriggerSync,
-  _isSyncing,
-  _currentRole,
+  syncStatus,
+  onTriggerSync,
+  isSyncing,
+  currentRole = 'Read-Only Public Tier',
   onFilterByEntity
 }) {
   const [categoryData, setCategoryData] = useState(null);
@@ -60,15 +64,69 @@ export default function PortfolioOverview({
   const medPct = stats.total_works > 0 ? ((stats.medium_risk_count / stats.total_works) * 100).toFixed(1) : 0;
   const lowPct = stats.total_works > 0 ? ((stats.low_risk_count / stats.total_works) * 100).toFixed(1) : 0;
 
+  const isAdmin = currentRole === 'MoSPI Reviewer';
+
   return (
     <div className="space-y-6">
+
+      {/* Admin Executive Command Center Banner (MoSPI Reviewer) */}
+      {isAdmin && (
+        <div className="rounded-2xl border border-amber-300 dark:border-amber-800 bg-linear-to-r from-amber-500/15 via-slate-50 to-indigo-500/10 dark:from-amber-950/40 dark:via-slate-900 dark:to-indigo-950/30 p-5 shadow-xs">
+          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+            <div className="space-y-1">
+              <div className="flex items-center gap-2 flex-wrap">
+                <span className="p-1.5 rounded-lg bg-amber-600 text-white shadow-xs">
+                  <Database className="w-5 h-5" />
+                </span>
+                <h3 className="text-lg font-bold font-display text-slate-900 dark:text-slate-100">
+                  MoSPI Executive Administration & Data Management Desk
+                </h3>
+                <Badge className="bg-amber-600 hover:bg-amber-700 text-white text-xs px-2.5 py-0.5 font-semibold">
+                  Administrator Authority
+                </Badge>
+              </div>
+              <p className="text-xs text-slate-600 dark:text-slate-400 max-w-2xl">
+                Comprehensive national oversight over all 543 Parliamentary Constituencies, State Nodal Departments, and real-time portal synchronization with mplads.mospi.gov.in.
+              </p>
+            </div>
+
+            {/* Live Sync Action & Status */}
+            <div className="flex items-center gap-3 shrink-0 flex-wrap">
+              <div className="text-right text-xs">
+                <div className="flex items-center justify-end gap-1.5 font-semibold text-slate-800 dark:text-slate-200">
+                  <span className={`w-2 h-2 rounded-full ${syncStatus?.is_data_stale ? 'bg-amber-500' : 'bg-emerald-500 animate-pulse'}`} />
+                  <span>Portal Sync: {syncStatus?.is_data_stale ? 'Sync Recommended' : 'Online & Live'}</span>
+                </div>
+                <span className="text-[11px] text-slate-400 block mt-0.5">
+                  Last: {syncStatus?.last_sync_time ? new Date(syncStatus.last_sync_time).toLocaleTimeString('en-IN') : 'Recent'} • {stats.total_works?.toLocaleString('en-IN')} works indexed
+                </span>
+              </div>
+
+              {onTriggerSync && (
+                <Button
+                  onClick={() => onTriggerSync('live')}
+                  disabled={isSyncing}
+                  className="h-9 px-4 rounded-xl bg-amber-600 hover:bg-amber-700 text-white text-xs font-semibold shadow-xs gap-2 cursor-pointer"
+                >
+                  <RefreshCw className={`w-3.5 h-3.5 ${isSyncing ? 'animate-spin' : ''}`} />
+                  <span>{isSyncing ? 'Synchronizing Ingestion…' : 'Sync Live Portal Data'}</span>
+                </Button>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Dashboard title + house scope */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
         <div>
-          <h2 className="text-2xl font-extrabold font-[Outfit] tracking-tight">MPLADS Dashboard</h2>
+          <h2 className="text-2xl font-bold font-display tracking-tight text-foreground">
+            {isAdmin ? 'National MPLADS Administration Overview' : 'MPLADS Transparency Dashboard'}
+          </h2>
           <p className="text-xs text-muted-foreground mt-0.5">
-            Overview of the Member of Parliament Local Area Development Scheme
+            {isAdmin
+              ? 'Complete national expenditure ledger, AI anomaly prioritization, and district data feeds.'
+              : 'Overview of the Member of Parliament Local Area Development Scheme across India'}
           </p>
         </div>
         <Badge variant="outline" className="gap-1.5 w-fit border-primary/30 bg-primary/5 text-primary text-xs font-semibold">
@@ -150,107 +208,6 @@ export default function PortfolioOverview({
       <BlurFade inView delay={0.12}>
         <StateAllocationChart states={statesData} />
       </BlurFade>
-
-      {/* Fund Flow & Project Progression Pipeline */}
-      <Card className="glass-panel p-5 rounded-2xl space-y-4">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b pb-3">
-          <div>
-            <h3 className="text-sm font-bold flex items-center gap-2">
-              <TrendingUp className="w-4 h-4 text-indigo-600" />
-              Fund Lifecycle & Conversion Pipeline
-            </h3>
-            <span className="text-[11px] text-muted-foreground">Progression from MoSPI allocation to on-ground completion</span>
-          </div>
-          <Badge variant="outline" className="w-fit text-xs font-mono font-semibold border-indigo-200 bg-indigo-50 text-indigo-700">
-            {stats.fund_utilization_pct ?? 0}% Allocated Utilized
-          </Badge>
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 pt-1">
-          {/* Stage 1: Allocated */}
-          <div className="p-4 rounded-xl bg-indigo-50/50 border border-indigo-100 flex flex-col justify-between space-y-2">
-            <div>
-              <div className="flex items-center justify-between text-xs text-indigo-800 font-semibold mb-1">
-                <span>1. Scheme Ceiling</span>
-                <span className="text-[10px] uppercase font-bold text-indigo-600">100% Base</span>
-              </div>
-              <span className="text-xl font-black font-mono text-indigo-900 block">
-                ₹{formatNumber(Math.round((stats.total_allocated_amount ?? 0) / 1e7))} Cr
-              </span>
-              <p className="text-[11px] text-indigo-700/80 mt-1">Total entitlement allocated by MoSPI</p>
-            </div>
-            <div className="w-full bg-indigo-200/60 h-1.5 rounded-full overflow-hidden">
-              <div className="bg-indigo-600 h-full w-full rounded-full" />
-            </div>
-          </div>
-
-          {/* Stage 2: Sanctioned */}
-          <div className="p-4 rounded-xl bg-sky-50/50 border border-sky-100 flex flex-col justify-between space-y-2">
-            <div>
-              <div className="flex items-center justify-between text-xs text-sky-800 font-semibold mb-1">
-                <span>2. Sanctioned Works</span>
-                <span className="text-[10px] uppercase font-bold text-sky-600">{stats.fund_utilization_pct ?? 0}%</span>
-              </div>
-              <span className="text-xl font-black font-mono text-sky-900 block">
-                ₹{formatNumber(Math.round((stats.total_sanctioned_amount ?? 0) / 1e7))} Cr
-              </span>
-              <p className="text-[11px] text-sky-700/80 mt-1">Approved by District Authorities</p>
-            </div>
-            <div className="w-full bg-sky-200/60 h-1.5 rounded-full overflow-hidden">
-              <div
-                className="bg-sky-600 h-full rounded-full transition-all duration-500"
-                style={{ width: `${Math.min(100, stats.fund_utilization_pct ?? 0)}%` }}
-              />
-            </div>
-          </div>
-
-          {/* Stage 3: Disbursed */}
-          <div className="p-4 rounded-xl bg-emerald-50/50 border border-emerald-100 flex flex-col justify-between space-y-2">
-            <div>
-              <div className="flex items-center justify-between text-xs text-emerald-800 font-semibold mb-1">
-                <span>3. Expenditure Paid</span>
-                <span className="text-[10px] uppercase font-bold text-emerald-600">{stats.expenditure_rate_pct ?? 0}%</span>
-              </div>
-              <span className="text-xl font-black font-mono text-emerald-900 block">
-                ₹{formatNumber(Math.round((stats.total_disbursed_amount ?? 0) / 1e7))} Cr
-              </span>
-              <p className="text-[11px] text-emerald-700/80 mt-1">Disbursed for project execution</p>
-            </div>
-            <div className="w-full bg-emerald-200/60 h-1.5 rounded-full overflow-hidden">
-              <div
-                className="bg-emerald-600 h-full rounded-full transition-all duration-500"
-                style={{ width: `${Math.min(100, stats.expenditure_rate_pct ?? 0)}%` }}
-              />
-            </div>
-          </div>
-
-          {/* Stage 4: Works Completed */}
-          <div className="p-4 rounded-xl bg-purple-50/50 border border-purple-100 flex flex-col justify-between space-y-2">
-            <div>
-              <div className="flex items-center justify-between text-xs text-purple-800 font-semibold mb-1">
-                <span>4. Completion Rate</span>
-                <span className="text-[10px] uppercase font-bold text-purple-600">
-                  {stats.total_works > 0 ? ((stats.works_completed / stats.total_works) * 100).toFixed(0) : 0}%
-                </span>
-              </div>
-              <span className="text-xl font-black font-mono text-purple-900 block">
-                {formatNumber(stats.works_completed)} Works
-              </span>
-              <p className="text-[11px] text-purple-700/80 mt-1">
-                {formatNumber(stats.works_pending)} projects in progress
-              </p>
-            </div>
-            <div className="w-full bg-purple-200/60 h-1.5 rounded-full overflow-hidden">
-              <div
-                className="bg-purple-600 h-full rounded-full transition-all duration-500"
-                style={{
-                  width: `${Math.min(100, stats.total_works > 0 ? (stats.works_completed / stats.total_works) * 100 : 0)}%`
-                }}
-              />
-            </div>
-          </div>
-        </div>
-      </Card>
 
       {/* Fund allocation & execution charts */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -410,34 +367,21 @@ export default function PortfolioOverview({
         </Card>
       </div>
 
-      {/* Entity risk tables */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      {/* Organized Entity Risk Watchlist */}
+      <RiskWatchlist
+        states={stats.top_risk_states}
+        mps={stats.top_risk_mps}
+        vendors={stats.top_risk_vendors}
+        onFilterByEntity={onFilterByEntity}
+      />
 
-        <EntityCard
-          title="Top-Risk States"
-          note="By Flagged Works"
-          icon={<MapPin className="w-4 h-4 text-primary" />}
-          rows={stats.top_risk_states}
-          onClick={(name) => onFilterByEntity('state', name)}
-          unit="works"
-        />
-
-        <EntityCard
-          title="Top-Risk MPs"
-          note="By High-Risk Works"
-          icon={<Users className="w-4 h-4 text-primary" />}
-          rows={stats.top_risk_mps}
-          onClick={(name) => onFilterByEntity('mp_name', name)}
-          unit="works"
-        />
-
-        <EntityCard
-          title="Top-Risk Vendors"
-          note="Concentration Signals"
-          icon={<Building2 className="w-4 h-4 text-primary" />}
-          rows={stats.top_risk_vendors}
-          onClick={(name) => onFilterByEntity('search', name)}
-          unit="contracts"
+      {/* Citizen Grievances & Problems Raised Section */}
+      <div className="pt-2">
+        <CitizenProblemsView
+          constituency="Kota"
+          state="Rajasthan"
+          currentRole={currentRole}
+          loggedInUser={currentRole}
         />
       </div>
 
@@ -479,14 +423,13 @@ export default function PortfolioOverview({
 
 function MetricCard({ label, icon, sub, valueClass = '', children }) {
   return (
-    <Card className="glass-panel p-5 rounded-2xl relative overflow-hidden">
+    <Card className="glass-panel p-5 rounded-xl relative overflow-hidden border border-border/80 shadow-2xs hover:border-border transition-colors">
       <div className="flex items-center justify-between text-muted-foreground text-xs font-medium">
         <span>{label}</span>
         {icon}
       </div>
       <div className={`mt-2 ${valueClass}`}>{children}</div>
       <span className="text-[11px] text-muted-foreground block mt-1">{sub}</span>
-      <div className="absolute right-0 bottom-0 w-24 h-24 bg-primary/5 rounded-full blur-xl pointer-events-none" />
     </Card>
   );
 }
@@ -502,46 +445,7 @@ function TierLegend({ color, label, count }) {
   );
 }
 
-function EntityCard({ title, note, icon, rows, onClick, unit }) {
-  return (
-    <Card className="glass-panel p-5 rounded-2xl space-y-3">
-      <div className="flex items-center justify-between border-b pb-3">
-        <div className="flex items-center gap-2">
-          {icon}
-          <h3 className="text-sm font-bold">{title}</h3>
-        </div>
-        <span className="text-[10px] text-muted-foreground">{note}</span>
-      </div>
 
-      <div className="space-y-2 text-xs">
-        {rows?.map((entity, idx) => (
-          <div
-            key={entity.name}
-            onClick={() => onClick(entity.name)}
-            className="p-2.5 rounded-xl bg-muted/60 hover:bg-accent/70 border cursor-pointer flex items-center justify-between transition-colors group"
-          >
-            <div className="space-y-0.5 min-w-0">
-              <span className="font-semibold text-foreground/90 group-hover:text-primary transition-colors truncate block">
-                {idx + 1}. {entity.name}
-              </span>
-              <span className="text-[10px] text-muted-foreground block">
-                {entity.count.toLocaleString('en-IN')} {unit} • Avg Risk {entity.avg_risk_score}
-              </span>
-            </div>
-            <div className="text-right shrink-0">
-              <span className="text-xs font-bold text-red-600 block font-mono">
-                {entity.high_risk_count} High
-              </span>
-              <span className="text-[10px] text-muted-foreground block">
-                {formatINR(entity.total_sanctioned)}
-              </span>
-            </div>
-          </div>
-        ))}
-      </div>
-    </Card>
-  );
-}
 
 function truncateLabel(text, max) {
   if (!text) return '';

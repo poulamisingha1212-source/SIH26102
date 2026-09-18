@@ -81,7 +81,7 @@ export default function StateAllocationChart({ states = [], title = 'State Funds
   }), [top]);
 
   return (
-    <Card className="glass-panel p-5 rounded-2xl">
+    <Card className="glass-panel p-5 rounded-xl border border-border/80">
       <div className="flex items-baseline justify-between mb-1">
         <h3 className="text-sm font-bold uppercase tracking-wider">{title}</h3>
         <span className="text-[10px] text-muted-foreground">Top 10 by sanctioned funds</span>

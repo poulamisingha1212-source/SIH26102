@@ -289,6 +289,80 @@ class LoginResponse(BaseModel):
     username: str
     role: str
     message: str
+    constituency: Optional[str] = None
+    district: Optional[str] = None
+    state: Optional[str] = None
+    mp_name: Optional[str] = None
+
+
+class UserProfileResponse(BaseModel):
+    username: str
+    role: str
+    constituency: Optional[str] = None
+    district: Optional[str] = None
+    state: Optional[str] = None
+    mp_name: Optional[str] = None
+
+
+class ProblemCreateRequest(BaseModel):
+    work_id: Optional[str] = None
+    work_title: Optional[str] = None
+    title: Optional[str] = None
+    description: Optional[str] = None
+    constituency: str
+    district: Optional[str] = None
+    state: Optional[str] = None
+    category: str = "Quality & Specification Concern"
+    comment: Optional[str] = None
+    photo_proof: Optional[str] = None
+    reporter_name: Optional[str] = None
+    citizen_name: Optional[str] = None
+    contact: Optional[str] = None
+    latitude: Optional[float] = None
+    longitude: Optional[float] = None
+
+
+class MPReplyRequest(BaseModel):
+    reply_text: Optional[str] = None
+    mp_reply: Optional[str] = None
+    action_taken: Optional[str] = "Official enquiry instituted with implementing agency"
+    status: str = "Action Initiated"  # "Action Initiated", "Under Investigation", "Resolved"
+
+
+class AuditorReviewRequest(BaseModel):
+    auditor_notes: str
+    status: str = "Under Investigation"  # "Under Investigation", "Action Initiated", "Resolved"
+
+
+class ProblemResponse(BaseModel):
+    id: str
+    work_id: Optional[str] = None
+    work_title: Optional[str] = None
+    title: Optional[str] = None
+    description: Optional[str] = None
+    constituency: str
+    district: Optional[str] = None
+    state: Optional[str] = None
+    category: str
+    comment: Optional[str] = None
+    photo_proof: Optional[str] = None
+    reporter_name: Optional[str] = None
+    citizen_name: Optional[str] = None
+    contact_masked: Optional[str] = None
+    latitude: Optional[float] = None
+    longitude: Optional[float] = None
+    created_at: datetime
+    status: str
+    mp_reply: Optional[Any] = None
+    mp_replied_at: Optional[str] = None
+    auditor_notes: Optional[Any] = None
+    auditor_reviewed_at: Optional[str] = None
+
+
+class ProblemListResponse(BaseModel):
+    total: int
+    items: List[ProblemResponse]
+
 
 
 class SyncLogResponse(BaseModel):

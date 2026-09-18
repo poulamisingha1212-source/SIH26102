@@ -198,14 +198,14 @@ project-root/
 │   │   │   ├── magicui/            # Shimmer buttons, dot patterns, blur fade
 │   │   │   ├── ui/                 # Accessible UI primitives (dialog, button, table, etc.)
 │   │   │   ├── CasePacketModal.jsx # Forensic case packet & citizen review modal
-│   │   │   ├── CompareView.jsx     # Side-by-side MP performance comparison
+│   │   │   ├── IndiaMap.jsx        # Interactive SVG map with color-coded utilization & compare triggers
 │   │   │   ├── Header.jsx          # MoSPI branding, status pills & auth trigger
 │   │   │   ├── LoginModal.jsx      # JWT credentials authentication dialog
 │   │   │   ├── MPDirectory.jsx     # MP transparency table & deep filter
 │   │   │   ├── MPProfileModal.jsx  # Individual MP portfolio dossier
 │   │   │   ├── PortfolioOverview.jsx # Macro analytics, charts & entity cards
 │   │   │   ├── PriorityQueue.jsx   # Ranked audit work triage table
-│   │   │   └── StatesView.jsx      # State-wise allocations & progress
+│   │   │   └── StatesView.jsx      # State choropleth map & integrated side-by-side comparison
 │   │   ├── lib/                    # API clients, chart configs & formatters
 │   │   ├── App.jsx                 # Stateful application coordinator
 │   │   ├── index.css               # Design tokens, glassmorphism & typography

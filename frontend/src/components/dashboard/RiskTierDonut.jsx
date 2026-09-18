@@ -39,7 +39,7 @@ export default function RiskTierDonut({ tier = {}, title = 'Risk Tier Distributi
   const total = (tier['High Risk - Review'] || 0) + (tier['Medium Risk - Monitor'] || 0) + (tier['Low Risk'] || 0);
 
   return (
-    <Card className="glass-panel p-5 rounded-2xl h-full">
+    <Card className="glass-panel p-5 rounded-xl border border-border/80 h-full">
       <h3 className="text-sm font-bold uppercase tracking-wider mb-3">{title}</h3>
       <div className="h-72">
         <Doughnut data={data} options={options} />

@@ -1,0 +1,114 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" fill="none">
+  <defs>
+    <!-- Background Shield / Squircle Gradient -->
+    <linearGradient id="emblemBg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0F172A" />
+      <stop offset="50%" stop-color="#0A192F" />
+      <stop offset="100%" stop-color="#030712" />
+    </linearGradient>
+
+    <!-- Border Gradient with Subtle Saffron & Emerald Accent -->
+    <linearGradient id="emblemBorder" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#F59E0B" stop-opacity="0.8" />
+      <stop offset="30%" stop-color="#D97706" stop-opacity="0.5" />
+      <stop offset="70%" stop-color="#0284C7" stop-opacity="0.5" />
+      <stop offset="100%" stop-color="#10B981" stop-opacity="0.8" />
+    </linearGradient>
+
+    <!-- Sun Ray Gradient (Saffron / Dawn of Transparency) -->
+    <linearGradient id="sunRays" x1="0%" y1="100%" x2="0%" y2="0%">
+      <stop offset="0%" stop-color="#F59E0B" stop-opacity="0.2" />
+      <stop offset="50%" stop-color="#FBBF24" stop-opacity="0.8" />
+      <stop offset="100%" stop-color="#F59E0B" stop-opacity="1" />
+    </linearGradient>
+
+    <!-- Citizens Radiant Arch Gradient -->
+    <linearGradient id="citizensGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#0284C7" />
+      <stop offset="50%" stop-color="#38BDF8" />
+      <stop offset="100%" stop-color="#10B981" />
+    </linearGradient>
+
+    <!-- Leaves / Sustainable Growth Gradient -->
+    <linearGradient id="leafGrad" x1="0%" y1="100%" x2="0%" y2="0%">
+      <stop offset="0%" stop-color="#059669" />
+      <stop offset="100%" stop-color="#34D399" />
+    </linearGradient>
+
+    <!-- Treasury Vessel / Nidhi Bowl Gradient -->
+    <linearGradient id="vesselGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#0369A1" />
+      <stop offset="50%" stop-color="#0284C7" />
+      <stop offset="100%" stop-color="#0F766E" />
+    </linearGradient>
+
+    <!-- Center Ambient Glow -->
+    <radialGradient id="centerGlow" cx="50%" cy="45%" r="45%">
+      <stop offset="0%" stop-color="#0284C7" stop-opacity="0.25" />
+      <stop offset="100%" stop-color="#0284C7" stop-opacity="0" />
+    </radialGradient>
+  </defs>
+
+  <!-- Squircle Base -->
+  <rect x="1.5" y="1.5" width="61" height="61" rx="16" fill="url(#emblemBg)" stroke="url(#emblemBorder)" stroke-width="1.5" />
+  
+  <!-- Subtle Internal Glow -->
+  <circle cx="32" cy="30" r="22" fill="url(#centerGlow)" />
+
+  <!-- 7 Rays of Sunlight / Transparency Corona -->
+  <!-- Center Ray -->
+  <line x1="32" y1="17" x2="32" y2="10" stroke="url(#sunRays)" stroke-width="1.8" stroke-linecap="round" />
+  <!-- Left Rays -->
+  <line x1="26" y1="18.5" x2="21" y2="12.5" stroke="url(#sunRays)" stroke-width="1.6" stroke-linecap="round" />
+  <line x1="21" y1="21.5" x2="14" y2="17.5" stroke="url(#sunRays)" stroke-width="1.5" stroke-linecap="round" />
+  <line x1="18" y1="26" x2="10" y2="25" stroke="url(#sunRays)" stroke-width="1.4" stroke-linecap="round" />
+  <!-- Right Rays -->
+  <line x1="38" y1="18.5" x2="43" y2="12.5" stroke="url(#sunRays)" stroke-width="1.6" stroke-linecap="round" />
+  <line x1="43" y1="21.5" x2="50" y2="17.5" stroke="url(#sunRays)" stroke-width="1.5" stroke-linecap="round" />
+  <line x1="46" y1="26" x2="54" y2="25" stroke="url(#sunRays)" stroke-width="1.4" stroke-linecap="round" />
+
+  <!-- Citizens ("Jan") - 3 Guardian Figures forming an Arch -->
+  <!-- Center Citizen Head -->
+  <circle cx="32" cy="18.5" r="3.5" fill="#38BDF8" stroke="#0F172A" stroke-width="1" />
+  <!-- Left Citizen Head -->
+  <circle cx="21" cy="24" r="3" fill="#60A5FA" stroke="#0F172A" stroke-width="1" />
+  <!-- Right Citizen Head -->
+  <circle cx="43" cy="24" r="3" fill="#34D399" stroke="#0F172A" stroke-width="1" />
+
+  <!-- Linked Arms / Protective Canopy -->
+  <path d="M 16 32 C 16 26.5, 23 23.5, 32 23.5 C 41 23.5, 48 26.5, 48 32 C 44 28.5, 39 26.8, 32 26.8 C 25 26.8, 20 28.5, 16 32 Z" fill="url(#citizensGrad)" opacity="0.95" />
+
+  <!-- Sprouting Infrastructure Leaves (Transparency & Development) -->
+  <!-- Left Leaf -->
+  <path d="M 31 36 C 26 33, 23 33, 21 35 C 23.5 38.5, 27.5 39, 31 37 Z" fill="#10B981" />
+  <!-- Right Leaf -->
+  <path d="M 33 36 C 38 33, 41 33, 43 35 C 40.5 38.5, 36.5 39, 33 37 Z" fill="#059669" />
+  <!-- Center Sprout -->
+  <path d="M 32 28 C 29.5 33, 30.5 38, 32 39.5 C 33.5 38, 34.5 33, 32 28 Z" fill="url(#leafGrad)" />
+
+  <!-- Nidhi (Treasury / Public Fund) Ceremonial Vessel -->
+  <path d="M 18 39.5 C 18 48.5, 46 48.5, 46 39.5 C 46 38.5, 18 38.5, 18 39.5 Z" fill="url(#vesselGrad)" stroke="#38BDF8" stroke-width="0.8" />
+  <!-- Vessel Lip Highlight -->
+  <ellipse cx="32" cy="39.2" rx="14" ry="1.8" fill="#38BDF8" opacity="0.6" />
+  
+  <!-- Vessel Pedestal Base -->
+  <path d="M 26 48.5 L 38 48.5 L 36 51.5 L 28 51.5 Z" fill="#0369A1" />
+
+  <!-- Indian Rupee Symbol (₹) on the Treasury Vessel -->
+  <g transform="translate(32, 44.8) scale(0.65)">
+    <!-- Top Bar 1 -->
+    <line x1="-5.5" y1="-5.5" x2="5.5" y2="-5.5" stroke="#FFFFFF" stroke-width="1.8" stroke-linecap="round" />
+    <!-- Top Bar 2 -->
+    <line x1="-5.5" y1="-2.5" x2="4" y2="-2.5" stroke="#FFFFFF" stroke-width="1.6" stroke-linecap="round" />
+    <!-- Curved R-spine -->
+    <path d="M -1.8 -5.5 L -1.8 1 C 2 1, 4.8 0, 4.8 -2 C 4.8 -4, 2.5 -5, -1.8 -5" fill="none" stroke="#FFFFFF" stroke-width="1.8" stroke-linecap="round" />
+    <!-- Slanted leg -->
+    <line x1="-0.8" y1="0.5" x2="4.5" y2="6.5" stroke="#FFFFFF" stroke-width="1.8" stroke-linecap="round" />
+  </g>
+
+  <!-- Sentinel Micro Dots (MoSPI AI Quality Indicator) -->
+  <circle cx="8" cy="8" r="1" fill="#F59E0B" opacity="0.6" />
+  <circle cx="56" cy="8" r="1" fill="#10B981" opacity="0.6" />
+  <circle cx="56" cy="56" r="1" fill="#38BDF8" opacity="0.6" />
+  <circle cx="8" cy="56" r="1" fill="#F59E0B" opacity="0.6" />
+</svg>

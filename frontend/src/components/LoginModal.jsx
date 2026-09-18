@@ -3,6 +3,7 @@ import { Lock, User, KeyRound, ShieldAlert, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { apiFetch, setAuthToken } from '@/lib/api';
+import BrandLogo from './BrandLogo';
 
 export default function LoginModal({ targetRole, onClose, onSuccess }) {
   const [username, setUsername] = useState('');
@@ -42,12 +43,18 @@ export default function LoginModal({ targetRole, onClose, onSuccess }) {
         setAuthToken(data.access_token);
       }
 
-      onSuccess(data.username, data.role);
+      onSuccess(data.username, data.role, data);
     } catch (err) {
       console.error('Login error:', err);
       setErrorMsg('Server connection failed. Please check backend API.');
       setIsSubmitting(false);
     }
+  };
+
+  const handleApplyPreset = (u, p) => {
+    setUsername(u);
+    setPassword(p);
+    setErrorMsg('');
   };
 
   return (
@@ -63,8 +70,13 @@ export default function LoginModal({ targetRole, onClose, onSuccess }) {
           <X className="w-4 h-4" />
         </button>
 
+        {/* Brand Logo Identity */}
+        <div className="mb-4 pb-3 border-b border-slate-100 dark:border-slate-800">
+          <BrandLogo size="compact" showTagline={true} />
+        </div>
+
         {/* Header */}
-        <div className="flex items-center gap-3 mb-5">
+        <div className="flex items-center gap-3 mb-4">
           <div className="p-3 rounded-xl bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 border border-indigo-100 dark:border-indigo-900">
             <Lock className="w-6 h-6" />
           </div>
@@ -75,6 +87,52 @@ export default function LoginModal({ targetRole, onClose, onSuccess }) {
             <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
               Login required for <span className="font-semibold text-indigo-600 dark:text-indigo-400">{targetRole}</span> access
             </p>
+          </div>
+        </div>
+
+        {/* Quick Demo Credentials Pill Bar */}
+        <div className="mb-4 p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/80 dark:border-slate-700/80 space-y-1.5">
+          <div className="text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 flex items-center justify-between">
+            <span>Quick Demo Credentials</span>
+            <span className="text-[9px] font-normal text-slate-400">Click to autofill</span>
+          </div>
+          <div className="grid grid-cols-3 gap-1.5">
+            <button
+              type="button"
+              onClick={() => handleApplyPreset('admin', 'Admin@MPLADS2026!')}
+              className={`px-2 py-1 rounded-lg text-[11px] font-medium border text-left transition-colors cursor-pointer ${
+                username === 'admin'
+                  ? 'bg-amber-100/90 border-amber-300 text-amber-900 dark:bg-amber-950/60 dark:border-amber-700 dark:text-amber-200'
+                  : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 hover:border-slate-300 text-slate-700 dark:text-slate-300'
+              }`}
+            >
+              <span className="block font-bold truncate">Admin</span>
+              <span className="text-[10px] text-slate-400 truncate block">MoSPI Reviewer</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => handleApplyPreset('auditor', 'Auditor@MPLADS2026!')}
+              className={`px-2 py-1 rounded-lg text-[11px] font-medium border text-left transition-colors cursor-pointer ${
+                username === 'auditor'
+                  ? 'bg-indigo-100/90 border-indigo-300 text-indigo-900 dark:bg-indigo-950/60 dark:border-indigo-700 dark:text-indigo-200'
+                  : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 hover:border-slate-300 text-slate-700 dark:text-slate-300'
+              }`}
+            >
+              <span className="block font-bold truncate">Auditor</span>
+              <span className="text-[10px] text-slate-400 truncate block">Kota District</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => handleApplyPreset('mp', 'MP@MPLADS2026!')}
+              className={`px-2 py-1 rounded-lg text-[11px] font-medium border text-left transition-colors cursor-pointer ${
+                username === 'mp'
+                  ? 'bg-emerald-100/90 border-emerald-300 text-emerald-900 dark:bg-emerald-950/60 dark:border-emerald-700 dark:text-emerald-200'
+                  : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 hover:border-slate-300 text-slate-700 dark:text-slate-300'
+              }`}
+            >
+              <span className="block font-bold truncate">MP</span>
+              <span className="text-[10px] text-slate-400 truncate block">Shri Kota Rep.</span>
+            </button>
           </div>
         </div>
 

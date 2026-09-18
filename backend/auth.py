@@ -19,9 +19,10 @@ from backend.database import users
 
 ROLE_MOSPI_REVIEWER = "MoSPI Reviewer"
 ROLE_DISTRICT_AUDITOR = "District Authority Auditor"
+ROLE_MP = "Member of Parliament"
 ROLE_PUBLIC_TIER = "Read-Only Public Tier"
 
-VALID_ROLES = {ROLE_MOSPI_REVIEWER, ROLE_DISTRICT_AUDITOR, ROLE_PUBLIC_TIER}
+VALID_ROLES = {ROLE_MOSPI_REVIEWER, ROLE_DISTRICT_AUDITOR, ROLE_MP, ROLE_PUBLIC_TIER}
 DEFAULT_ROLE = ROLE_PUBLIC_TIER
 
 oauth2_scheme = OAuth2PasswordBearer(
@@ -322,3 +323,30 @@ def require_mospi_admin_role(
             detail="Access forbidden: Only MoSPI Reviewers can perform governance and sync operations."
         )
     return role
+
+
+def require_mp_or_admin_role(
+    user: dict = Depends(get_current_user)
+) -> dict:
+    """Restricts access to Members of Parliament or MoSPI Reviewers (Admin)."""
+    role = user.get("role", "")
+    if role not in {ROLE_MP, ROLE_MOSPI_REVIEWER}:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Access forbidden: Only Members of Parliament or Admins can submit official responses."
+        )
+    return user
+
+
+def require_auditor_or_admin_role(
+    user: dict = Depends(get_current_user)
+) -> dict:
+    """Restricts access to District Authority Auditors or MoSPI Reviewers."""
+    role = user.get("role", "")
+    if role not in {ROLE_DISTRICT_AUDITOR, ROLE_MOSPI_REVIEWER}:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Access forbidden: Only District Auditors or Admins may record audit findings."
+        )
+    return user
+

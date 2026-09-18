@@ -18,9 +18,10 @@ env/
 *.db
 *.db-shm
 *.db-wal
-*.log
 data/*.csv
 !data/.gitkeep
+!data/constituency_credentials.csv
+!data/constituency_credentials.json
 
 # Documentation and audit scan artifacts
 docs/
@@ -39,6 +40,7 @@ pnpm-debug.log*
 .vscode/
 .idea/
 .claude/
+.agents/
 .DS_Store
 Thumbs.db
 
@@ -51,3 +53,6 @@ Gemini_Generated_Image_*.png
 # Local agent scan state
 .mimosa/
 scratch/
+scratch_test.py
+gstack-repo/
+ui-ux-pro-max-repo/

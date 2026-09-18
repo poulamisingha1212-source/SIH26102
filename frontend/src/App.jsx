@@ -7,16 +7,36 @@ import CasePacketModal from './components/CasePacketModal';
 import PortfolioOverview from './components/PortfolioOverview';
 import MPDirectory from './components/MPDirectory';
 import StatesView from './components/StatesView';
-import CompareView from './components/CompareView';
 import MPProfileModal from './components/MPProfileModal';
+import DistrictAuditorDashboard from './components/dashboard/DistrictAuditorDashboard';
+import MPDashboard from './components/dashboard/MPDashboard';
 import { Toaster } from '@/components/ui/sonner';
 import { DotPattern } from '@/components/magicui/dot-pattern';
 import { apiFetch, clearAuthToken } from '@/lib/api';
+import BrandLogo from './components/BrandLogo';
 
 export default function App() {
   const [activeTab, setActiveTab] = useState('overview');
   const [currentRole, setCurrentRole] = useState('Read-Only Public Tier');
   const [loggedInUser, setLoggedInUser] = useState('');
+  const [userProfile, setUserProfile] = useState(null);
+
+  // Restore user session if token exists
+  useEffect(() => {
+    apiFetch('/api/auth/me')
+      .then((res) => {
+        if (res.ok) return res.json();
+        return null;
+      })
+      .then((profile) => {
+        if (profile && profile.username) {
+          setUserProfile(profile);
+          setCurrentRole(profile.role);
+          setLoggedInUser(profile.username);
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   // Login modal state
   const [pendingRole, setPendingRole] = useState(null);
@@ -26,6 +46,7 @@ export default function App() {
       clearAuthToken();
       setCurrentRole('Read-Only Public Tier');
       setLoggedInUser('');
+      setUserProfile(null);
       toast.info('Switched to Read-Only Public Tier');
     } else {
       if (loggedInUser && currentRole === selectedRole) {
@@ -35,10 +56,12 @@ export default function App() {
     }
   };
 
-  const handleLoginSuccess = (uname, role) => {
+  const handleLoginSuccess = (uname, role, profileData) => {
     setCurrentRole(role);
     setLoggedInUser(uname);
+    setUserProfile(profileData || { username: uname, role });
     setPendingRole(null);
+    setActiveTab('overview');
     toast.success(`Welcome ${uname}! Authenticated as ${role}`);
   };
 
@@ -46,6 +69,7 @@ export default function App() {
     clearAuthToken();
     setCurrentRole('Read-Only Public Tier');
     setLoggedInUser('');
+    setUserProfile(null);
     toast.info('Logged out to Public Tier');
   };
 
@@ -299,6 +323,7 @@ export default function App() {
         house={house}
         setHouse={setHouse}
         loggedInUser={loggedInUser}
+        userProfile={userProfile}
         onLogout={handleLogout}
       />
 
@@ -346,23 +371,31 @@ export default function App() {
           />
         )}
 
-        {activeTab === 'compare' && (
-          <CompareView
-            house={house}
-            onOpenMP={handleOpenMP}
-          />
-        )}
-
         {activeTab === 'overview' && (
-          <PortfolioOverview
-            stats={stats}
-            house={house}
-            syncStatus={syncStatus}
-            onTriggerSync={handleTriggerSync}
-            isSyncing={isSyncing}
-            currentRole={currentRole}
-            onFilterByEntity={handleFilterByEntity}
-          />
+          currentRole === 'Member of Parliament' ? (
+            <MPDashboard
+              userProfile={userProfile}
+              currentRole={currentRole}
+              onSelectWork={handleSelectWork}
+            />
+          ) : currentRole === 'District Authority Auditor' ? (
+            <DistrictAuditorDashboard
+              userProfile={userProfile}
+              currentRole={currentRole}
+              onSelectWork={handleSelectWork}
+              onOpenMP={handleOpenMP}
+            />
+          ) : (
+            <PortfolioOverview
+              stats={stats}
+              house={house}
+              syncStatus={syncStatus}
+              onTriggerSync={handleTriggerSync}
+              isSyncing={isSyncing}
+              currentRole={currentRole}
+              onFilterByEntity={handleFilterByEntity}
+            />
+          )
         )}
 
 
@@ -397,14 +430,14 @@ export default function App() {
       )}
 
       {/* Footer */}
-      <footer className="border-t border-slate-200/80 bg-white/60 backdrop-blur-xs py-5 text-xs text-slate-500 mt-auto">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 flex flex-col sm:flex-row items-center justify-between gap-2.5 text-center sm:text-left">
-          <div className="flex items-center gap-2 flex-wrap justify-center sm:justify-start">
-            <span className="font-semibold text-slate-700">JanNidhi</span>
-            <span className="text-slate-300">•</span>
-            <span>Ministry of Statistics and Programme Implementation (MoSPI)</span>
+      <footer className="border-t border-slate-200/80 bg-white/60 dark:bg-slate-950/60 backdrop-blur-xs py-4 text-xs text-slate-500 mt-auto">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-center sm:text-left">
+          <div className="flex items-center gap-3 flex-wrap justify-center sm:justify-start">
+            <BrandLogo size="compact" showTagline={false} />
+            <span className="text-slate-300 dark:text-slate-700">•</span>
+            <span className="text-slate-600 dark:text-slate-400 font-medium">Ministry of Statistics and Programme Implementation (MoSPI)</span>
           </div>
-          <p className="text-[11px] text-slate-500">
+          <p className="text-[11px] text-slate-500 dark:text-slate-400">
             Decision Support System — Risk Scores are audit prioritization indicators, not definitive fraud verdicts.
           </p>
         </div>

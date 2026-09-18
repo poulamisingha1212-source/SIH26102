@@ -651,7 +651,7 @@ export default function CasePacketModal({
                       {isFetchingLocation ? (
                         <div className="flex items-center gap-2 text-indigo-600 dark:text-indigo-400 py-1">
                           <Loader2 className="w-4 h-4 animate-spin shrink-0" />
-                          <span className="text-xs font-medium">Acquiring GPS ground coordinates...</span>
+                          <span className="text-xs font-medium">Acquiring GPS ground coordinates…</span>
                         </div>
                       ) : pubLocation ? (
                         <div className="space-y-1.5">
@@ -755,7 +755,7 @@ export default function CasePacketModal({
                         className="h-9 px-5 rounded-xl text-xs font-semibold bg-indigo-600 hover:bg-indigo-700 text-white gap-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
                       >
                         {isSubmittingPublicReview ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Send className="w-3.5 h-3.5" />}
-                        <span>{isSubmittingPublicReview ? 'Submitting...' : 'Submit Verification'}</span>
+                        <span>{isSubmittingPublicReview ? 'Submitting…' : 'Submit Verification'}</span>
                       </Button>
                     </div>
                   </div>

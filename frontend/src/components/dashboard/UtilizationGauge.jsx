@@ -37,14 +37,14 @@ export default function UtilizationGauge({ utilization = 0, title = 'Fund Utiliz
   }), []);
 
   return (
-    <Card className="glass-panel p-5 rounded-2xl overflow-hidden h-full flex flex-col">
+    <Card className="glass-panel p-5 rounded-xl overflow-hidden h-full flex flex-col border border-border/80">
       <h3 className="text-sm font-bold uppercase tracking-wider">{title}</h3>
 
       {/* Arc + percentage readout centred in the semicircle */}
       <div className="relative flex-1 min-h-[190px] mt-2">
         <Doughnut data={data} options={options} />
         <div className="absolute inset-x-0 bottom-0 text-center pointer-events-none">
-          <div className="text-4xl font-extrabold font-[Outfit] tracking-tight" style={{ color }}>
+          <div className="text-4xl font-black font-mono tabular-nums tracking-tight" style={{ color }}>
             {pct.toFixed(1)}%
           </div>
         </div>

@@ -2,35 +2,39 @@ const API_BASE_URL = (import.meta.env.VITE_API_URL || '').replace(/\/$/, '');
 
 let _memoryToken = null;
 
+const hasSessionStorage = (() => {
+  if (typeof window === 'undefined' || !window.sessionStorage) return false;
+  try {
+    const testKey = '__mplads_test__';
+    window.sessionStorage.setItem(testKey, '1');
+    window.sessionStorage.removeItem(testKey);
+    return true;
+  } catch (err) {
+    // Storage quota disabled or restricted sandbox
+    return false;
+  }
+})();
+
 export function getAuthToken() {
   if (_memoryToken) return _memoryToken;
-  try {
-    return sessionStorage.getItem('mplads_auth_token') || null;
-  } catch {
-    return null;
-  }
+  if (!hasSessionStorage) return null;
+  return window.sessionStorage.getItem('mplads_auth_token') || null;
 }
 
 export function setAuthToken(token) {
   _memoryToken = token;
-  try {
-    if (token) {
-      sessionStorage.setItem('mplads_auth_token', token);
-    } else {
-      sessionStorage.removeItem('mplads_auth_token');
-    }
-  } catch {
-    // SessionStorage may fail in restricted sandboxes
+  if (!hasSessionStorage) return;
+  if (token) {
+    window.sessionStorage.setItem('mplads_auth_token', token);
+  } else {
+    window.sessionStorage.removeItem('mplads_auth_token');
   }
 }
 
 export function clearAuthToken() {
   _memoryToken = null;
-  try {
-    sessionStorage.removeItem('mplads_auth_token');
-  } catch {
-    // Ignore
-  }
+  if (!hasSessionStorage) return;
+  window.sessionStorage.removeItem('mplads_auth_token');
 }
 
 export function apiFetch(path, options = {}) {

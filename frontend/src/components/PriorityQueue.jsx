@@ -98,7 +98,7 @@ export default function PriorityQueue({
           <div className="relative md:col-span-2">
             <Search className="w-4 h-4 text-muted-foreground absolute left-3 top-1/2 -translate-y-1/2" />
             <Input
-              placeholder="Search Work ID, vendor, or work type..."
+              placeholder="Search Work ID, vendor, or work type…"
               value={searchInput}
               onChange={(e) => setSearchInput(e.target.value)}
               className="pl-9"
@@ -210,25 +210,25 @@ export default function PriorityQueue({
             <BlurFade key={work.work_id} delay={Math.min(idx * 0.025, 0.3)}>
               <Card
                 onClick={() => onSelectWork(work.work_id)}
-                className="glass-card p-5 rounded-2xl cursor-pointer group hover:bg-accent/40 transition-all duration-200 py-0"
+                className="glass-card p-5 rounded-xl cursor-pointer group hover:bg-accent/40 transition-all duration-200 py-0 border border-border/80"
               >
                 <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
 
                   {/* Rank, score & identification */}
                   <div className="flex items-start gap-4">
-                    <div className="flex flex-col items-center justify-center min-w-[54px] p-2 rounded-xl bg-muted/70 border">
+                    <div className="flex flex-col items-center justify-center min-w-[54px] p-2 rounded-lg bg-muted/70 border">
                       <span className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider">Rank</span>
-                      <span className="text-lg font-black text-primary">#{work.priority_rank}</span>
+                      <span className="text-lg font-black text-primary font-mono tabular-nums">#{work.priority_rank}</span>
                     </div>
 
-                    <div className={`flex flex-col items-center justify-center min-w-[62px] p-2 rounded-xl border ${scoreColorClass(work.final_risk_score)}`}>
+                    <div className={`flex flex-col items-center justify-center min-w-[62px] p-2 rounded-lg border ${scoreColorClass(work.final_risk_score)}`}>
                       <span className="text-[10px] uppercase font-bold tracking-wider opacity-80">Risk</span>
-                      <span className="text-lg font-black">{work.final_risk_score}</span>
+                      <span className="text-lg font-black font-mono tabular-nums">{work.final_risk_score}</span>
                     </div>
 
                     <div className="space-y-1">
                       <div className="flex flex-wrap items-center gap-2">
-                        <span className="font-mono text-xs font-semibold bg-muted/80 px-2 py-0.5 rounded border">
+                        <span className="font-mono tabular-nums text-xs font-semibold bg-muted/80 px-2 py-0.5 rounded border">
                           {work.work_id}
                         </span>
                         <span className={`text-xs font-semibold px-2.5 py-0.5 rounded-full ${tierBadgeClass(work.risk_tier)}`}>
@@ -267,7 +267,7 @@ export default function PriorityQueue({
 
                   {/* Signal indicator */}
                   <div className="flex items-center gap-2 self-start lg:self-center">
-                    <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold border border-amber-200 bg-amber-50/80 text-amber-800 shadow-2xs">
+                    <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold border border-amber-200 bg-amber-50/80 text-amber-800 shadow-2xs font-mono tabular-nums">
                       <AlertCircle className="w-3.5 h-3.5 text-amber-600 shrink-0" />
                       <span>{work.rule_flag_count} Anomaly Signal{work.rule_flag_count !== 1 ? 's' : ''}</span>
                     </span>
@@ -279,10 +279,10 @@ export default function PriorityQueue({
                       <span className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground block">
                         Sanctioned
                       </span>
-                      <span className="text-base font-bold font-mono">
+                      <span className="text-base font-bold font-mono tabular-nums">
                         {formatINR(work.sanction_amount)}
                       </span>
-                      <span className="text-[10px] text-muted-foreground block">
+                      <span className="text-[10px] text-muted-foreground block font-mono tabular-nums">
                         Disbursed: {formatINR(work.total_fund_disbursed)}
                       </span>
                     </div>
@@ -309,7 +309,7 @@ export default function PriorityQueue({
 
       {/* Pagination */}
       {totalPages > 1 && (
-        <Card className="glass-panel p-4 rounded-2xl flex flex-col sm:flex-row items-center justify-between gap-4">
+        <Card className="glass-panel p-4 rounded-xl flex flex-col sm:flex-row items-center justify-between gap-4 border border-border/80">
           <div className="text-xs text-muted-foreground">
             Page <strong className="text-foreground">{page}</strong> of <strong className="text-foreground">{totalPages}</strong> ({formatNumber(totalWorks)} total records)
           </div>

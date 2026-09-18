@@ -8,23 +8,70 @@ from pymongo import ASCENDING, DESCENDING, MongoClient, ReturnDocument
 
 from backend.config import settings
 
-_client = MongoClient(
-    settings.MONGODB_URI,
-    appname="mplads-ai-sentinel",
-    # Short server-selection timeout: fail fast if MONGODB_URI is wrong so the
-    # startup error is logged immediately (Render dashboard shows it clearly).
-    serverSelectionTimeoutMS=5000,
-    connectTimeoutMS=5000,
-    # Live-sync bulk writes and long-running aggregation cursors must not
-    # time out mid-flight; the driver default (30s idle) is too tight.
-    socketTimeoutMS=600000,
-)
-db = _client[settings.MONGO_DB_NAME]
+import logging
+
+_logger = logging.getLogger("backend.database")
+is_mock = False
+
+try:
+    _client = MongoClient(
+        settings.MONGODB_URI,
+        appname="mplads-ai-sentinel",
+        serverSelectionTimeoutMS=10000,
+        connectTimeoutMS=10000,
+        socketTimeoutMS=600000,
+    )
+    # Probe to check if MongoDB is alive
+    _client.admin.command("ping")
+    db = _client[settings.MONGO_DB_NAME]
+except Exception as e:
+    if settings.ENVIRONMENT in ("development", "test"):
+        _logger.warning(
+            "Local MongoDB not reachable at %s. Falling back to in-memory mongomock for local development.",
+            settings.MONGODB_URI,
+        )
+        try:
+            import mongomock
+            from mongomock.collection import BulkOperationBuilder
+            from mongomock.aggregate import _Parser
+
+            _orig_add_replace = BulkOperationBuilder.add_replace
+            _orig_add_update = BulkOperationBuilder.add_update
+
+            def _patched_add_replace(self, selector, replacement, upsert=False, collation=None, hint=None, sort=None):
+                return _orig_add_replace(self, selector, replacement, upsert=upsert, collation=collation, hint=hint)
+
+            def _patched_add_update(self, selector, update, upsert=False, multi=False, collation=None, array_filters=None, hint=None, sort=None):
+                return _orig_add_update(self, selector, update, upsert=upsert, multi=multi, collation=collation, array_filters=array_filters, hint=hint)
+
+            BulkOperationBuilder.add_replace = _patched_add_replace
+            BulkOperationBuilder.add_update = _patched_add_update
+
+            _orig_handle_set = _Parser._handle_set_operator
+
+            def _patched_handle_set(self, operator, values):
+                if operator == "$setDifference":
+                    set1, set2 = values
+                    s1 = self.parse(set1) or []
+                    s2 = self.parse(set2) or []
+                    return [x for x in s1 if x not in s2]
+                return _orig_handle_set(self, operator, values)
+
+            _Parser._handle_set_operator = _patched_handle_set
+
+            _client = mongomock.MongoClient()
+            db = _client[settings.MONGO_DB_NAME]
+            is_mock = True
+        except ImportError:
+            raise e
+    else:
+        raise e
 
 works = db["works"]
 mp_allocations = db["mp_allocations"]
 review_logs = db["review_logs"]
 public_reviews = db["public_reviews"]
+citizen_problems = db["citizen_problems"]
 sync_logs = db["sync_logs"]
 users = db["users"]
 distributed_locks = db["distributed_locks"]
@@ -32,9 +79,10 @@ rate_limits = db["rate_limits"]
 _counters = db["counters"]
 
 
+
 def init_database(uri: str, db_name: str = None):
     """Rebind MongoClient and collections to a new URI (used by scripts and runtime overrides)."""
-    global _client, db, works, mp_allocations, review_logs, public_reviews, sync_logs, users, distributed_locks, rate_limits, _counters
+    global _client, db, works, mp_allocations, review_logs, public_reviews, citizen_problems, sync_logs, users, distributed_locks, rate_limits, _counters
     import sys
     settings.MONGODB_URI = uri
     if db_name:
@@ -51,6 +99,7 @@ def init_database(uri: str, db_name: str = None):
     mp_allocations = db["mp_allocations"]
     review_logs = db["review_logs"]
     public_reviews = db["public_reviews"]
+    citizen_problems = db["citizen_problems"]
     sync_logs = db["sync_logs"]
     users = db["users"]
     distributed_locks = db["distributed_locks"]
@@ -61,7 +110,7 @@ def init_database(uri: str, db_name: str = None):
     for mod_name in ("backend.database", "backend.services.ingestion", "backend.seeder", "backend.main", "backend.services.analytics", "backend.auth"):
         if mod_name in sys.modules:
             mod = sys.modules[mod_name]
-            for attr in ("works", "mp_allocations", "review_logs", "public_reviews", "sync_logs", "users", "distributed_locks", "rate_limits", "_counters", "db"):
+            for attr in ("works", "mp_allocations", "review_logs", "public_reviews", "citizen_problems", "sync_logs", "users", "distributed_locks", "rate_limits", "_counters", "db"):
                 if hasattr(mod, attr):
                     setattr(mod, attr, locals().get(attr, getattr(sys.modules["backend.database"], attr, None)))
 
@@ -82,6 +131,8 @@ def ensure_indexes() -> None:
     """Idempotent and resilient index creation, called at startup.
     Catches and logs index conflicts, already-existing configurations,
     or dirty duplicate data without crashing service boot."""
+    if is_mock:
+        return
     import logging
     _log = logging.getLogger(__name__)
 

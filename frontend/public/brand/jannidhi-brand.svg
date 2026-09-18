@@ -1,0 +1,115 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 280 56" width="280" height="56" fill="none">
+  <defs>
+    <!-- Background Shield / Squircle Gradient -->
+    <linearGradient id="emblemBgFull" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0F172A" />
+      <stop offset="50%" stop-color="#0A192F" />
+      <stop offset="100%" stop-color="#030712" />
+    </linearGradient>
+
+    <!-- Border Gradient with Subtle Saffron & Emerald Accent -->
+    <linearGradient id="emblemBorderFull" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#F59E0B" stop-opacity="0.9" />
+      <stop offset="40%" stop-color="#D97706" stop-opacity="0.6" />
+      <stop offset="70%" stop-color="#0284C7" stop-opacity="0.6" />
+      <stop offset="100%" stop-color="#10B981" stop-opacity="0.9" />
+    </linearGradient>
+
+    <!-- Sun Rays Gradient -->
+    <linearGradient id="sunRaysFull" x1="0%" y1="100%" x2="0%" y2="0%">
+      <stop offset="0%" stop-color="#F59E0B" stop-opacity="0.3" />
+      <stop offset="100%" stop-color="#FBBF24" stop-opacity="1" />
+    </linearGradient>
+
+    <!-- Citizens Radiant Arch Gradient -->
+    <linearGradient id="citizensGradFull" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#0284C7" />
+      <stop offset="50%" stop-color="#38BDF8" />
+      <stop offset="100%" stop-color="#10B981" />
+    </linearGradient>
+
+    <!-- Vessel Gradient -->
+    <linearGradient id="vesselGradFull" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#0369A1" />
+      <stop offset="100%" stop-color="#0F766E" />
+    </linearGradient>
+
+    <!-- Nidhi Gradient Text -->
+    <linearGradient id="nidhiTextGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#0D9488" />
+      <stop offset="100%" stop-color="#059669" />
+    </linearGradient>
+  </defs>
+
+  <!-- Group 1: Emblem Mark (Scaled to 46x46 at x=4, y=5) -->
+  <g transform="translate(4, 5)">
+    <!-- Base Squircle -->
+    <rect x="0" y="0" width="46" height="46" rx="12" fill="url(#emblemBgFull)" stroke="url(#emblemBorderFull)" stroke-width="1.2" />
+    
+    <!-- Sun Rays -->
+    <line x1="23" y1="12" x2="23" y2="7" stroke="url(#sunRaysFull)" stroke-width="1.5" stroke-linecap="round" />
+    <line x1="18.5" y1="13.5" x2="15" y2="8.5" stroke="url(#sunRaysFull)" stroke-width="1.3" stroke-linecap="round" />
+    <line x1="15" y1="16" x2="10" y2="12.5" stroke="url(#sunRaysFull)" stroke-width="1.2" stroke-linecap="round" />
+    <line x1="27.5" y1="13.5" x2="31" y2="8.5" stroke="url(#sunRaysFull)" stroke-width="1.3" stroke-linecap="round" />
+    <line x1="31" y1="16" x2="36" y2="12.5" stroke="url(#sunRaysFull)" stroke-width="1.2" stroke-linecap="round" />
+
+    <!-- 3 Citizens ("Jan") -->
+    <circle cx="23" cy="13.5" r="2.5" fill="#38BDF8" />
+    <circle cx="15.5" cy="17.5" r="2.2" fill="#60A5FA" />
+    <circle cx="30.5" cy="17.5" r="2.2" fill="#34D399" />
+
+    <!-- Arch Canopy -->
+    <path d="M 12 23 C 12 19, 17 17, 23 17 C 29 17, 34 19, 34 23 C 31 20.5, 27 19.2, 23 19.2 C 19 19.2, 15 20.5, 12 23 Z" fill="url(#citizensGradFull)" />
+
+    <!-- Sprout Leaves -->
+    <path d="M 22 26 C 18 24, 16 24, 15 25.5 C 17 28, 20 28.5, 22 27 Z" fill="#10B981" />
+    <path d="M 24 26 C 28 24, 30 24, 31 25.5 C 29 28, 26 28.5, 24 27 Z" fill="#059669" />
+    <path d="M 23 20.5 C 21 24, 22 27.5, 23 28.5 C 24 27.5, 25 24, 23 20.5 Z" fill="#34D399" />
+
+    <!-- Treasury Bowl ("Nidhi") -->
+    <path d="M 13 28.5 C 13 35, 33 35, 33 28.5 C 33 28, 13 28, 13 28.5 Z" fill="url(#vesselGradFull)" stroke="#38BDF8" stroke-width="0.7" />
+    <!-- Pedestal -->
+    <path d="M 19 35 L 27 35 L 26 37 L 20 37 Z" fill="#0369A1" />
+
+    <!-- Rupee Glyph (₹) -->
+    <g transform="translate(23, 32.2) scale(0.48)">
+      <line x1="-4.5" y1="-4.5" x2="4.5" y2="-4.5" stroke="#FFFFFF" stroke-width="1.8" stroke-linecap="round" />
+      <line x1="-4.5" y1="-2" x2="3" y2="-2" stroke="#FFFFFF" stroke-width="1.6" stroke-linecap="round" />
+      <path d="M -1.5 -4.5 L -1.5 1 C 1.8 1, 4 0, 4 -1.8 C 4 -3.6, 2.2 -4.2, -1.5 -4.2" fill="none" stroke="#FFFFFF" stroke-width="1.8" stroke-linecap="round" />
+      <line x1="-0.6" y1="0.5" x2="3.8" y2="5.5" stroke="#FFFFFF" stroke-width="1.8" stroke-linecap="round" />
+    </g>
+  </g>
+
+  <!-- Group 2: Wordmark & Typography -->
+  <!-- Main Name: JanNidhi -->
+  <text x="58" y="27" font-family="Satoshi, system-ui, -apple-system, sans-serif" font-weight="900" font-size="22" letter-spacing="-0.5px">
+    <tspan fill="#0F172A">Jan</tspan><tspan fill="url(#nidhiTextGrad)">Nidhi</tspan>
+  </text>
+
+  <!-- Golden Dot on Nidhi's 'i' -->
+  <circle cx="137.5" cy="14" r="1.6" fill="#F59E0B" />
+
+  <!-- Devanagari Script: जन निधि -->
+  <g transform="translate(152, 13)">
+    <rect x="0" y="0" width="56" height="15" rx="3.5" fill="#FEF3C7" stroke="#FDE68A" stroke-width="0.7" />
+    <text x="28" y="11" font-family="'Noto Sans Devanagari', 'DM Sans', sans-serif" font-weight="700" font-size="9.5" fill="#B45309" text-anchor="middle">जन निधि</text>
+  </g>
+
+  <!-- Subtitle Line: MPLADS AI SENTINEL • MoSPI -->
+  <g transform="translate(58, 41)">
+    <!-- Tricolor Mini Indicator -->
+    <g transform="translate(0, -6)">
+      <rect x="0" y="0" width="2" height="7" rx="1" fill="#F59E0B" />
+      <rect x="3" y="0" width="2" height="7" rx="1" fill="#CBD5E1" />
+      <rect x="6" y="0" width="2" height="7" rx="1" fill="#10B981" />
+    </g>
+    
+    <text x="14" y="0" font-family="'JetBrains Mono', monospace" font-weight="700" font-size="8.5" letter-spacing="0.1em" fill="#64748B">
+      MPLADS AI SENTINEL
+    </text>
+    <circle cx="120" cy="-2.5" r="1.5" fill="#94A3B8" />
+    <text x="127" y="0" font-family="Satoshi, system-ui, sans-serif" font-weight="800" font-size="8.5" letter-spacing="0.05em" fill="#0284C7">
+      MoSPI
+    </text>
+  </g>
+</svg>
