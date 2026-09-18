@@ -64,69 +64,17 @@ export default function PortfolioOverview({
   const medPct = stats.total_works > 0 ? ((stats.medium_risk_count / stats.total_works) * 100).toFixed(1) : 0;
   const lowPct = stats.total_works > 0 ? ((stats.low_risk_count / stats.total_works) * 100).toFixed(1) : 0;
 
-  const isAdmin = currentRole === 'MoSPI Reviewer';
-
   return (
     <div className="space-y-6">
-
-      {/* Admin Executive Command Center Banner (MoSPI Reviewer) */}
-      {isAdmin && (
-        <div className="rounded-2xl border border-amber-300 dark:border-amber-800 bg-linear-to-r from-amber-500/15 via-slate-50 to-indigo-500/10 dark:from-amber-950/40 dark:via-slate-900 dark:to-indigo-950/30 p-5 shadow-xs">
-          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-            <div className="space-y-1">
-              <div className="flex items-center gap-2 flex-wrap">
-                <span className="p-1.5 rounded-lg bg-amber-600 text-white shadow-xs">
-                  <Database className="w-5 h-5" />
-                </span>
-                <h3 className="text-lg font-bold font-display text-slate-900 dark:text-slate-100">
-                  MoSPI Executive Administration & Data Management Desk
-                </h3>
-                <Badge className="bg-amber-600 hover:bg-amber-700 text-white text-xs px-2.5 py-0.5 font-semibold">
-                  Administrator Authority
-                </Badge>
-              </div>
-              <p className="text-xs text-slate-600 dark:text-slate-400 max-w-2xl">
-                Comprehensive national oversight over all 543 Parliamentary Constituencies, State Nodal Departments, and real-time portal synchronization with mplads.mospi.gov.in.
-              </p>
-            </div>
-
-            {/* Live Sync Action & Status */}
-            <div className="flex items-center gap-3 shrink-0 flex-wrap">
-              <div className="text-right text-xs">
-                <div className="flex items-center justify-end gap-1.5 font-semibold text-slate-800 dark:text-slate-200">
-                  <span className={`w-2 h-2 rounded-full ${syncStatus?.is_data_stale ? 'bg-amber-500' : 'bg-emerald-500 animate-pulse'}`} />
-                  <span>Portal Sync: {syncStatus?.is_data_stale ? 'Sync Recommended' : 'Online & Live'}</span>
-                </div>
-                <span className="text-[11px] text-slate-400 block mt-0.5">
-                  Last: {syncStatus?.last_sync_time ? new Date(syncStatus.last_sync_time).toLocaleTimeString('en-IN') : 'Recent'} • {stats.total_works?.toLocaleString('en-IN')} works indexed
-                </span>
-              </div>
-
-              {onTriggerSync && (
-                <Button
-                  onClick={() => onTriggerSync('live')}
-                  disabled={isSyncing}
-                  className="h-9 px-4 rounded-xl bg-amber-600 hover:bg-amber-700 text-white text-xs font-semibold shadow-xs gap-2 cursor-pointer"
-                >
-                  <RefreshCw className={`w-3.5 h-3.5 ${isSyncing ? 'animate-spin' : ''}`} />
-                  <span>{isSyncing ? 'Synchronizing Ingestion…' : 'Sync Live Portal Data'}</span>
-                </Button>
-              )}
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* Dashboard title + house scope */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
         <div>
           <h2 className="text-2xl font-bold font-display tracking-tight text-foreground">
-            {isAdmin ? 'National MPLADS Administration Overview' : 'MPLADS Transparency Dashboard'}
+            MPLADS Transparency Dashboard
           </h2>
           <p className="text-xs text-muted-foreground mt-0.5">
-            {isAdmin
-              ? 'Complete national expenditure ledger, AI anomaly prioritization, and district data feeds.'
-              : 'Overview of the Member of Parliament Local Area Development Scheme across India'}
+            Public expenditure ledger, fund utilization analytics, and AI anomaly tracking across Indian Parliamentary constituencies
           </p>
         </div>
         <Badge variant="outline" className="gap-1.5 w-fit border-primary/30 bg-primary/5 text-primary text-xs font-semibold">

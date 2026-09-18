@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import {
   Landmark, Building, Users, AlertTriangle, CheckCircle2,
   TrendingUp, Wallet, MessageSquare, Send, Calendar,
-  MapPin, Clock, ArrowUpRight, Award, ShieldCheck, ChevronRight
+  MapPin, Clock, ArrowUpRight, Award, ShieldCheck, ChevronRight,
+  Filter, Search
 } from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -18,17 +19,27 @@ export default function MPDashboard({
   currentRole = 'Member of Parliament',
   onSelectWork = null,
 }) {
-  const mpName = userProfile?.mp_name || 'Shri Kota Representative';
-  const constituency = userProfile?.constituency || 'Kota';
-  const state = userProfile?.state || 'Rajasthan';
+  const initialConstituency = userProfile?.constituency || 'Kota';
+  const initialState = userProfile?.state || 'Rajasthan';
 
+  const [selectedConstituency, setSelectedConstituency] = useState(initialConstituency);
+  const [selectedState, setSelectedState] = useState(initialState);
   const [dashboardData, setDashboardData] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [activeMPTab, setActiveMPTab] = useState('grievances'); // 'grievances' | 'works' | 'utilization'
 
   useEffect(() => {
+    if (userProfile?.constituency) {
+      setSelectedConstituency(userProfile.constituency);
+    }
+    if (userProfile?.state) {
+      setSelectedState(userProfile.state);
+    }
+  }, [userProfile]);
+
+  useEffect(() => {
     setIsLoading(true);
-    apiFetch(`/api/dashboard/constituency?constituency=${encodeURIComponent(constituency)}&state=${encodeURIComponent(state)}`)
+    apiFetch(`/api/dashboard/constituency?constituency=${encodeURIComponent(selectedConstituency)}&state=${encodeURIComponent(selectedState)}`)
       .then((res) => {
         if (!res.ok) throw new Error('Failed to load constituency data');
         return res.json();
@@ -41,13 +52,20 @@ export default function MPDashboard({
         console.error('Error fetching MP dashboard data:', err);
         setIsLoading(false);
       });
-  }, [constituency, state]);
+  }, [selectedConstituency, selectedState]);
 
   const stats = dashboardData?.stats || dashboardData || {};
   const mp = dashboardData?.mp || {};
+  const mpName = userProfile?.mp_name || mp.name || 'Shri Om Birla';
+  const constituency = selectedConstituency || mp.constituency || 'Kota';
+  const state = selectedState || mp.state || 'Rajasthan';
   const highRiskWorks = dashboardData?.high_risk_works || [];
   const problemsSummary = dashboardData?.problems_summary || {};
-  const utilizationPct = stats.utilization_pct ?? 52.2;
+  const totalSanctioned = stats.total_sanctioned_amount ?? stats.total_sanctioned ?? 0;
+  const totalDisbursed = stats.total_disbursed_amount ?? stats.total_disbursed ?? 0;
+  const unspentBalance = Math.max(0, totalSanctioned - totalDisbursed);
+  const entitlement = mp.entitlement || 250000000;
+  const utilizationPct = stats.utilization_pct ?? (entitlement > 0 ? ((totalSanctioned / entitlement) * 100).toFixed(1) : 0);
 
   return (
     <div className="space-y-6">
@@ -73,9 +91,9 @@ export default function MPDashboard({
               <p className="text-xs text-slate-600 dark:text-slate-400 flex items-center gap-2 flex-wrap">
                 <span>Constituency: <strong className="text-slate-900 dark:text-slate-200">{constituency}</strong> ({state})</span>
                 <span>•</span>
-                <span>Party: <strong>{mp.party || 'Bharatiya Janata Party'}</strong></span>
+                <span>Party: <strong>{mp.party || 'Lok Sabha Representative'}</strong></span>
                 <span>•</span>
-                <span>Term: {mp.terms || '2024–present'}</span>
+                <span>Term: {mp.terms || mp.term || '18th Lok Sabha (2024–present)'}</span>
               </p>
             </div>
           </div>
@@ -141,9 +159,9 @@ export default function MPDashboard({
             <TrendingUp className="w-4 h-4 text-primary" />
           </div>
           <div className="text-2xl font-bold font-mono text-slate-900 dark:text-slate-100">
-            {isLoading ? <Skeleton className="h-8 w-20" /> : `₹${formatNumber(Math.round((stats.total_sanctioned_amount || 0) / 1e7))} Cr`}
+            {isLoading ? <Skeleton className="h-8 w-20" /> : formatINR(totalSanctioned)}
           </div>
-          <p className="text-[11px] text-slate-400 mt-1">Sanctioned via District Collector</p>
+          <p className="text-[11px] text-slate-400 mt-1">Sanctioned via District Authority</p>
         </Card>
 
         <Card className="p-4 border-slate-200 dark:border-slate-800 shadow-2xs">
@@ -152,7 +170,7 @@ export default function MPDashboard({
             <Wallet className="w-4 h-4 text-emerald-500" />
           </div>
           <div className="text-2xl font-bold font-mono text-emerald-600 dark:text-emerald-400">
-            {isLoading ? <Skeleton className="h-8 w-20" /> : `₹${formatNumber(Math.round((stats.total_disbursed_amount || 0) / 1e7))} Cr`}
+            {isLoading ? <Skeleton className="h-8 w-20" /> : formatINR(totalDisbursed)}
           </div>
           <p className="text-[11px] text-slate-400 mt-1">Payments disbursed to vendors</p>
         </Card>
@@ -166,19 +184,19 @@ export default function MPDashboard({
             {isLoading ? <Skeleton className="h-8 w-14" /> : formatNumber(problemsSummary.total || 0)}
           </div>
           <p className="text-[11px] text-slate-400 mt-1">
-            {problemsSummary.pending || 0} pending • {problemsSummary.action_initiated || 0} responded
+            {problemsSummary.pending || 0} pending • {problemsSummary.action_initiated || 0} in action • {problemsSummary.resolved || 0} resolved
           </p>
         </Card>
       </div>
 
-      {/* Tab: Grievances Raised by the People (Default and primary for MP) */}
+      {/* Tab: Grievances Raised by the People */}
       {activeMPTab === 'grievances' && (
         <div className="space-y-4">
           <div className="p-4 rounded-xl bg-indigo-50/60 dark:bg-indigo-950/30 border border-indigo-100 dark:border-indigo-900/60 flex items-start gap-3">
             <Send className="w-5 h-5 text-indigo-600 mt-0.5 shrink-0" />
             <div className="text-xs text-indigo-950 dark:text-indigo-200">
               <strong className="font-semibold block mb-0.5">MP Official Response Protocol:</strong>
-              As the elected representative for {constituency}, you can review each constituent issue below, click <strong>"Dispatch MP Official Reply"</strong>, and provide executive directives or status updates. Your response is published transparently on the citizen grievance ledger.
+              As the elected representative for {constituency}, you can review each constituent issue below, click <strong>"Dispatch MP Official Reply"</strong>, and provide executive directives or status updates. Your official response is instantly visible to constituents and district auditors.
             </div>
           </div>
 
@@ -201,11 +219,11 @@ export default function MPDashboard({
                 Recommended Works in {constituency} Constituency
               </CardTitle>
               <p className="text-xs text-slate-500 mt-0.5">
-                Overview of projects funded under the MP's annual entitlement
+                Overview of community projects funded under MP local area entitlement
               </p>
             </div>
             <Badge variant="outline" className="text-xs font-semibold">
-              {highRiskWorks.length} Critical Items
+              {highRiskWorks.length} Priority Works
             </Badge>
           </CardHeader>
           <CardContent className="p-0">
@@ -213,49 +231,64 @@ export default function MPDashboard({
               <table className="w-full text-left text-xs">
                 <thead className="bg-slate-50 dark:bg-slate-800/60 border-b border-slate-200 dark:border-slate-800 text-slate-500 font-semibold">
                   <tr>
-                    <th className="py-2.5 px-4">Work ID & Details</th>
+                    <th className="py-2.5 px-4">Work ID & Description</th>
                     <th className="py-2.5 px-4">Category</th>
                     <th className="py-2.5 px-4">Sanctioned Amount</th>
-                    <th className="py-2.5 px-4">Priority Risk Tier</th>
+                    <th className="py-2.5 px-4">Disbursed Amount</th>
+                    <th className="py-2.5 px-4">Priority Risk Score</th>
                     <th className="py-2.5 px-4 text-right">Action</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-                  {highRiskWorks.map((w) => (
-                    <tr key={w.work_id} className="hover:bg-slate-50/80 dark:hover:bg-slate-800/40 transition-colors">
-                      <td className="py-3 px-4 max-w-sm">
-                        <span className="font-mono font-bold text-slate-900 dark:text-slate-100 block">
-                          {w.work_id}
-                        </span>
-                        <span className="text-slate-600 dark:text-slate-400 line-clamp-1 mt-0.5">
-                          {w.work_description}
-                        </span>
-                      </td>
-                      <td className="py-3 px-4">
-                        <Badge variant="outline" className="text-[10px] bg-slate-50">
-                          {w.work_category}
-                        </Badge>
-                      </td>
-                      <td className="py-3 px-4 font-mono font-semibold text-slate-800 dark:text-slate-200">
-                        {formatINR(w.sanctioned_amount)}
-                      </td>
-                      <td className="py-3 px-4">
-                        <span className="inline-flex items-center gap-1 font-mono font-bold px-2 py-0.5 rounded text-xs bg-rose-50 text-rose-700 border border-rose-200">
-                          Risk Score {w.risk_score}
-                        </span>
-                      </td>
-                      <td className="py-3 px-4 text-right">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => onSelectWork && onSelectWork(w.work_id)}
-                          className="h-7 px-2.5 text-xs rounded-lg text-indigo-700 border-indigo-200 hover:bg-indigo-50 cursor-pointer"
-                        >
-                          View Details
-                        </Button>
+                  {highRiskWorks.length === 0 ? (
+                    <tr>
+                      <td colSpan={6} className="py-8 text-center text-slate-400">
+                        No flagged works found for {constituency}. All community projects are proceeding within statutory guidelines.
                       </td>
                     </tr>
-                  ))}
+                  ) : (
+                    highRiskWorks.map((w) => (
+                      <tr key={w.work_id} className="hover:bg-slate-50/80 dark:hover:bg-slate-800/40 transition-colors">
+                        <td className="py-3 px-4 max-w-sm">
+                          <span className="font-mono font-bold text-slate-900 dark:text-slate-100 block">
+                            {w.work_id}
+                          </span>
+                          <span className="text-slate-600 dark:text-slate-400 line-clamp-1 mt-0.5" title={w.work_description || w.work_type}>
+                            {w.work_description || w.work_title || w.work_type || 'Community Development Work'}
+                          </span>
+                          <span className="text-[10px] text-slate-400 block font-mono">
+                            Vendor: {w.primary_vendor || w.ida || 'District Implementing Agency'}
+                          </span>
+                        </td>
+                        <td className="py-3 px-4">
+                          <Badge variant="outline" className="text-[10px] bg-slate-50 border-slate-200">
+                            {w.work_category || w.work_type || 'Community Infrastructure'}
+                          </Badge>
+                        </td>
+                        <td className="py-3 px-4 font-mono font-semibold text-slate-800 dark:text-slate-200">
+                          {formatINR(w.sanctioned_amount ?? w.sanction_amount)}
+                        </td>
+                        <td className="py-3 px-4 font-mono text-emerald-600 dark:text-emerald-400">
+                          {formatINR(w.total_disbursed ?? w.total_fund_disbursed)}
+                        </td>
+                        <td className="py-3 px-4">
+                          <span className="inline-flex items-center gap-1 font-mono font-bold px-2 py-0.5 rounded text-xs bg-rose-50 text-rose-700 border border-rose-200">
+                            Risk {w.risk_score ?? w.final_risk_score ?? 0}
+                          </span>
+                        </td>
+                        <td className="py-3 px-4 text-right">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => onSelectWork && onSelectWork(w.work_id)}
+                            className="h-7 px-2.5 text-xs rounded-lg text-indigo-700 border-indigo-200 hover:bg-indigo-50 cursor-pointer"
+                          >
+                            Inspect Details
+                          </Button>
+                        </td>
+                      </tr>
+                    ))
+                  )}
                 </tbody>
               </table>
             </div>
@@ -276,23 +309,29 @@ export default function MPDashboard({
                 <span>Fund Utilization Rate</span>
                 <span className="font-bold font-mono text-emerald-600">{utilizationPct}%</span>
               </div>
-              <Progress value={Math.min(utilizationPct, 100)} className="h-3" />
+              <Progress value={Math.min(Number(utilizationPct) || 0, 100)} className="h-3" />
               <p className="text-[11px] text-slate-400 leading-relaxed">
                 Represents disbursed contractor vouchers against authorized administrative sanctions in {constituency}.
               </p>
             </div>
 
-            <div className="pt-3 border-t border-slate-100 dark:border-slate-800 grid grid-cols-2 gap-3 text-xs">
-              <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/50">
-                <span className="text-slate-400 block text-[11px]">Total Sanctioned</span>
-                <strong className="text-sm font-bold font-mono text-slate-800 dark:text-slate-200">
-                  ₹{formatNumber(Math.round((stats.total_sanctioned_amount || 0) / 1e7))} Cr
+            <div className="pt-3 border-t border-slate-100 dark:border-slate-800 grid grid-cols-3 gap-2.5 text-xs">
+              <div className="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/50">
+                <span className="text-slate-400 block text-[10px]">Entitlement</span>
+                <strong className="text-xs font-bold font-mono text-slate-800 dark:text-slate-200">
+                  {formatINR(entitlement)}
                 </strong>
               </div>
-              <div className="p-3 rounded-xl bg-emerald-50/50 dark:bg-emerald-950/20 border border-emerald-100 dark:border-emerald-900/40">
-                <span className="text-emerald-700 dark:text-emerald-300 block text-[11px]">Disbursed</span>
-                <strong className="text-sm font-bold font-mono text-emerald-800 dark:text-emerald-200">
-                  ₹{formatNumber(Math.round((stats.total_disbursed_amount || 0) / 1e7))} Cr
+              <div className="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/50">
+                <span className="text-slate-400 block text-[10px]">Sanctioned</span>
+                <strong className="text-xs font-bold font-mono text-slate-800 dark:text-slate-200">
+                  {formatINR(totalSanctioned)}
+                </strong>
+              </div>
+              <div className="p-2.5 rounded-xl bg-emerald-50/50 dark:bg-emerald-950/20 border border-emerald-100 dark:border-emerald-900/40">
+                <span className="text-emerald-700 dark:text-emerald-300 block text-[10px]">Disbursed</span>
+                <strong className="text-xs font-bold font-mono text-emerald-800 dark:text-emerald-200">
+                  {formatINR(totalDisbursed)}
                 </strong>
               </div>
             </div>
@@ -306,7 +345,7 @@ export default function MPDashboard({
             <ul className="space-y-2.5 text-xs text-slate-600 dark:text-slate-300">
               <li className="flex items-start gap-2">
                 <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0 mt-0.5" />
-                <span>Quarterly coordination meeting completed with District Collector.</span>
+                <span>Quarterly coordination meeting scheduled with District Collector.</span>
               </li>
               <li className="flex items-start gap-2">
                 <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0 mt-0.5" />
@@ -314,11 +353,11 @@ export default function MPDashboard({
               </li>
               <li className="flex items-start gap-2">
                 <Clock className="w-4 h-4 text-amber-500 shrink-0 mt-0.5" />
-                <span>{problemsSummary.pending || 0} constituent complaints awaiting MP response.</span>
+                <span>{problemsSummary.pending || 0} constituent complaints awaiting MP official response.</span>
               </li>
               <li className="flex items-start gap-2">
                 <AlertTriangle className="w-4 h-4 text-rose-500 shrink-0 mt-0.5" />
-                <span>{stats.high_risk_count || 0} works flagged for audit documentation review.</span>
+                <span>{highRiskWorks.length} community works flagged for documentation or field review.</span>
               </li>
             </ul>
           </Card>

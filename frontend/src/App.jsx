@@ -10,6 +10,7 @@ import StatesView from './components/StatesView';
 import MPProfileModal from './components/MPProfileModal';
 import DistrictAuditorDashboard from './components/dashboard/DistrictAuditorDashboard';
 import MPDashboard from './components/dashboard/MPDashboard';
+import AdminDashboard from './components/dashboard/AdminDashboard';
 import CitizenGrievancesView from './components/CitizenGrievancesView';
 import { Toaster } from '@/components/ui/sonner';
 import { DotPattern } from '@/components/magicui/dot-pattern';
@@ -385,6 +386,17 @@ export default function App() {
               currentRole={currentRole}
               onSelectWork={handleSelectWork}
               onOpenMP={handleOpenMP}
+            />
+          ) : currentRole === 'MoSPI Reviewer' ? (
+            <AdminDashboard
+              stats={stats}
+              house={house}
+              syncStatus={syncStatus}
+              onTriggerSync={handleTriggerSync}
+              isSyncing={isSyncing}
+              onSelectWork={handleSelectWork}
+              onFilterByEntity={handleFilterByEntity}
+              onNavigateTab={setActiveTab}
             />
           ) : (
             <PortfolioOverview

@@ -1273,38 +1273,46 @@ def get_constituency_dashboard(
     if not target_const:
         target_const = "Kota"
 
-    # Aggregations on works for this constituency
+    # Aggregations on works for this constituency with fuzzy fallback
+    clean_const = re.sub(r"\(.*?\)", "", target_const).strip()
     match_q = {"constituency": {"$regex": f"^{re.escape(target_const)}$", "$options": "i"}}
     matched_works = list(works.find(match_q))
 
-    # If exact match has 0 works, fall back to relaxed regex
+    # If exact match has 0 works, fall back to prefix/clean regex
     if not matched_works:
-        match_q = {"constituency": {"$regex": re.escape(target_const), "$options": "i"}}
+        match_q = {"constituency": {"$regex": f"^{re.escape(clean_const)}", "$options": "i"}}
+        matched_works = list(works.find(match_q))
+    if not matched_works:
+        match_q = {"constituency": {"$regex": re.escape(clean_const), "$options": "i"}}
         matched_works = list(works.find(match_q))
 
     total_works = len(matched_works)
-    total_sanctioned = sum(w.get("sanction_amount", 0) for w in matched_works)
-    total_disbursed = sum(w.get("total_fund_disbursed", 0) for w in matched_works)
+    total_sanctioned = sum(float(w.get("sanction_amount") or 0) for w in matched_works)
+    total_disbursed = sum(float(w.get("total_fund_disbursed") or 0) for w in matched_works)
     completed_works = sum(1 for w in matched_works if w.get("work_status") in ("Completed", "Work Completed"))
     pending_works = total_works - completed_works
     high_risk_works = [w for w in matched_works if w.get("risk_tier") == "High Risk - Review"]
     high_risk_count = len(high_risk_works)
-    avg_risk = sum(w.get("final_risk_score", 0) for w in matched_works) / max(1, total_works)
+    avg_risk = sum(float(w.get("final_risk_score") or 0) for w in matched_works) / max(1, total_works)
 
     # Fetch matching MP profile
     mp_doc = (
         mp_allocations.find_one({"constituency": {"$regex": f"^{re.escape(target_const)}$", "$options": "i"}})
-        or mp_allocations.find_one({"constituency": {"$regex": re.escape(target_const), "$options": "i"}})
+        or mp_allocations.find_one({"constituency": {"$regex": f"^{re.escape(clean_const)}", "$options": "i"}})
+        or mp_allocations.find_one({"constituency": {"$regex": re.escape(clean_const), "$options": "i"}})
     )
     mp_info = None
     if mp_doc:
         mp_alloc = float(mp_doc.get("allocated_amount") or mp_doc.get("allocated") or 250000000.0)
         mp_info = {
-            "name": mp_doc.get("mp_name"),
-            "constituency": mp_doc.get("constituency"),
-            "state": mp_doc.get("state"),
-            "house": mp_doc.get("house"),
-            "term": mp_doc.get("term"),
+            "name": mp_doc.get("mp_name") or "Elected Representative",
+            "mp_name": mp_doc.get("mp_name") or "Elected Representative",
+            "constituency": mp_doc.get("constituency") or target_const,
+            "state": mp_doc.get("state") or "India",
+            "house": mp_doc.get("house") or "18th Lok Sabha",
+            "term": mp_doc.get("term") or mp_doc.get("house") or "18th Lok Sabha (2024–present)",
+            "terms": mp_doc.get("term") or "2024–present",
+            "party": mp_doc.get("party") or "Lok Sabha Representative",
             "entitlement": float(mp_doc.get("entitlement") or 250000000.0),
             "allocated": mp_alloc,
             "allocated_amount": mp_alloc,
@@ -1314,11 +1322,14 @@ def get_constituency_dashboard(
     elif matched_works:
         first_w = matched_works[0]
         mp_info = {
-            "name": first_w.get("mp_name", "Constituency Representative"),
+            "name": first_w.get("mp_name") or "Constituency Representative",
+            "mp_name": first_w.get("mp_name") or "Constituency Representative",
             "constituency": target_const,
             "state": first_w.get("state", "Rajasthan"),
             "house": first_w.get("house", "Lok Sabha"),
             "term": "18th Lok Sabha",
+            "terms": "2024–present",
+            "party": "Lok Sabha Representative",
             "entitlement": 250000000.0,
             "allocated": 250000000.0,
             "allocated_amount": 250000000.0,
@@ -1330,11 +1341,16 @@ def get_constituency_dashboard(
     utilization_pct = round((total_sanctioned / max(1, mp_allocated)) * 100, 1)
     expenditure_pct = round((total_disbursed / max(1, total_sanctioned)) * 100, 1) if total_sanctioned else 0.0
 
-    # Fetch top high-risk works for focused queue
-    top_high_risk = sorted(matched_works, key=lambda w: w.get("final_risk_score", 0), reverse=True)[:10]
+    # Fetch top high-risk works for focused queue (or highest risk overall)
+    top_high_risk = sorted(matched_works, key=lambda w: float(w.get("final_risk_score") or 0), reverse=True)[:15]
 
     # Fetch citizen problems and summary breakdown for this constituency
-    problems_docs = list(citizen_problems.find({"constituency": {"$regex": re.escape(target_const), "$options": "i"}}))
+    problems_docs = list(citizen_problems.find({
+        "$or": [
+            {"constituency": {"$regex": re.escape(target_const), "$options": "i"}},
+            {"constituency": {"$regex": re.escape(clean_const), "$options": "i"}}
+        ]
+    }))
     problems_summary = {
         "total": len(problems_docs),
         "pending": sum(1 for p in problems_docs if p.get("status") in ("Pending Review", "Under Investigation")),
@@ -1356,26 +1372,40 @@ def get_constituency_dashboard(
         "avg_risk_score": round(avg_risk, 1),
     }
 
+    formatted_high_risk = []
+    for w in top_high_risk:
+        desc = w.get("work_description") or w.get("work_type") or w.get("work_category") or "Community Development Work"
+        cat = w.get("work_category") or w.get("work_type") or "Community Infrastructure"
+        s_amt = float(w.get("sanction_amount") or 0.0)
+        d_amt = float(w.get("total_fund_disbursed") or 0.0)
+        r_score = float(w.get("final_risk_score") or 0.0)
+        formatted_high_risk.append({
+            "work_id": w.get("work_id"),
+            "work_description": desc,
+            "work_title": desc,
+            "work_category": cat,
+            "work_type": w.get("work_type") or cat,
+            "sanction_amount": s_amt,
+            "sanctioned_amount": s_amt,
+            "total_fund_disbursed": d_amt,
+            "total_disbursed": d_amt,
+            "risk_tier": w.get("risk_tier") or "High Risk - Review",
+            "final_risk_score": r_score,
+            "risk_score": r_score,
+            "primary_vendor": w.get("primary_vendor") or "Assigned Contractor",
+            "ida": w.get("ida") or "District Authority",
+            "work_status": w.get("work_status") or "In Progress",
+            "recommended_action": w.get("recommended_action") or "Audit inspection recommended",
+            "human_review_outcome": w.get("human_review_outcome")
+        })
+
     return {
         "constituency": target_const,
         "state": mp_info.get("state") if mp_info else "India",
         **stats_dict,
         "stats": stats_dict,
         "mp": mp_info,
-        "high_risk_works": [
-            {
-                "work_id": w.get("work_id"),
-                "work_type": w.get("work_type") or w.get("work_category"),
-                "sanction_amount": w.get("sanction_amount"),
-                "total_fund_disbursed": w.get("total_fund_disbursed"),
-                "risk_tier": w.get("risk_tier"),
-                "final_risk_score": w.get("final_risk_score"),
-                "primary_vendor": w.get("primary_vendor"),
-                "work_status": w.get("work_status"),
-                "recommended_action": w.get("recommended_action")
-            }
-            for w in top_high_risk
-        ],
+        "high_risk_works": formatted_high_risk,
         "problems_count": len(problems_docs),
         "problems_summary": problems_summary
     }
