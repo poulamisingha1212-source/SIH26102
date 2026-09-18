@@ -52,6 +52,25 @@ export default function AdminDashboard({
       .catch((err) => console.error('Failed to load state analytics for admin:', err));
   }, [house]);
 
+  const [localStats, setLocalStats] = useState(stats);
+
+  useEffect(() => {
+    if (stats) {
+      setLocalStats(stats);
+    }
+    // Always ensure fresh national stats on mount or house change
+    const qs = house ? `?house=${encodeURIComponent(house)}` : '';
+    apiFetch(`/api/stats/overview${qs}`)
+      .then((res) => {
+        if (res.ok) return res.json();
+        return null;
+      })
+      .then((data) => {
+        if (data) setLocalStats(data);
+      })
+      .catch((err) => console.error('Failed to load admin overview stats:', err));
+  }, [stats, house]);
+
   // Master CSV Export handler
   const handleExportCSV = async () => {
     setIsExporting(true);
@@ -79,13 +98,15 @@ export default function AdminDashboard({
     }
   };
 
-  const totalWorks = stats?.total_works || 0;
-  const highRiskCount = stats?.high_risk_count || 0;
-  const reviewedCount = stats?.reviewed_count || 0;
+  const activeStats = localStats || stats || {};
+  const totalWorks = activeStats.total_works || 0;
+  const highRiskCount = activeStats.high_risk_count || 0;
+  const reviewedCount = activeStats.reviewed_works ?? activeStats.reviewed_count ?? 0;
   const auditComplianceRate = totalWorks > 0 ? ((reviewedCount / totalWorks) * 100).toFixed(1) : 0;
-  const totalSanctioned = stats?.total_sanctioned || 0;
-  const totalDisbursed = stats?.total_disbursed || 0;
-  const nationalUtilization = totalSanctioned > 0 ? ((totalDisbursed / totalSanctioned) * 100).toFixed(1) : 0;
+  const totalSanctioned = activeStats.total_sanctioned_amount ?? activeStats.total_sanctioned ?? 0;
+  const totalDisbursed = activeStats.total_disbursed_amount ?? activeStats.total_disbursed ?? 0;
+  const totalAllocated = activeStats.total_allocated_amount ?? activeStats.total_allocated ?? 0;
+  const nationalUtilization = activeStats.fund_utilization_pct ?? (totalSanctioned > 0 ? ((totalDisbursed / totalSanctioned) * 100).toFixed(1) : 0);
   const unspentBalance = Math.max(0, totalSanctioned - totalDisbursed);
 
   return (

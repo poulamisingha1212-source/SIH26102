@@ -49,7 +49,6 @@ export default function App() {
       setCurrentRole('Read-Only Public Tier');
       setLoggedInUser('');
       setUserProfile(null);
-      toast.info('Switched to Read-Only Public Tier');
     } else {
       if (loggedInUser && currentRole === selectedRole) {
         return;
@@ -72,7 +71,6 @@ export default function App() {
     setCurrentRole('Read-Only Public Tier');
     setLoggedInUser('');
     setUserProfile(null);
-    toast.info('Logged out to Public Tier');
   };
 
   // Works state (Priority Queue)
