@@ -1,7 +1,8 @@
 # Secrets and local environment
 .env
 .env.*
-!.env.example
+*.env
+*.env.*
 /scripts/
 
 # Python

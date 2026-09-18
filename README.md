@@ -6,23 +6,24 @@
 
 ---
 
-[![Python](https://img.shields.io/badge/Python-3.11%2B-blue?style=for-the-badge&logo=python&logoColor=white)](https://python.org)
+[![Python](https://img.shields.io/badge/Python-3.11%20%7C%203.12-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://python.org)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.115%2B-009688?style=for-the-badge&logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com)
 [![React](https://img.shields.io/badge/React-19.0-61DAFB?style=for-the-badge&logo=react&logoColor=black)](https://react.dev)
 [![Vite](https://img.shields.io/badge/Vite-6.0-646CFF?style=for-the-badge&logo=vite&logoColor=white)](https://vitejs.dev)
-[![MongoDB](https://img.shields.io/badge/MongoDB-Atlas%20%2F%20PyMongo-47A248?style=for-the-badge&logo=mongodb&logoColor=white)](https://mongodb.com)
+[![MongoDB Atlas](https://img.shields.io/badge/MongoDB-Atlas%20%2F%20PyMongo-47A248?style=for-the-badge&logo=mongodb&logoColor=white)](https://mongodb.com)
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-3.4-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)](https://tailwindcss.com)
 [![Tests](https://img.shields.io/badge/Tests-82%20Passed-success?style=for-the-badge&logo=pytest&logoColor=white)](tests/)
-[![Security](https://img.shields.io/badge/Security-RBAC%20%7C%20Bcrypt%20%7C%20JWT-red?style=for-the-badge&logo=auth0&logoColor=white)](backend/auth.py)
+[![Security](https://img.shields.io/badge/Security-RBAC%202.0%20%7C%20JWT%20%7C%20Bcrypt-F59E0B?style=for-the-badge&logo=auth0&logoColor=black)](backend/auth.py)
 
 <p align="center">
-  <b>A proactive, explainable, evidence-based decision-support system analyzing 228,000+ MPLADS works to detect expenditure irregularities, contractor monopolies, duplicate claims, and statutory non-compliance.</b>
+  <b>A proactive, explainable, evidence-based decision-support system analyzing 228,000+ MPLADS works across 545 Lok Sabha constituencies to detect expenditure irregularities, contractor monopolies, duplicate claims, and statutory non-compliance.</b>
 </p>
 
-[Key Capabilities](#-key-capabilities) •
-[Multi-Agent Architecture](#-multi-agent-risk-engine) •
-[Statutory Rules](#-evidence-grounded-5-state-rule-system) •
-[System Flow](#-system-architecture) •
+[Key Innovations](#-key-innovations) •
+[Role-Tailored Dashboards](#-role-tailored-experience-rbac-20) •
+[Citizen Grievance Redressal](#-citizen-grievances--public-redressal-portal) •
+[Multi-Agent Risk Engine](#-multi-agent-risk-engine) •
+[Statutory 5-State Rules](#-evidence-grounded-5-state-rule-system) •
 [API Reference](#-public--auditor-api-reference) •
 [Quick Start](#-quick-start-guide)
 
@@ -37,9 +38,10 @@ Under the **Members of Parliament Local Area Development Scheme (MPLADS)**, each
 **JanNidhi (जन निधि)** modernizes this audit paradigm through:
 1. **Multi-Agent Risk Synthesis:** 6 specialist AI agents examine financial flows, milestone velocities, vendor networks, text duplication, geographic clustering, and statutory guidelines.
 2. **Deterministic 5-State Rule Verification:** Isolates documentary evidence gaps (`UNKNOWN`) from verified legal violations (`FAIL`), preventing false accusations.
-3. **Explainable Forensic Case Packets:** Generates plain-language causal narratives, quantified impact figures (e.g. INR overrun values), and targeted auditor checklists (Measurement Books, Sanction Orders).
-4. **Citizen Crowdsourced Verification:** Enables citizens to submit geo-tagged photographic feedback directly from project sites with strict MIME validation and payload protections.
-5. **Open Public Governance:** Empowers citizens and journalists with transparent directories of MPs, state expenditures, category breakdowns, and rate-limited open-data exports.
+3. **Forensic Case Packets:** Generates plain-language causal narratives, quantified impact figures (e.g. INR overrun values), and targeted auditor checklists (Measurement Books, Sanction Orders).
+4. **Authentic Citizen Grievance Redressal:** A dedicated public grievance portal seeded with 500 domain-authentic complaints across all 545 constituencies, with 86% linked directly to authentic works in the database and one-click Case Packet inspection.
+5. **Role-Tailored Dashboards (RBAC 2.0):** Specialized, distraction-free interfaces engineered specifically for Central MoSPI Reviewers, Members of Parliament (MPs), District Authority Auditors, and Citizens.
+6. **Open Public Governance:** Empowers citizens and journalists with transparent directories of MPs, state expenditures, category breakdowns, and rate-limited open-data exports.
 
 > [!IMPORTANT]
 > **Core Explainability Principle:**  
@@ -47,19 +49,25 @@ Under the **Members of Parliament Local Area Development Scheme (MPLADS)**, each
 
 ---
 
-## ⚡ Key Capabilities
+## ⚡ Key Innovations
 
 ```
-┌────────────────────────────────────────────────────────────────────────────────────────┐
-│                                   PLATFORM MODULES                                     │
-├──────────────────────┬──────────────────────┬───────────────────┬──────────────────────┤
-│ 📊 Portfolio         │ 📋 Priority Audit    │ 🔍 Case Packet    │ 🏛️ Public MP & State │
-│    Overview          │    Queue             │    Dossier        │    Directory         │
-│ Macro risk tiers,    │ Dynamic prioritized  │ Multi-agent risk  │ Constituency splits, │
-│ utilization gauges,  │ audit queue with     │ breakdown, rule   │ MP utilization rates,│
-│ state allocation     │ instant state, MP,   │ evidence checklist│ category spend, side-│
-│ charts & live KPIs.  │ and house filters.   │ & citizen reports.│ by-side comparisons. │
-└──────────────────────┴──────────────────────┴───────────────────┴──────────────────────┘
+┌──────────────────────────────────────────────────────────────────────────────────────────────────┐
+│                                   JANNIDHI PLATFORM MODULES                                      │
+├──────────────────────┬──────────────────────┬──────────────────────┬─────────────────────────────┤
+│ 👑 MoSPI Admin       │ 🏛️ Member of         │ ⚖️ District          │ 👥 Citizen Grievance        │
+│    Dashboard         │    Parliament Portal │    Auditor Portal    │    & Redressal Hub          │
+│ National utilization │ Constituency budget, │ Field inspections,   │ Geo-located complaints,     │
+│ (₹12,450 Cr spend),  │ works progress,      │ formal cure notices, │ photo evidence, authentic   │
+│ portfolio risk map,  │ pending grievances & │ checklist review, &  │ work ID linkage & one-click │
+│ live sync controls.  │ parliamentary replies│ milestone audits.    │ case packet inspection.     │
+├──────────────────────┼──────────────────────┼──────────────────────┼─────────────────────────────┤
+│ 📊 Portfolio         │ 📋 Priority Audit    │ 🔍 Forensic Case     │ 🏛️ Public Transparency     │
+│    Overview          │    Queue             │    Packet Dossier    │    Directory & Choropleth   │
+│ Macro risk tiers,    │ Dynamic prioritized  │ Multi-agent scores,  │ Interactive India SVG map,  │
+│ utilization gauges,  │ audit queue with     │ causal explanations, │ state comparison matrix,    │
+│ category analytics.  │ instant filters.     │ & itemized evidence. │ & MP transparency profiles. │
+└──────────────────────┴──────────────────────┴──────────────────────┴─────────────────────────────┘
 ```
 
 - 🎯 **Risk-Ranked Priority Queue:** Instant triage of high-risk projects requiring urgent inspection.
@@ -67,6 +75,74 @@ Under the **Members of Parliament Local Area Development Scheme (MPLADS)**, each
 - 👥 **Citizen Ground-Truth Reporting:** Public photo verification module with rate-limiting and metadata validation.
 - ⚖️ **Auditor Review Workflow:** Server-authoritative review recording with formal determination tracking.
 - 🔄 **Live Sync & Ingestion Pipeline:** Automated long-format master data ingestion secured with MongoDB distributed locking.
+- 🚀 **1-Click Quick Login:** Instant preset authentication for Admin, Auditor, and MP with self-healing credentials.
+
+---
+
+## 👥 Role-Tailored Experience (RBAC 2.0)
+
+JanNidhi provides purpose-built, role-tailored dashboards designed around the exact operational needs of each stakeholder:
+
+### 1. 👑 MoSPI Reviewer / Admin Dashboard (`AdminDashboard.jsx`)
+*Engineered for central policy makers and national oversight directors.*
+- **Macro Fiscal Telemetry:** Real-time visibility into **₹12,450.75 Cr sanctioned**, **₹7,927.39 Cr disbursed**, **₹4,523.36 Cr unspent balance**, and **75.7% national fund utilization**.
+- **Portfolio Risk Breakdown:** Instant tracking of **67,936 High-Risk projects**, **98,412 Medium-Risk monitors**, and statutory non-compliance flags.
+- **Master Data Synchronization:** Manual and scheduled triggering of the live MoSPI ingestion pipeline protected by distributed locks.
+- **Audit Queue & High-Risk Works:** Quick triage table allowing administrators to inspect case packets and filter works by state or MP.
+
+### 2. 🏛️ Member of Parliament (MP) Dashboard (`MPDashboard.jsx`)
+*Tailored for Lok Sabha and Rajya Sabha representatives to track their parliamentary development funds.*
+- **Constituency Fund Health:** Real-time metrics for sanctioned vs. disbursed funds, utilization rates, and unspent balances.
+- **Work Status Overview:** Completed vs. ongoing vs. sanctioned projects in the MP's constituency.
+- **Priority Attention Queue:** Works flagged with execution delays or documentation gaps.
+- **Constituent Grievance Desk:** Direct pipeline of citizen grievances raised by local voters, complete with photo evidence, GPS location, and an **Official MP Reply** submission channel.
+
+### 3. ⚖️ District Authority Auditor Dashboard (`DistrictAuditorDashboard.jsx`)
+*Designed for District Collectors, Planning Officers, and Field Auditors.*
+- **Field Inspection Queue:** Prioritized list of projects requiring on-site physical verification.
+- **Auditor Notes & Investigation Log:** Ability to record formal site inspection notes, serving formal cure notices to non-compliant contractors.
+- **Itemized Case Packet Checklist:** Measurement Book (MB) verification, Sanction Order comparison, and milestone compliance validation.
+
+### 4. 🌐 Public Transparency Tier (`PortfolioOverview.jsx` & `CitizenGrievancesView.jsx`)
+*Open, accessible governance for citizens, civil society, and investigative journalists.*
+- Full access to all 228,000+ public records, expenditure statistics, and MP profiles without login.
+- Interactive **All-India Choropleth Map** with color-coded state utilization and side-by-side comparative analysis.
+- Bounded open-data CSV exports up to 10,000 records.
+
+---
+
+## 📢 Citizen Grievances & Public Redressal Portal
+
+A groundbreaking civic engagement portal connecting grassroot citizens directly to their elected MPs and District Auditors:
+
+```
+┌────────────────────────────────────────────────────────────────────────────────────────┐
+│                        CITIZEN GRIEVANCE VERIFICATION PIPELINE                         │
+├────────────────────────────────────────────────────────────────────────────────────────┤
+│  1. Report Issue         2. Auto-Location           3. Authentic Work Link             │
+│  Select civic category   GPS detection with         Linked to real MPLADS Work ID      │
+│  & attach photo proof    fallback State / District  (e.g. #152872 in Murshidabad)      │
+│         │                        │                               │                     │
+│         ▼                        ▼                               ▼                     │
+│  4. Transparent Desk     5. Field Investigation     6. Inspect Case Packet             │
+│  Official MP response    District Auditor logs site One-click MoSPI Risk Engine v4     │
+│  from camp office        inspection & cure notice   dossier with risk score & rules    │
+└────────────────────────────────────────────────────────────────────────────────────────┘
+```
+
+### 🌟 Key Features of the Grievance Portal
+- **500 Domain-Accurate Seeded Complaints:** Grounded in real Indian Lok Sabha constituencies (Kolkata Dakshin, Varanasi, Kota, Pune, Darjeeling, etc.) covering Drinking Water, Rural Roads, School Infrastructure, Healthcare/PHC, and Solar Lighting.
+- **Authentic Work ID Linkage:** **430 out of 500 grievances (86%)** are mapped to actual, verifiable works in the 228,328 works database.
+- **One-Click Case Packet Inspection:** Each linked grievance features an interactive amber badge:
+  ```
+  [FileText] #152872  Inspect Case Packet  [ExternalLink]
+  ```
+  Clicking immediately opens the forensic **Case Packet Modal** displaying the project's risk score, priority rank, and statutory rule triggers.
+- **Smart Location Selection:** Browser GPS geo-location with intelligent fallback allowing citizens to select their State, District, and Lok Sabha Constituency step-by-step.
+- **Photo Evidence Capture & Preview:** Citizens can capture live photos or upload site evidence with full-screen preview.
+- **Dual-Channel Status Tracking:**
+  - 🔵 **Official MP Response:** Written communication from the MP's parliamentary desk.
+  - 🟣 **District Auditor Notes:** Formal site verification logs and remediation notices.
 
 ---
 
@@ -85,6 +161,7 @@ JanNidhi employs **6 specialist domain agents** governed by a central coordinato
 
 ### Consensus Scoring Pipeline
 $$\text{Likelihood Score} = \sum_{i=1}^{6} w_i \cdot \text{AgentScore}_i \quad \text{where} \quad \sum w_i = 1.0$$
+
 Works with a weighted consensus score $\ge 0.40$ are flagged as anomalous, and normalized against portfolio percentiles into actionable tiers:
 - 🔴 **High Risk - Review** (`score ≥ 70.0`)
 - 🟡 **Medium Risk - Monitor** (`50.0 ≤ score < 70.0`)
@@ -98,190 +175,77 @@ Unlike traditional binary scanners that generate high false-positive rates, JanN
 
 ```mermaid
 graph TD
-    Work["MPLADS Work Record"] --> Eval{"Evaluate Rule Evidence"}
-    Eval -->|"Documentary Evidence Missing"| UNKNOWN["UNKNOWN\n(Flag Document Gap, Not Fraud)"]
-    Eval -->|"Rule Irrelevant to Work Category"| NA["NOT_APPLICABLE\n(Excluded from Scoring)"]
-    Eval -->|"Clear Statutory Non-Compliance"| FAIL["FAIL\n(Immediate Escalation)"]
-    Eval -->|"Ambiguity Requiring Human Inquiry"| REVIEW["REVIEW\n(Auditor Checklist Generated)"]
-    Eval -->|"Fully Compliant with Evidence"| PASS["PASS\n(Verified Safe)"]
+    Data[Input MPLADS Work Record] --> CheckEvidence{Are Required Evidence Fields Present?}
+    CheckEvidence -->|Missing or Incomplete| UNKNOWN[UNKNOWN<br/>Evidence Gap Flagged]
+    CheckEvidence -->|Complete| CheckThreshold{Does Record Violate Statutory Rule?}
+    CheckThreshold -->|Violated| FAIL[FAIL<br/>Legal Non-Compliance]
+    CheckThreshold -->|Compliant| PASS[PASS<br/>Statutory Verified]
+    CheckThreshold -->|Not Pertinent| NA[NOT_APPLICABLE<br/>Outside Rule Domain]
 ```
 
-- **`PASS`**: Full documentary evidence confirms compliance with statutory guidelines.
-- **`FAIL`**: Explicit, verified violation of a statutory prohibition (e.g., fund release prior to Administrative Sanction, disbursement exceeding sanction order, Trust work exceeding ₹50 Lakh).
-- **`REVIEW`**: Condition warrants auditor verification (e.g., prohibited work keywords requiring site inspection, unclassified category codes).
-- **`UNKNOWN`**: Crucial statutory dates or documents are unavailable in the source data. **Treated strictly as a documentation defect, never as proof of misconduct.**
-- **`NOT_APPLICABLE`**: Rule scope does not apply to this category or entity.
+### Statutory Guidelines Evaluated
+1. **Rule 1 (Prohibited Items):** Enforces MPLADS Annexure-II prohibitions (commercial entities, religious places of worship).
+2. **Rule 2 (Trust / Society ₹50L Ceiling):** Flags non-governmental organization grants exceeding ₹50 Lakh statutory lifetime limits.
+3. **Rule 3 (Negative Balance Violation):** Flags instances where expenditure exceeds sanctioned allocation.
+4. **Rule 4 (Disbursement without Sanction):** Detects funds released prior to formal administrative approval.
+5. **Rule 5 (Rapid Completion Anomaly):** Flags infrastructure projects marked completed under 15 days without geo-tagged evidence.
+6. **Rule 6 (Execution Stagnation):** Flags sanctioned projects with zero progress exceeding 180 days.
+7. **Rule 7 (Completed Without Image):** Flags finished projects lacking mandatory completion photographic verification.
+8. **Rule 8 (Single Vendor Monopoly):** Flags vendors receiving over 60% of an MP's total recommended sanctions.
+9. **Rule 9 (Post-Completion Disbursement):** Flags fund releases occurring more than 30 days after certified physical completion.
+10. **Rule 10 (Duplicate Scheme Description):** Flags suspiciously identical scheme descriptions within the same district.
 
 ---
 
-## 🏗️ System Architecture
+## 🔐 1-Click Quick Login & Role Matrix
 
-```
-                                  [ Citizen / Browser Client ]
-                                               │
-                                               ▼
-                             ┌───────────────────────────────────┐
-                             │    React 19 + Tailwind SPA UI     │
-                             │  (Vite Bundled, Lucide, Chart.js) │
-                             └─────────────────┬─────────────────┘
-                                               │ HTTPS / REST / JWT
-                                               ▼
-                             ┌───────────────────────────────────┐
-                             │       FastAPI Backend API         │
-                             │  (Server-Side RBAC, Sliding Rate  │
-                             │   Limiter, Bcrypt Auth & CORS)    │
-                             └─────────┬───────────────┬─────────┘
-                                       │               │
-                     ┌─────────────────┴─┐           ┌─┴───────────────────┐
-                     │ Multi-Agent Risk  │           │   PyMongo Ingestion  │
-                     │ Engine & 5-State  │           │  & Distributed Lock │
-                     │ Rule Evaluator    │           │     (TTL Index)     │
-                     └─────────────────┬─┘           └─┬───────────────────┘
-                                       │               │
-                                       ▼               ▼
-                             ┌───────────────────────────────────┐
-                             │       MongoDB Atlas Cluster       │
-                             │ (Works, Users, MP Allocations,    │
-                             │  Public Reviews, Distributed Lock)│
-                             └───────────────────────────────────┘
-```
+JanNidhi includes built-in, self-healing demo authentication presets allowing evaluators to experience each role instantly with one click:
 
----
+| Role | Preset Username | Password | Operational Access |
+|---|---|---|---|
+| **Public Citizen** | *(No login required)* | *(None)* | View priority queue, MP directories, case packet narratives, submit grievances with photos, inspect public data. |
+| **Member of Parliament** | `mp` | `MP@MPLADS2026!` | Access MP Dashboard, track constituency fund health, review pending problems, submit official parliamentary replies. |
+| **District Authority Auditor**| `auditor` | `Auditor@MPLADS2026!` | Access District Auditor Dashboard, schedule site inspections, serve formal cure notices, submit Case Packet determinations. |
+| **MoSPI Reviewer / Admin** | `admin` | `Admin@MPLADS2026!` | Access MoSPI Admin Dashboard, monitor national utilization (₹12,450 Cr), trigger live portal sync, manage system-wide audit queues. |
 
-## 🔒 Security Architecture & Production Hardening
-
-JanNidhi incorporates enterprise-grade security practices validated against strict attack-regression suites:
-
-1. **Server-Authoritative Role-Based Access Control (RBAC):**
-   - Client-provided privilege headers (`X-User-Role`, etc.) are unconditionally rejected.
-   - User identity and permissions are strictly resolved from signed JWT Bearer tokens validated directly against MongoDB.
-2. **Bcrypt Password Encryption:**
-   - User passwords are encrypted with bcrypt (cost factor 12). Passwords and password hashes are stripped from all API serializations.
-3. **Sliding-Window Rate Limiting:**
-   - Protects authentication endpoints (`/api/auth/login` capped at 5 requests/min) to prevent brute-force attacks.
-   - Public review submission (`/api/works/{id}/public-review`) and open-data export streams (`/api/export/works`) are bounded by IP rate limiters.
-4. **MIME Validation & Payload Protection:**
-   - Citizen photographic uploads are capped at 1.5MB, validated for real image headers (JPEG, PNG, WEBP), and sanitised to thwart script injection.
-5. **Distributed Concurrency Lock:**
-   - MongoDB-backed distributed lock with TTL expiration prevents concurrent portal sync execution across multiple worker processes.
-
----
-
-## 📁 Repository Structure
-
-```
-project-root/
-├── backend/
-│   ├── audit/                      # Portfolio scanning & rescoring utilities
-│   │   ├── portfolio_scanner.py    # Production batch audit scanner
-│   │   └── rescore_portfolio.py    # Live field update & priority ranker
-│   ├── engines/                    # Data quality defect engine
-│   │   └── data_quality_engine.py  # 12-vector data defect classification
-│   ├── scripts/                    # Maintenance & feed utility scripts
-│   ├── services/                   # Core business logic
-│   │   ├── analytics.py            # MP, State, and Portfolio aggregations
-│   │   ├── ingestion.py            # Data pipeline, transformation & locking
-│   │   └── mplads_live.py          # Portal session client & scraper
-│   ├── auth.py                     # Bcrypt hashing, JWT tokens & rate limiters
-│   ├── config.py                   # Pydantic environment configuration
-│   ├── database.py                 # PyMongo connection & index initialization
-│   ├── main.py                     # FastAPI application entrypoint & routing
-│   ├── models.py                   # Document schemas & normalization helpers
-│   ├── schemas.py                  # Pydantic request/response validation
-│   └── seeder.py                   # Idempotent DB initialization & demo users
-│
-├── frontend/                       # React 19 + Tailwind CSS Frontend
-│   ├── public/                     # Static assets, branding & icons
-│   ├── src/
-│   │   ├── components/             # Reusable UI & view components
-│   │   │   ├── dashboard/          # Risk donut, state allocation & utilization charts
-│   │   │   ├── magicui/            # Shimmer buttons, dot patterns, blur fade
-│   │   │   ├── ui/                 # Accessible UI primitives (dialog, button, table, etc.)
-│   │   │   ├── CasePacketModal.jsx # Forensic case packet & citizen review modal
-│   │   │   ├── IndiaMap.jsx        # Interactive SVG map with color-coded utilization & compare triggers
-│   │   │   ├── Header.jsx          # MoSPI branding, status pills & auth trigger
-│   │   │   ├── LoginModal.jsx      # JWT credentials authentication dialog
-│   │   │   ├── MPDirectory.jsx     # MP transparency table & deep filter
-│   │   │   ├── MPProfileModal.jsx  # Individual MP portfolio dossier
-│   │   │   ├── PortfolioOverview.jsx # Macro analytics, charts & entity cards
-│   │   │   ├── PriorityQueue.jsx   # Ranked audit work triage table
-│   │   │   └── StatesView.jsx      # State choropleth map & integrated side-by-side comparison
-│   │   ├── lib/                    # API clients, chart configs & formatters
-│   │   ├── App.jsx                 # Stateful application coordinator
-│   │   ├── index.css               # Design tokens, glassmorphism & typography
-│   │   └── main.jsx                # React root bootstrap
-│   ├── package.json                # Frontend dependencies
-│   └── vite.config.js              # Vite configuration
-│
-├── model/                          # Multi-Agent Risk Engine
-│   ├── agents/                     # 6 Domain Specialist Agents
-│   │   ├── base.py                 # Base agent abstract interface
-│   │   ├── coordinator.py          # Multi-agent weighted synthesis
-│   │   ├── financial_agent.py      # Financial outlier detection
-│   │   ├── duplicate_agent.py      # Near-duplicate text & location detection
-│   │   ├── timeline_agent.py       # Velocity & stagnation detection
-│   │   ├── vendor_agent.py         # Vendor concentration detection
-│   │   ├── compliance_agent.py     # Statutory guideline compliance
-│   │   └── geographic_agent.py     # IDA clustering & capture detection
-│   ├── rules/                      # Statutory 5-State Rule Evaluator
-│   │   ├── evaluator.py            # Rule evaluation implementations
-│   │   └── registry.py             # Rule registry & legal metadata
-│   ├── config.yaml                 # Tunable agent weights & thresholds
-│   └── risk_engine.py              # Central risk scoring & case packet generator
-│
-├── data/
-│   └── generate_sample_feed.py     # Dynamic test feed generator
-│
-├── tests/                          # Automated PyTest Test Suite (82 tests)
-│   ├── conftest.py                 # Isolated mongomock database fixtures
-│   ├── test_api.py                 # 24 REST API integration tests
-│   ├── test_ingestion_regression.py# Pipeline merge & locking tests
-│   ├── test_phase_3_rules.py       # Statutory five-state rule tests
-│   ├── test_phase_4_scan.py        # Algorithmic portfolio scan tests
-│   ├── test_risk_engine.py         # Multi-agent scoring & drift tests
-│   └── test_security_regression.py # 9-vector security attack tests
-│
-├── .github/workflows/              # CI/CD Automated Pipelines
-│   ├── test.yml                    # Automated PyTest execution on push/PR
-│   └── deploy-frontend.yml         # Frontend build verification
-│
-├── .env.example                    # Environment variable template
-├── .gitignore                      # Git exclusion rules
-├── pytest.ini                      # PyTest discovery configuration
-└── requirements.txt                # Python backend dependencies
-```
+*Self-Healing Security Note: If demo user records are missing upon container initialization, the authentication layer automatically creates them securely with bcrypt password hashing on first login.*
 
 ---
 
 ## 📡 Public & Auditor API Reference
 
-All endpoints are hosted under `/api`. Interactive documentation is accessible via Swagger UI at `/docs` or ReDoc at `/redoc`.
+All endpoints are hosted under `/api`. Interactive OpenAPI documentation is accessible via Swagger UI at `http://localhost:8000/docs`.
 
 | Method | Endpoint | Access Level | Description |
 |:---:|---|:---:|---|
 | `POST` | `/api/auth/login` | **Public** (Rate Limited) | Authenticates credentials with bcrypt, returns signed JWT Bearer token. |
+| `GET` | `/api/auth/me` | **Authenticated** | Returns current user profile, role, and assigned constituency/district. |
+| `GET` | `/api/stats/overview` | **Public** | Macro national statistics (sanctioned, disbursed, allocated, utilization, risk tiers). |
 | `GET` | `/api/works` | **Public** | Paginated works sorted by priority rank. Filters: `state`, `mp_name`, `house`, `risk_tier`. |
-| `GET` | `/api/works/{work_id}` | **Public** | Detailed case packet: risk breakdown, plain-language causes, citizen reports. |
-| `POST` | `/api/works/{work_id}/review` | **Auditor / Reviewer** | Records formal audit determination. Role validated server-side. |
-| `POST` | `/api/works/{work_id}/public-review`| **Public** (Rate Limited) | Submits citizen site feedback with optional 1.5MB validated photo upload. |
-| `GET` | `/api/mps` | **Public** | Complete MP fund directory: allocations, expenditure, utilization rate, risk profile. |
-| `GET` | `/api/mps/{mp_name}` | **Public** | MP transparency profile: category distributions, top anomalous works. |
+| `GET` | `/api/works/{work_id}` | **Public** | Complete forensic Case Packet: risk scores, causal factors, statutory rule triggers. |
+| `POST` | `/api/works/{work_id}/review` | **Auditor / Reviewer** | Records formal human audit determination (Approved, Needs Inspection, Reject). |
+| `POST` | `/api/works/{work_id}/public-review`| **Public** (Rate Limited) | Submits citizen site verification with GPS coordinates and photo proof. |
+| `GET` | `/api/problems` | **Public** | Retrieves citizen grievances with filters: `state`, `district`, `constituency`, `status`, `category`. |
+| `POST` | `/api/problems` | **Public** | Submits a new citizen civic grievance with optional photographic evidence. |
+| `POST` | `/api/problems/{problem_id}/reply` | **MP / Admin** | Records official MP parliamentary desk response and action taken. |
+| `POST` | `/api/problems/{problem_id}/auditor-review`| **Auditor / Admin** | Records District Authority Auditor site investigation notes and cure notices. |
+| `GET` | `/api/mps` | **Public** | Complete MP directory: allocations, expenditure, utilization rate, risk profile. |
+| `GET` | `/api/mps/{mp_name}` | **Public** | MP transparency profile: category distribution, top anomalous works. |
 | `GET` | `/api/states` | **Public** | State-wise fund allocation, expenditure totals, and MP coverage summary. |
 | `GET` | `/api/states/{state}` | **Public** | State-level dossier: risk tier distribution, top MPs, category breakdowns. |
 | `GET` | `/api/analytics/categories` | **Public** | Overall fund share and average risk score grouped by work category. |
 | `GET` | `/api/analytics/status` | **Public** | Portfolio distribution across completion statuses. |
 | `GET` | `/api/export/works` | **Public** (Rate Limited) | Open-data CSV export stream (bounded at 10,000 rows). |
-| `POST` | `/api/sync/run` | **Reviewer / Admin** | Triggers asynchronous portal ingestion under a distributed lock. |
+| `POST` | `/api/sync/run` | **Reviewer / Admin** | Triggers asynchronous live portal data ingestion under a distributed lock. |
 | `GET` | `/api/sync/status` | **Public** | Reports ingestion status, lock state, and last synchronized timestamp. |
-| `GET` | `/api/sync/logs` | **Public** | Public audit log of past synchronization runs. |
-| `GET` | `/api/health` | **Public** | System health probe (MongoDB connection, document count). |
+| `GET` | `/api/health` | **Public** | System health probe (MongoDB connection, document counts). |
 
 ---
 
 ## 🚀 Quick Start Guide
 
 ### Prerequisites
-- **Python:** 3.11 or higher
+- **Python:** 3.11 or 3.12
 - **Node.js:** 18 or higher (with npm)
 - **MongoDB:** Local MongoDB Community Server or MongoDB Atlas cluster
 
@@ -291,16 +255,33 @@ git clone https://github.com/poulamisingha1212-source/SIH26102.git
 cd SIH26102
 ```
 
-### 2. Configure Environment Variables
-Create a `.env` file in the root directory (refer to `.env.example`):
+### 2. Environment Configuration
+Create a local `.env` file in the root directory.
+
+> [!NOTE]
+> All `.env` files are strictly excluded from git tracking to prevent credential leaks. Configure your local file as follows:
+
 ```env
+# MongoDB Connection
 MONGODB_URI=mongodb://localhost:27017
 MONGO_DB_NAME=mplads_sentinel
+
+# Application Environment
 ENVIRONMENT=development
-JWT_SECRET=your-super-secret-key-at-least-32-chars-long
-ACCESS_TOKEN_EXPIRE_MINUTES=1440
-CORS_ORIGINS=http://localhost:5173,http://localhost:3000
 PORT=8000
+HOST=0.0.0.0
+
+# Security & Authentication
+JWT_SECRET=your-secure-jwt-secret-minimum-32-characters-long!
+ACCESS_TOKEN_EXPIRE_MINUTES=1440
+
+# CORS Configuration
+CORS_ORIGINS=http://localhost:5173,http://localhost:3000,http://127.0.0.1:5173
+
+# Live Ingestion Portal Settings
+MPLADS_BASE_URL=https://mplads.mospi.gov.in
+MPLADS_LIVE_HOUSE=both
+MPLADS_LIVE_TIMEOUT=300
 ```
 
 ### 3. Backend Setup
@@ -308,23 +289,26 @@ PORT=8000
 # Install Python dependencies
 pip install -r requirements.txt -r requirements-dev.txt
 
-# Seed initial database & demo user accounts
+# Seed initial database, indexes, and credentials
 python -m backend.seeder
+
+# Seed 500 authentic citizen grievances linked to works
+python -m backend.scripts.seed_500_grievances
 
 # Start the FastAPI server
 uvicorn backend.main:app --host 0.0.0.0 --port 8000 --reload
 ```
-API Documentation: `http://localhost:8000/docs`
+API Documentation will be live at `http://localhost:8000/docs`.
 
 ### 4. Frontend Setup
 ```bash
 # In a new terminal:
 cd frontend
 
-# Install dependencies
-npm ci
+# Install frontend dependencies
+npm install
 
-# Start the development server
+# Start the Vite development server
 npm run dev
 ```
 Open your browser at `http://localhost:5173`.
@@ -339,11 +323,8 @@ JanNidhi includes an extensive suite of **82 automated tests** covering security
 # Run the complete test suite:
 pytest -v
 
-# Run with short traceback:
-pytest -v --tb=short
-
 # Run specific test modules:
-pytest tests/test_security_regression.py -v   # RBAC, injection, rate limiting
+pytest tests/test_security_regression.py -v   # RBAC 2.0, injection, rate limiting
 pytest tests/test_phase_3_rules.py -v         # Statutory 5-state logic
 pytest tests/test_risk_engine.py -v           # Multi-agent scoring & drift
 pytest tests/test_api.py -v                   # REST endpoints & directories
@@ -353,15 +334,89 @@ pytest tests/test_api.py -v                   # REST endpoints & directories
 
 ---
 
-## 👥 Demo User Credentials
+## 📁 Repository Structure
 
-For demonstration and audit workflow evaluation:
+```
+SIH26102/
+├── backend/                        # FastAPI REST Backend
+│   ├── auth.py                     # RBAC 2.0, JWT validation & bcrypt hashing
+│   ├── config.py                   # Pydantic settings & environment validation
+│   ├── database.py                 # PyMongo connection layer & index definitions
+│   ├── main.py                     # API routers, middleware & rate limiting
+│   ├── schemas.py                  # Pydantic request & response schemas
+│   ├── seeder.py                   # Database bootstrap & index provisioning
+│   ├── scripts/
+│   │   ├── seed_500_grievances.py  # 500 realistic grievances with authentic work links
+│   │   └── generate_constituency_credentials.py # MP & Auditor credential generator
+│   └── services/
+│       ├── analytics.py            # Aggregations, state & MP risk metrics
+│       └── ingestion.py            # Live portal scraper & distributed locking
+│
+├── frontend/                       # React 19 + Vite Frontend Application
+│   ├── src/
+│   │   ├── components/
+│   │   │   ├── CasePacketModal.jsx       # Forensic case packet & audit review modal
+│   │   │   ├── CitizenGrievancesView.jsx # Citizen grievance portal & redressal desk
+│   │   │   ├── Header.jsx                # MoSPI navigation header & role switcher
+│   │   │   ├── IndiaMap.jsx              # Interactive SVG map & compare modal
+│   │   │   ├── LoginModal.jsx            # 1-Click quick login dialog
+│   │   │   ├── MPDirectory.jsx           # MP transparency table & filters
+│   │   │   ├── MPProfileModal.jsx        # Individual MP dossier modal
+│   │   │   ├── PortfolioOverview.jsx     # Macro analytics & KPI cards
+│   │   │   ├── PriorityQueue.jsx         # Ranked audit triage table
+│   │   │   ├── StatesView.jsx            # State comparison matrix
+│   │   │   └── dashboard/
+│   │   │       ├── AdminDashboard.jsx    # MoSPI central reviewer oversight
+│   │   │       ├── MPDashboard.jsx       # MP constituency management portal
+│   │   │       ├── DistrictAuditorDashboard.jsx # District field verification
+│   │   │       └── CitizenProblemsView.jsx # Embedded grievance review desk
+│   │   ├── lib/
+│   │   │   ├── api.js                    # Authenticated apiFetch wrapper
+│   │   │   └── formatters.js             # INR currency & date formatters
+│   │   ├── App.jsx                       # Application coordinator & tab router
+│   │   └── index.css                     # gstack Anti-Slop dark design system
+│   ├── package.json
+│   └── vite.config.js
+│
+├── model/                          # Multi-Agent Risk Engine
+│   ├── agents/                     # 6 Domain Specialist Agents
+│   │   ├── base.py                 # Abstract agent interface
+│   │   ├── coordinator.py          # Multi-agent weighted synthesis
+│   │   ├── financial_agent.py      # Financial outlier detection
+│   │   ├── duplicate_agent.py      # Near-duplicate text & location detection
+│   │   ├── timeline_agent.py       # Velocity & stagnation detection
+│   │   ├── vendor_agent.py         # Vendor concentration detection
+│   │   ├── compliance_agent.py     # Statutory guideline compliance
+│   │   └── geographic_agent.py     # IDA clustering & capture detection
+│   ├── rules/                      # Statutory 5-State Rule Evaluator
+│   │   ├── evaluator.py            # Rule evaluation implementations
+│   │   └── registry.py             # Rule registry & legal metadata
+│   ├── config.yaml                 # Tunable agent weights & thresholds
+│   └── risk_engine.py              # Central risk scoring & case packet generator
+│
+├── tests/                          # Automated PyTest Test Suite (82 tests)
+│   ├── conftest.py                 # Isolated mongomock database fixtures
+│   ├── test_api.py                 # 24 REST API integration tests
+│   ├── test_phase_3_rules.py       # Statutory five-state rule tests
+│   ├── test_risk_engine.py         # Multi-agent scoring & drift tests
+│   └── test_security_regression.py # RBAC & security attack tests
+│
+├── AGENTS.md                       # gstack Engineering & Design Rules
+├── .gitignore                      # Strict exclusion of all env and secrets
+├── pytest.ini
+└── requirements.txt
+```
 
-| Role | Username | Password | Permissions |
-|---|---|---|---|
-| **Public User** | *(No login required)* | *(None)* | View priority queue, MP directories, case packet narratives, submit citizen feedback, export open data. |
-| **Auditor** | `auditor` | `Auditor@MPLADS2026!` | All public access + Submit formal audit determinations on case packets. |
-| **Admin / Reviewer**| `admin` | `Admin@MPLADS2026!` | All auditor access + Trigger live portal data synchronization. |
+---
+
+## 🎨 Design System & Anti-Slop Doctrine
+
+This project strictly adheres to **gstack** and **anti-slop design principles**:
+- **Color Discipline:** Deep dark surfaces at `#0C0C0C` (base) and `#141414` (cards) with subtle `#262626` borders.
+- **Intentional Accent:** Warm amber cursor accent (`#F59E0B` / `#FBBF24`) reserved for high-intent actions like Case Packet inspection and review approvals.
+- **Semantic Risk Indicators:** Clear risk signaling using Red (`#EF4444` for High Risk), Amber (`#F59E0B` for Medium Risk), and Green (`#22C55E` for Low Risk).
+- **Physical Depth:** Subtle SVG noise texture (`feTurbulence`) to avoid flat, lifeless SaaS templates.
+- **Tabular Data Scannability:** Monospace typography with tabular figures (`tnum`) for monetary figures, work IDs, and percentage metrics.
 
 ---
 
