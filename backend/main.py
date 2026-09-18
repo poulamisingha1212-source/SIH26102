@@ -748,6 +748,150 @@ def get_current_user_profile(
 
 
 # ==============================================================================
+# 5a. Geography Hierarchy & Geolocation Resolution
+# ==============================================================================
+_GEOGRAPHY_CACHE = None
+
+
+def get_geography_data():
+    global _GEOGRAPHY_CACHE
+    if _GEOGRAPHY_CACHE is not None:
+        return _GEOGRAPHY_CACHE
+    import json
+    from pathlib import Path
+    from collections import defaultdict
+
+    json_path = Path(__file__).resolve().parent.parent / "data" / "constituency_credentials.json"
+    ls_records = []
+    if json_path.exists():
+        try:
+            with open(json_path, "r", encoding="utf-8") as f:
+                all_data = json.load(f)
+                ls_records = [d for d in all_data if d.get("house") == "Lok Sabha" and d.get("role") == "Member of Parliament"]
+        except Exception as e:
+            logger.warning(f"Failed to load constituency_credentials.json: {e}")
+
+    if not ls_records:
+        for r in mp_allocations.find({"house": {"$regex": "Lok Sabha", "$options": "i"}}):
+            ls_records.append({
+                "state": r.get("state"),
+                "district": r.get("district") or r.get("constituency"),
+                "constituency": r.get("constituency"),
+                "representative": r.get("mp_name")
+            })
+
+    states = sorted(set(d["state"] for d in ls_records if d.get("state")))
+    districts_by_state = defaultdict(set)
+    constituencies_by_state = defaultdict(list)
+
+    for d in ls_records:
+        st = d.get("state")
+        const = d.get("constituency")
+        dist = d.get("district") or const
+        rep = d.get("representative") or d.get("mp_name") or ""
+        if st and const:
+            districts_by_state[st].add(dist)
+            constituencies_by_state[st].append({
+                "constituency": const,
+                "district": dist,
+                "mp_name": rep
+            })
+
+    _GEOGRAPHY_CACHE = {
+        "states": states,
+        "districts_by_state": {k: sorted(list(v)) for k, v in districts_by_state.items()},
+        "constituencies_by_state": {k: sorted(v, key=lambda x: x["constituency"]) for k, v in constituencies_by_state.items()},
+        "raw_records": ls_records
+    }
+    return _GEOGRAPHY_CACHE
+
+
+@app.get("/api/geography/hierarchy")
+def get_geography_hierarchy():
+    """Returns complete state, district, and Lok Sabha constituency hierarchy for civic grievance selection."""
+    geo = get_geography_data()
+    return {
+        "states": geo["states"],
+        "districts_by_state": geo["districts_by_state"],
+        "constituencies_by_state": geo["constituencies_by_state"]
+    }
+
+
+@app.get("/api/geography/reverse-geocode")
+def reverse_geocode(
+    lat: float = Query(..., ge=-90, le=90),
+    lon: float = Query(..., ge=-180, le=180)
+):
+    """
+    Reverse geocodes GPS coordinates to Indian State, District, and Parliamentary Constituency.
+    """
+    import urllib.request
+    import json
+    geo_data = get_geography_data()
+    ls_records = geo_data.get("raw_records", [])
+
+    state_detected = None
+    district_detected = None
+    city_detected = None
+    display_name = f"{lat:.4f}, {lon:.4f}"
+
+    try:
+        url = f"https://nominatim.openstreetmap.org/reverse?lat={lat}&lon={lon}&format=json"
+        req = urllib.request.Request(url, headers={"User-Agent": "MPLADSSentinel/1.0 (sih-grievance-portal)"})
+        with urllib.request.urlopen(req, timeout=3.0) as response:
+            res = json.loads(response.read().decode())
+            addr = res.get("address", {})
+            state_detected = addr.get("state")
+            district_detected = addr.get("state_district") or addr.get("county") or addr.get("district")
+            city_detected = addr.get("city") or addr.get("town") or addr.get("village")
+            display_name = res.get("display_name", display_name)
+    except Exception as e:
+        logger.warning(f"Reverse geocode lookup warning: {e}")
+
+    # Match state
+    matched_state = None
+    if state_detected:
+        for st in geo_data["states"]:
+            if state_detected.lower() in st.lower() or st.lower() in state_detected.lower():
+                matched_state = st
+                break
+
+    candidates = [d for d in ls_records if d.get("state") == matched_state] if matched_state else ls_records
+    best_match = None
+    search_keys = [k for k in [district_detected, city_detected] if k]
+
+    for key in search_keys:
+        k_clean = key.lower()
+        for c in candidates:
+            c_name = c.get("constituency", "").lower()
+            d_name = (c.get("district") or "").lower()
+            if k_clean in c_name or c_name in k_clean or k_clean in d_name or d_name in k_clean:
+                best_match = c
+                break
+        if best_match:
+            break
+
+    if not best_match and candidates:
+        best_match = candidates[0]
+
+    final_state = best_match.get("state") if best_match else (matched_state or "Rajasthan")
+    final_district = best_match.get("district") or best_match.get("constituency") if best_match else "Kota"
+    final_constituency = best_match.get("constituency") if best_match else "Kota"
+    final_mp = best_match.get("representative") if best_match else "Om Birla"
+
+    return {
+        "success": True,
+        "latitude": lat,
+        "longitude": lon,
+        "state": final_state,
+        "district": final_district,
+        "constituency": final_constituency,
+        "mp_name": final_mp,
+        "display_name": display_name
+    }
+
+
+# ==============================================================================
 # 5b. Citizen Problems & Grievances with MP Reply & Auditor Verification
 # ==============================================================================
 @app.get("/api/problems", response_model=ProblemListResponse)
@@ -819,6 +963,30 @@ def submit_citizen_problem(
     const_code = (payload.constituency[:3] if payload.constituency else "GEN").upper()
     new_id = f"PRB-{const_code}-{uuid.uuid4().hex[:6].upper()}"
 
+    photo = payload.photo_proof
+    if photo:
+        photo = photo.strip()
+        if len(photo) > 2_000_000:
+            raise HTTPException(
+                status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
+                detail="Photo payload exceeds the 1.5MB size limit."
+            )
+        valid_prefix = any(
+            photo.startswith(p) for p in (
+                "data:image/jpeg;base64,",
+                "data:image/jpg;base64,",
+                "data:image/png;base64,",
+                "data:image/webp;base64,",
+                "http://",
+                "https://",
+            )
+        )
+        if not valid_prefix:
+            raise HTTPException(
+                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                detail="Invalid image format. Allowed formats: JPEG, PNG, WEBP base64 data URLs or HTTPS URLs."
+            )
+
     raw_title = (payload.title or payload.work_title or "Citizen Grievance").strip()
     raw_desc = (payload.description or payload.comment or raw_title).strip()
     raw_citizen = (payload.citizen_name or payload.reporter_name or "Concerned Citizen").strip()
@@ -836,7 +1004,7 @@ def submit_citizen_problem(
         "state": payload.state.strip() if payload.state else None,
         "category": payload.category.strip(),
         "comment": raw_desc,
-        "photo_proof": payload.photo_proof,
+        "photo_proof": photo,
         "reporter_name": raw_citizen,
         "citizen_name": raw_citizen,
         "contact": contact_val,

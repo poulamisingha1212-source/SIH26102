@@ -1,9 +1,10 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import {
   MessageSquare, AlertCircle, CheckCircle2, Clock, Search,
   Filter, Plus, Send, ShieldAlert, FileText, ArrowRight,
   ExternalLink, User, Calendar, MapPin, Sparkles, X,
-  Building, CheckCircle, RefreshCw
+  Building, CheckCircle, RefreshCw, Camera, Upload, Trash2,
+  Navigation, Eye, Check, ChevronRight, LocateFixed
 } from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -46,6 +47,7 @@ const CATEGORIES = [
   'Education & Schools',
   'Community Assets',
   'Electricity & Lighting',
+  'Others',
 ];
 
 const MP_REPLY_TEMPLATES = [
@@ -96,7 +98,236 @@ export default function CitizenProblemsView({
     citizen_name: '',
     contact: '',
   });
+  const [otherCategoryDetail, setOtherCategoryDetail] = useState('');
   const [isSubmittingNew, setIsSubmittingNew] = useState(false);
+
+  // Photo state
+  const [photoProof, setPhotoProof] = useState(null);
+  const [photoMeta, setPhotoMeta] = useState(null);
+  const fileInputRef = useRef(null);
+
+  // Lightbox preview for full photo inspection
+  const [previewingPhoto, setPreviewingPhoto] = useState(null);
+
+  // Constituency selection modes: 'steps' | 'gps'
+  const [constituencySelectMode, setConstituencySelectMode] = useState('steps');
+  const [geoHierarchy, setGeoHierarchy] = useState({
+    states: [],
+    districts_by_state: {},
+    constituencies_by_state: {}
+  });
+  const [isLoadingGeo, setIsLoadingGeo] = useState(false);
+  const [selectedGeoState, setSelectedGeoState] = useState(state || 'Rajasthan');
+  const [selectedGeoDistrict, setSelectedGeoDistrict] = useState(constituency || 'Kota');
+  const [selectedMPName, setSelectedMPName] = useState('Om Birla');
+  const [isLocating, setIsLocating] = useState(false);
+  const [locationSuccessInfo, setLocationSuccessInfo] = useState(null);
+
+  // Fetch complete geography hierarchy for step-by-step dropdowns
+  useEffect(() => {
+    if (showCreateModal && geoHierarchy.states.length === 0) {
+      setIsLoadingGeo(true);
+      apiFetch('/api/geography/hierarchy')
+        .then((res) => {
+          if (!res.ok) throw new Error('Hierarchy endpoint returned error');
+          return res.json();
+        })
+        .then((data) => {
+          if (data && data.states) {
+            setGeoHierarchy(data);
+            const initialSt = state && data.states.includes(state) ? state : (data.states[0] || 'Rajasthan');
+            setSelectedGeoState(initialSt);
+            const dists = data.districts_by_state[initialSt] || [];
+            const initialDist = constituency && dists.includes(constituency) ? constituency : (dists[0] || '');
+            setSelectedGeoDistrict(initialDist);
+            const consts = data.constituencies_by_state[initialSt] || [];
+            const matchedConst = consts.find((c) => c.constituency === constituency) || consts[0];
+            if (matchedConst) {
+              setSelectedMPName(matchedConst.mp_name || '');
+            }
+          }
+        })
+        .catch((err) => {
+          console.warn('Could not load geography hierarchy:', err);
+        })
+        .finally(() => setIsLoadingGeo(false));
+    }
+  }, [showCreateModal, geoHierarchy.states.length, state, constituency]);
+
+  // When state changes in step-by-step
+  const handleStateChange = (newState) => {
+    setSelectedGeoState(newState);
+    const districts = geoHierarchy.districts_by_state[newState] || [];
+    const firstDistrict = districts[0] || '';
+    setSelectedGeoDistrict(firstDistrict);
+
+    const consts = geoHierarchy.constituencies_by_state[newState] || [];
+    const matchedConst = consts.find((c) => c.district === firstDistrict) || consts[0];
+    if (matchedConst) {
+      setNewProblem((prev) => ({
+        ...prev,
+        state: newState,
+        district: matchedConst.district || firstDistrict,
+        constituency: matchedConst.constituency
+      }));
+      setSelectedMPName(matchedConst.mp_name || '');
+    } else {
+      setNewProblem((prev) => ({
+        ...prev,
+        state: newState,
+        district: firstDistrict,
+        constituency: firstDistrict
+      }));
+      setSelectedMPName('');
+    }
+  };
+
+  // When district changes in step-by-step
+  const handleDistrictChange = (newDistrict) => {
+    setSelectedGeoDistrict(newDistrict);
+    const consts = geoHierarchy.constituencies_by_state[selectedGeoState] || [];
+    const matchedConst = consts.find((c) => c.district === newDistrict) || consts[0];
+    if (matchedConst) {
+      setNewProblem((prev) => ({
+        ...prev,
+        district: newDistrict,
+        constituency: matchedConst.constituency
+      }));
+      setSelectedMPName(matchedConst.mp_name || '');
+    } else {
+      setNewProblem((prev) => ({
+        ...prev,
+        district: newDistrict,
+        constituency: newDistrict
+      }));
+      setSelectedMPName('');
+    }
+  };
+
+  // When constituency changes in step-by-step
+  const handleConstituencyChange = (newConst) => {
+    const consts = geoHierarchy.constituencies_by_state[selectedGeoState] || [];
+    const item = consts.find((c) => c.constituency === newConst);
+    setNewProblem((prev) => ({
+      ...prev,
+      constituency: newConst,
+      district: item?.district || prev.district,
+      state: selectedGeoState
+    }));
+    setSelectedMPName(item?.mp_name || '');
+  };
+
+  // GPS Location detection handler
+  const handleDetectLocation = () => {
+    if (!navigator.geolocation) {
+      toast.error('Geolocation is not supported by your browser.');
+      return;
+    }
+
+    setIsLocating(true);
+    setLocationSuccessInfo(null);
+    navigator.geolocation.getCurrentPosition(
+      async (pos) => {
+        try {
+          const { latitude, longitude } = pos.coords;
+          const res = await apiFetch(`/api/geography/reverse-geocode?lat=${latitude}&lon=${longitude}`);
+          if (!res.ok) throw new Error('Reverse geocode failed');
+          const data = await res.json();
+          if (data && data.constituency) {
+            setNewProblem((prev) => ({
+              ...prev,
+              constituency: data.constituency,
+              district: data.district || data.constituency,
+              state: data.state || prev.state,
+              latitude,
+              longitude
+            }));
+            setSelectedGeoState(data.state || state);
+            setSelectedGeoDistrict(data.district || data.constituency);
+            setSelectedMPName(data.mp_name || '');
+            setLocationSuccessInfo({
+              constituency: data.constituency,
+              district: data.district,
+              state: data.state,
+              mp_name: data.mp_name,
+              display_name: data.display_name
+            });
+            toast.success(`📍 Located in ${data.constituency} (${data.state})!`);
+          } else {
+            toast.info('GPS coordinates acquired; please confirm constituency from dropdown.');
+          }
+        } catch (err) {
+          console.error('GPS reverse geocode error:', err);
+          toast.error('Could not auto-detect constituency from coordinates. Please select step-by-step.');
+        } finally {
+          setIsLocating(false);
+        }
+      },
+      (err) => {
+        console.warn('Geolocation permission error:', err);
+        setIsLocating(false);
+        toast.error('Location access denied or timed out. Please choose State and District below.');
+      },
+      { timeout: 10000, enableHighAccuracy: true }
+    );
+  };
+
+  // Client-side photo upload & automatic canvas compression
+  const handlePhotoSelect = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      toast.error('Please select an image file (JPEG, PNG, or WEBP).');
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const img = new window.Image();
+      img.onload = () => {
+        const MAX_DIM = 1200;
+        let width = img.width;
+        let height = img.height;
+
+        if (width > MAX_DIM || height > MAX_DIM) {
+          if (width > height) {
+            height = Math.round((height * MAX_DIM) / width);
+            width = MAX_DIM;
+          } else {
+            width = Math.round((width * MAX_DIM) / height);
+            height = MAX_DIM;
+          }
+        }
+
+        const canvas = document.createElement('canvas');
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, width, height);
+
+        let compressedBase64 = canvas.toDataURL('image/jpeg', 0.82);
+        if (compressedBase64.length > 1_800_000) {
+          compressedBase64 = canvas.toDataURL('image/jpeg', 0.6);
+        }
+
+        setPhotoProof(compressedBase64);
+        setPhotoMeta({
+          name: file.name,
+          size: `${Math.round((compressedBase64.length * 0.75) / 1024)} KB`
+        });
+        toast.success('Photo proof attached successfully!');
+      };
+      img.src = event.target.result;
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleRemovePhoto = () => {
+    setPhotoProof(null);
+    setPhotoMeta(null);
+    if (fileInputRef.current) fileInputRef.current.value = '';
+  };
 
   const fetchProblems = useCallback(async () => {
     setIsLoading(true);
@@ -203,12 +434,27 @@ export default function CitizenProblemsView({
       return;
     }
 
+    let finalCategory = newProblem.category;
+    if (newProblem.category === 'Others') {
+      if (otherCategoryDetail.trim()) {
+        finalCategory = `Others: ${otherCategoryDetail.trim()}`;
+      } else {
+        finalCategory = 'Others';
+      }
+    }
+
     setIsSubmittingNew(true);
     try {
+      const payload = {
+        ...newProblem,
+        category: finalCategory,
+        photo_proof: photoProof || null
+      };
+
       const res = await apiFetch('/api/problems', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(newProblem),
+        body: JSON.stringify(payload),
       });
 
       if (!res.ok) {
@@ -229,6 +475,10 @@ export default function CitizenProblemsView({
         citizen_name: '',
         contact: '',
       });
+      setOtherCategoryDetail('');
+      setPhotoProof(null);
+      setPhotoMeta(null);
+      setLocationSuccessInfo(null);
       fetchProblems();
     } catch (err) {
       console.error('Create problem error:', err);
@@ -244,6 +494,9 @@ export default function CitizenProblemsView({
   // Filter client-side by category if specified
   const filteredProblems = problems.filter((p) => {
     if (categoryFilter === 'All Categories') return true;
+    if (categoryFilter === 'Others') {
+      return p.category?.toLowerCase().startsWith('other');
+    }
     return p.category?.toLowerCase().includes(categoryFilter.toLowerCase().split(' ')[0]);
   });
 
@@ -413,6 +666,31 @@ export default function CitizenProblemsView({
                     </p>
                   </div>
 
+                  {/* Attached Photo Proof Thumbnail (if present) */}
+                  {p.photo_proof && (
+                    <div className="pt-1">
+                      <div className="flex items-center gap-1.5 text-xs text-slate-500 dark:text-slate-400 mb-1.5 font-semibold">
+                        <Camera className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" />
+                        <span>Attached Photo Evidence:</span>
+                      </div>
+                      <div
+                        onClick={() => setPreviewingPhoto({ url: p.photo_proof, title: p.title })}
+                        className="group relative inline-block cursor-pointer overflow-hidden rounded-xl border border-slate-200 dark:border-slate-800 shadow-2xs hover:shadow-md transition-all duration-200 bg-slate-100 dark:bg-slate-800"
+                        title="Click to view full photo evidence"
+                      >
+                        <img
+                          src={p.photo_proof}
+                          alt="Citizen grievance photo proof"
+                          className="h-24 w-36 sm:h-28 sm:w-44 object-cover group-hover:scale-105 transition-transform duration-200"
+                        />
+                        <div className="absolute inset-0 bg-slate-950/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white text-xs font-semibold gap-1">
+                          <Eye className="w-3.5 h-3.5" />
+                          <span>Expand</span>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
                   {/* Citizen Info & Linked Work */}
                   <div className="flex items-center justify-between gap-3 pt-2 border-t border-slate-100 dark:border-slate-800/80 flex-wrap text-xs">
                     <div className="flex items-center gap-2 text-slate-500">
@@ -449,7 +727,7 @@ export default function CitizenProblemsView({
                           <span>
                             {typeof p.mp_reply === 'object' && p.mp_reply.replied_by
                               ? `Official MP Response from ${p.mp_reply.replied_by}`
-                              : 'Official MP Response from Shri Kota Representative'}
+                              : 'Official MP Response from Parliamentary Desk'}
                           </span>
                         </div>
                         {(p.mp_replied_at || (typeof p.mp_reply === 'object' && p.mp_reply.replied_at)) && (
@@ -684,30 +962,193 @@ export default function CitizenProblemsView({
       {/* Citizen Report Issue Modal */}
       {showCreateModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-xs p-4 animate-in fade-in duration-200">
-          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-2xl max-w-lg w-full p-6 relative overflow-hidden max-h-[90vh] overflow-y-auto">
+          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-2xl max-w-xl w-full p-6 relative overflow-hidden max-h-[90vh] overflow-y-auto">
             <button
               type="button"
               onClick={() => setShowCreateModal(false)}
-              className="absolute top-4 right-4 text-slate-400 hover:text-slate-600 p-1.5 rounded-lg hover:bg-slate-100 transition-colors cursor-pointer"
+              className="absolute top-4 right-4 text-slate-400 hover:text-slate-600 p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
             >
               <X className="w-4 h-4" />
             </button>
 
             <div className="flex items-center gap-3 mb-4">
-              <div className="p-2.5 rounded-xl bg-indigo-50 dark:bg-indigo-950 text-indigo-600 border border-indigo-100">
+              <div className="p-2.5 rounded-xl bg-indigo-50 dark:bg-indigo-950 text-indigo-600 border border-indigo-100 dark:border-indigo-900">
                 <MessageSquare className="w-5 h-5" />
               </div>
               <div>
                 <h3 className="text-base font-bold text-slate-900 dark:text-slate-100 font-display">
                   Report Civic Grievance to MP & Auditor
                 </h3>
-                <p className="text-xs text-slate-500">
-                  Submissions are routed directly to the elected MP and the District Authority auditor desk.
+                <p className="text-xs text-slate-500 dark:text-slate-400">
+                  Submissions are routed directly to the elected Lok Sabha MP and the District Authority auditor desk.
                 </p>
               </div>
             </div>
 
-            <form onSubmit={handleCreateProblem} className="space-y-3.5">
+            <form onSubmit={handleCreateProblem} className="space-y-4">
+              {/* Constituency Selection Section (GPS or Step-by-Step) */}
+              <div className="space-y-2 rounded-xl bg-slate-50 dark:bg-slate-800/40 p-3.5 border border-slate-200 dark:border-slate-700/60">
+                <div className="flex items-center justify-between">
+                  <label className="text-xs font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
+                    <MapPin className="w-3.5 h-3.5 text-indigo-600" />
+                    <span>Select Target Constituency</span>
+                  </label>
+                  <div className="flex items-center gap-1 bg-white dark:bg-slate-900 p-0.5 rounded-lg border border-slate-200 dark:border-slate-700">
+                    <button
+                      type="button"
+                      onClick={() => setConstituencySelectMode('steps')}
+                      className={`px-2.5 py-1 text-[11px] font-semibold rounded-md transition-all cursor-pointer ${
+                        constituencySelectMode === 'steps'
+                          ? 'bg-indigo-600 text-white shadow-2xs'
+                          : 'text-slate-600 hover:text-slate-900 dark:text-slate-400'
+                      }`}
+                    >
+                      Step-by-Step
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setConstituencySelectMode('gps')}
+                      className={`px-2.5 py-1 text-[11px] font-semibold rounded-md transition-all flex items-center gap-1 cursor-pointer ${
+                        constituencySelectMode === 'gps'
+                          ? 'bg-indigo-600 text-white shadow-2xs'
+                          : 'text-slate-600 hover:text-slate-900 dark:text-slate-400'
+                      }`}
+                    >
+                      <Navigation className="w-3 h-3" />
+                      Auto GPS
+                    </button>
+                  </div>
+                </div>
+
+                {/* Mode A: GPS Auto-Detect */}
+                {constituencySelectMode === 'gps' && (
+                  <div className="space-y-2 pt-1 animate-in fade-in duration-150">
+                    <div className="flex items-center justify-between gap-2 p-2.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
+                      <div className="text-xs text-slate-600 dark:text-slate-300">
+                        <p className="font-semibold text-slate-900 dark:text-slate-100">One-Tap Geolocation</p>
+                        <p className="text-[11px] text-slate-500">Detects your Lok Sabha constituency and local MP using browser GPS.</p>
+                      </div>
+                      <Button
+                        type="button"
+                        size="sm"
+                        onClick={handleDetectLocation}
+                        disabled={isLocating}
+                        className="h-8 px-3 rounded-lg text-xs font-semibold bg-indigo-600 hover:bg-indigo-700 text-white shadow-2xs gap-1.5 cursor-pointer shrink-0"
+                      >
+                        <Navigation className={`w-3.5 h-3.5 ${isLocating ? 'animate-spin' : ''}`} />
+                        <span>{isLocating ? 'Detecting...' : 'Detect My Location'}</span>
+                      </Button>
+                    </div>
+
+                    {locationSuccessInfo && (
+                      <div className="p-2.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/60 text-xs space-y-1 animate-in fade-in duration-150">
+                        <div className="flex items-center gap-1.5 text-emerald-800 dark:text-emerald-300 font-bold">
+                          <Check className="w-3.5 h-3.5" />
+                          <span>Successfully Located: {locationSuccessInfo.constituency}</span>
+                        </div>
+                        <p className="text-[11px] text-emerald-700 dark:text-emerald-400">
+                          District: <strong>{locationSuccessInfo.district || locationSuccessInfo.constituency}</strong> | State: <strong>{locationSuccessInfo.state}</strong>
+                          {locationSuccessInfo.mp_name && (
+                            <span> | Routed to MP: <strong>{locationSuccessInfo.mp_name}</strong></span>
+                          )}
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* Mode B: Step-by-Step Selection */}
+                {constituencySelectMode === 'steps' && (
+                  <div className="space-y-2.5 pt-1 animate-in fade-in duration-150">
+                    {isLoadingGeo ? (
+                      <div className="text-center py-4 text-xs text-slate-400">
+                        <RefreshCw className="w-4 h-4 animate-spin mx-auto mb-1 text-indigo-600" />
+                        Loading Indian Parliamentary Geography...
+                      </div>
+                    ) : (
+                      <>
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                          {/* Step 1: State */}
+                          <div className="space-y-1">
+                            <label className="text-[11px] font-semibold text-slate-600 dark:text-slate-400">
+                              1. State / UT
+                            </label>
+                            <select
+                              value={selectedGeoState}
+                              onChange={(e) => handleStateChange(e.target.value)}
+                              className="w-full text-xs h-8 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-2 py-1 text-slate-900 dark:text-slate-100 font-medium cursor-pointer"
+                            >
+                              {(geoHierarchy.states.length > 0 ? geoHierarchy.states : [state || 'Rajasthan']).map((st) => (
+                                <option key={st} value={st}>
+                                  {st}
+                                </option>
+                              ))}
+                            </select>
+                          </div>
+
+                          {/* Step 2: District */}
+                          <div className="space-y-1">
+                            <label className="text-[11px] font-semibold text-slate-600 dark:text-slate-400">
+                              2. District
+                            </label>
+                            <select
+                              value={selectedGeoDistrict}
+                              onChange={(e) => handleDistrictChange(e.target.value)}
+                              className="w-full text-xs h-8 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-2 py-1 text-slate-900 dark:text-slate-100 font-medium cursor-pointer"
+                            >
+                              {(geoHierarchy.districts_by_state[selectedGeoState] || [constituency || 'Kota']).map((dist) => (
+                                <option key={dist} value={dist}>
+                                  {dist}
+                                </option>
+                              ))}
+                            </select>
+                          </div>
+
+                          {/* Step 3: Lok Sabha Constituency */}
+                          <div className="space-y-1">
+                            <label className="text-[11px] font-semibold text-slate-600 dark:text-slate-400">
+                              3. Lok Sabha Seat
+                            </label>
+                            <select
+                              value={newProblem.constituency}
+                              onChange={(e) => handleConstituencyChange(e.target.value)}
+                              className="w-full text-xs h-8 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-2 py-1 text-slate-900 dark:text-slate-100 font-medium cursor-pointer"
+                            >
+                              {(
+                                geoHierarchy.constituencies_by_state[selectedGeoState]?.filter(
+                                  (c) => !selectedGeoDistrict || c.district === selectedGeoDistrict
+                                ).length > 0
+                                  ? geoHierarchy.constituencies_by_state[selectedGeoState].filter(
+                                      (c) => !selectedGeoDistrict || c.district === selectedGeoDistrict
+                                    )
+                                  : geoHierarchy.constituencies_by_state[selectedGeoState] || [{ constituency: constituency || 'Kota', mp_name: 'Om Birla' }]
+                              ).map((c) => (
+                                <option key={c.constituency} value={c.constituency}>
+                                  {c.constituency} {c.mp_name ? `(${c.mp_name})` : ''}
+                                </option>
+                              ))}
+                            </select>
+                          </div>
+                        </div>
+
+                        {/* Representative info badge */}
+                        <div className="flex items-center justify-between text-[11px] px-2.5 py-1.5 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400">
+                          <span>
+                            Target: <strong className="text-slate-900 dark:text-slate-100">{newProblem.constituency}</strong> ({newProblem.state})
+                          </span>
+                          {selectedMPName && (
+                            <span className="text-indigo-600 dark:text-indigo-400 font-semibold flex items-center gap-1">
+                              <Building className="w-3 h-3" /> MP: {selectedMPName}
+                            </span>
+                          )}
+                        </div>
+                      </>
+                    )}
+                  </div>
+                )}
+              </div>
+
+              {/* Issue Title */}
               <div className="space-y-1">
                 <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
                   Issue Title <span className="text-rose-500">*</span>
@@ -721,9 +1162,12 @@ export default function CitizenProblemsView({
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-2.5">
+              {/* Category Selection with 'Others' Option */}
+              <div className="space-y-2">
                 <div className="space-y-1">
-                  <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">Category</label>
+                  <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
+                    Category <span className="text-rose-500">*</span>
+                  </label>
                   <Select
                     value={newProblem.category}
                     onValueChange={(val) => setNewProblem({ ...newProblem, category: val })}
@@ -739,20 +1183,29 @@ export default function CitizenProblemsView({
                       <SelectItem value="Education & Schools" className="text-xs">Education & Schools</SelectItem>
                       <SelectItem value="Community Assets" className="text-xs">Community Assets</SelectItem>
                       <SelectItem value="Electricity & Lighting" className="text-xs">Electricity & Lighting</SelectItem>
+                      <SelectItem value="Others" className="text-xs font-semibold text-indigo-600">Others (Specify)</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
 
-                <div className="space-y-1">
-                  <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">Constituency</label>
-                  <Input
-                    value={newProblem.constituency}
-                    onChange={(e) => setNewProblem({ ...newProblem, constituency: e.target.value, district: e.target.value })}
-                    className="text-xs h-9 rounded-xl border-slate-200 font-medium"
-                  />
-                </div>
+                {/* If Others is chosen, show custom specification field */}
+                {newProblem.category === 'Others' && (
+                  <div className="space-y-1 animate-in fade-in duration-150">
+                    <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
+                      Specify Category Details <span className="text-rose-500">*</span>
+                    </label>
+                    <Input
+                      placeholder="e.g. Park maintenance, flood drain overflow, sports ground repair..."
+                      value={otherCategoryDetail}
+                      onChange={(e) => setOtherCategoryDetail(e.target.value)}
+                      className="text-xs h-9 rounded-xl border-indigo-200 focus:border-indigo-500 bg-indigo-50/20"
+                      required
+                    />
+                  </div>
+                )}
               </div>
 
+              {/* Detailed Description */}
               <div className="space-y-1">
                 <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
                   Detailed Description <span className="text-rose-500">*</span>
@@ -767,6 +1220,85 @@ export default function CitizenProblemsView({
                 />
               </div>
 
+              {/* Photo Proof Upload Option */}
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold text-slate-700 dark:text-slate-300 flex items-center justify-between">
+                  <span className="flex items-center gap-1.5">
+                    <Camera className="w-3.5 h-3.5 text-indigo-600" />
+                    Attach Photo Proof (Optional)
+                  </span>
+                  <span className="text-[10px] text-slate-400 font-normal">JPEG, PNG, WEBP (Auto-compressed)</span>
+                </label>
+
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp"
+                  onChange={handlePhotoSelect}
+                  className="hidden"
+                />
+
+                {!photoProof ? (
+                  <div
+                    onClick={() => fileInputRef.current?.click()}
+                    className="border border-dashed border-slate-200 dark:border-slate-700 hover:border-indigo-400 dark:hover:border-indigo-500 rounded-xl p-3 flex flex-col items-center justify-center gap-1 bg-slate-50/60 dark:bg-slate-800/30 hover:bg-indigo-50/30 transition-all cursor-pointer text-center group"
+                  >
+                    <div className="p-2 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 group-hover:border-indigo-300 text-slate-500 group-hover:text-indigo-600 transition-colors shadow-2xs">
+                      <Upload className="w-4 h-4" />
+                    </div>
+                    <p className="text-xs font-semibold text-slate-700 dark:text-slate-300 group-hover:text-indigo-600 transition-colors">
+                      Click to upload photo evidence from device or camera
+                    </p>
+                    <p className="text-[10px] text-slate-400">
+                      Provides verifiable visual proof to MP and district auditors
+                    </p>
+                  </div>
+                ) : (
+                  <div className="flex items-center justify-between p-2.5 rounded-xl border border-indigo-200 bg-indigo-50/40 dark:bg-indigo-950/30 dark:border-indigo-900 gap-3">
+                    <div className="flex items-center gap-2.5 min-w-0">
+                      <img
+                        src={photoProof}
+                        alt="Proof thumbnail"
+                        className="w-12 h-12 rounded-lg object-cover border border-indigo-200 dark:border-indigo-800 shadow-2xs shrink-0"
+                      />
+                      <div className="min-w-0">
+                        <p className="text-xs font-semibold text-indigo-950 dark:text-indigo-200 truncate">
+                          {photoMeta?.name || 'photo_proof.jpg'}
+                        </p>
+                        <div className="flex items-center gap-2 text-[10px] text-indigo-600 dark:text-indigo-400">
+                          <span className="flex items-center gap-0.5">
+                            <Check className="w-3 h-3 text-emerald-600" /> Attached
+                          </span>
+                          <span>•</span>
+                          <span>{photoMeta?.size}</span>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-1 shrink-0">
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => fileInputRef.current?.click()}
+                        className="h-7 px-2 text-[11px] text-indigo-700 hover:bg-indigo-100 rounded-lg cursor-pointer"
+                      >
+                        Change
+                      </Button>
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="ghost"
+                        onClick={handleRemovePhoto}
+                        className="h-7 px-2 text-[11px] text-rose-600 hover:bg-rose-50 hover:text-rose-700 rounded-lg cursor-pointer"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </Button>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Optional Work ID */}
               <div className="space-y-1">
                 <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
                   Linked MPLADS Work ID (Optional)
@@ -779,6 +1311,7 @@ export default function CitizenProblemsView({
                 />
               </div>
 
+              {/* Citizen Name & Phone */}
               <div className="grid grid-cols-2 gap-2.5">
                 <div className="space-y-1">
                   <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">Your Name (Optional)</label>
@@ -800,6 +1333,7 @@ export default function CitizenProblemsView({
                 </div>
               </div>
 
+              {/* Action Buttons */}
               <div className="pt-3 flex items-center justify-end gap-2">
                 <Button
                   type="button"
@@ -821,6 +1355,55 @@ export default function CitizenProblemsView({
                 </Button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Full-size Photo Preview Lightbox */}
+      {previewingPhoto && (
+        <div
+          className="fixed inset-0 z-60 flex items-center justify-center bg-slate-950/80 backdrop-blur-xs p-4 animate-in fade-in duration-200"
+          onClick={() => setPreviewingPhoto(null)}
+        >
+          <div
+            className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-2xl max-w-2xl w-full p-4 relative overflow-hidden space-y-3"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between pb-2 border-b border-slate-100 dark:border-slate-800">
+              <div className="flex items-center gap-2">
+                <Camera className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
+                <h4 className="text-sm font-bold text-slate-900 dark:text-slate-100 line-clamp-1 font-display">
+                  {previewingPhoto.title || 'Civic Grievance Photo Evidence'}
+                </h4>
+              </div>
+              <button
+                type="button"
+                onClick={() => setPreviewingPhoto(null)}
+                className="text-slate-400 hover:text-slate-600 p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <div className="relative rounded-xl overflow-hidden bg-slate-950 flex items-center justify-center max-h-[70vh]">
+              <img
+                src={previewingPhoto.url}
+                alt="Grievance evidence proof preview"
+                className="max-h-[70vh] w-auto max-w-full object-contain"
+              />
+            </div>
+
+            <div className="flex items-center justify-between pt-1 text-xs text-slate-500">
+              <span>Verified field photo proof submitted by citizen</span>
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => setPreviewingPhoto(null)}
+                className="h-7 text-xs rounded-lg"
+              >
+                Close Preview
+              </Button>
+            </div>
           </div>
         </div>
       )}
