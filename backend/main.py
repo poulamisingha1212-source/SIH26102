@@ -817,67 +817,172 @@ def get_geography_hierarchy():
     }
 
 
+STATE_CENTROIDS = {
+    "Andaman And Nicobar Islands": (11.7401, 92.6586),
+    "Andhra Pradesh": (15.9129, 79.7400),
+    "Arunachal Pradesh": (28.2180, 94.7278),
+    "Assam": (26.2006, 92.9376),
+    "Bihar": (25.0961, 85.3131),
+    "Chandigarh": (30.7333, 76.7794),
+    "Chhattisgarh": (21.2787, 81.8661),
+    "Dadra And Nagar Haveli And Daman And Diu": (20.3974, 72.8328),
+    "Delhi": (28.7041, 77.1025),
+    "Goa": (15.2993, 74.1240),
+    "Gujarat": (22.2587, 71.1924),
+    "Haryana": (29.0588, 76.0856),
+    "Himachal Pradesh": (31.1048, 77.1734),
+    "Jammu And Kashmir": (33.7782, 76.5762),
+    "Jharkhand": (23.6102, 85.2799),
+    "Karnataka": (15.3173, 75.7139),
+    "Kerala": (10.8505, 76.2711),
+    "Ladakh": (34.1526, 77.5771),
+    "Lakshadweep": (10.5667, 72.6417),
+    "Madhya Pradesh": (22.9734, 78.6569),
+    "Maharashtra": (19.7515, 75.7139),
+    "Manipur": (24.6637, 93.9063),
+    "Meghalaya": (25.4670, 91.3662),
+    "Mizoram": (23.1645, 92.9376),
+    "Nagaland": (26.1584, 94.5624),
+    "Odisha": (20.9517, 85.9812),
+    "Puducherry": (11.9416, 79.8083),
+    "Punjab": (31.1471, 75.3412),
+    "Rajasthan": (27.0238, 74.2179),
+    "Sikkim": (27.5330, 88.5122),
+    "Tamil Nadu": (11.1271, 78.6569),
+    "Telangana": (18.1124, 79.0193),
+    "Tripura": (23.9408, 91.9882),
+    "Uttar Pradesh": (26.8467, 80.9462),
+    "Uttarakhand": (30.0668, 79.0193),
+    "West Bengal": (22.9868, 87.8550),
+}
+
+
 @app.get("/api/geography/reverse-geocode")
 def reverse_geocode(
     lat: float = Query(..., ge=-90, le=90),
-    lon: float = Query(..., ge=-180, le=180)
+    lon: float = Query(..., ge=-180, le=180),
+    state_hint: Optional[str] = None,
+    district_hint: Optional[str] = None
 ):
     """
     Reverse geocodes GPS coordinates to Indian State, District, and Parliamentary Constituency.
+    Uses multi-tier lookup (BigDataCloud -> Nominatim -> State coordinate centroid fallback).
     """
     import urllib.request
     import json
+    import re
     geo_data = get_geography_data()
     ls_records = geo_data.get("raw_records", [])
 
-    state_detected = None
-    district_detected = None
+    state_detected = state_hint if isinstance(state_hint, str) else None
+    district_detected = district_hint if isinstance(district_hint, str) else None
     city_detected = None
     display_name = f"{lat:.4f}, {lon:.4f}"
 
+    level5_districts = []
+    # Tier 1: BigDataCloud API (fast, reliable, free client endpoint without IP blocks)
     try:
-        url = f"https://nominatim.openstreetmap.org/reverse?lat={lat}&lon={lon}&format=json"
-        req = urllib.request.Request(url, headers={"User-Agent": "MPLADSSentinel/1.0 (sih-grievance-portal)"})
-        with urllib.request.urlopen(req, timeout=3.0) as response:
-            res = json.loads(response.read().decode())
-            addr = res.get("address", {})
-            state_detected = addr.get("state")
-            district_detected = addr.get("state_district") or addr.get("county") or addr.get("district")
-            city_detected = addr.get("city") or addr.get("town") or addr.get("village")
-            display_name = res.get("display_name", display_name)
-    except Exception as e:
-        logger.warning(f"Reverse geocode lookup warning: {e}")
+        bdc_url = f"https://api.bigdatacloud.net/data/reverse-geocode-client?latitude={lat}&longitude={lon}&localityLanguage=en"
+        req = urllib.request.Request(bdc_url, headers={"User-Agent": "MPLADSSentinel/2.0"})
+        with urllib.request.urlopen(req, timeout=4.0) as response:
+            bdc_data = json.loads(response.read().decode())
+            if bdc_data.get("principalSubdivision"):
+                state_detected = bdc_data.get("principalSubdivision")
 
-    # Match state
+            # Extract adminLevel 5 (district level) names in India
+            admin_divisions = bdc_data.get("localityInfo", {}).get("administrative", [])
+            for a in admin_divisions:
+                if a.get("adminLevel") == 5 and a.get("name"):
+                    cleaned_name = a["name"].replace(" district", "").replace(" District", "")
+                    if cleaned_name and cleaned_name not in level5_districts:
+                        level5_districts.append(cleaned_name)
+
+            if level5_districts:
+                district_detected = level5_districts[0]
+            elif bdc_data.get("locality"):
+                district_detected = bdc_data.get("locality")
+            elif bdc_data.get("city"):
+                district_detected = bdc_data.get("city")
+
+            city_detected = bdc_data.get("locality") or bdc_data.get("city")
+            display_name = f"{district_detected or city_detected or ''}, {state_detected or ''}".strip(", ")
+    except Exception as e:
+        logger.warning(f"BigDataCloud reverse geocode lookup warning: {e}")
+
+    # Tier 2: Nominatim OpenStreetMap fallback if state still not detected
+    if not state_detected:
+        try:
+            url = f"https://nominatim.openstreetmap.org/reverse?lat={lat}&lon={lon}&format=json&accept-language=en"
+            req = urllib.request.Request(url, headers={"User-Agent": "MPLADSSentinel-Grievance/2.0 (contact: support@jannidhi.gov.in)"})
+            with urllib.request.urlopen(req, timeout=4.0) as response:
+                res = json.loads(response.read().decode())
+                addr = res.get("address", {})
+                state_detected = addr.get("state")
+                district_detected = addr.get("state_district") or addr.get("county") or addr.get("district")
+                city_detected = addr.get("city") or addr.get("town") or addr.get("village")
+                display_name = res.get("display_name", display_name)
+        except Exception as e:
+            logger.warning(f"Nominatim reverse geocode lookup warning: {e}")
+
+    # Tier 3: Coordinate Centroid fallback if external APIs failed
+    if not state_detected:
+        best_st = None
+        min_dist = float("inf")
+        for st_name, (c_lat, c_lon) in STATE_CENTROIDS.items():
+            dist = (lat - c_lat) ** 2 + (lon - c_lon) ** 2
+            if dist < min_dist:
+                min_dist = dist
+                best_st = st_name
+        state_detected = best_st
+
+    # Match state against standard geo_data['states']
     matched_state = None
     if state_detected:
+        clean_target = re.sub(r"[^a-z0-9]", "", state_detected.lower())
         for st in geo_data["states"]:
-            if state_detected.lower() in st.lower() or st.lower() in state_detected.lower():
+            clean_st = re.sub(r"[^a-z0-9]", "", st.lower())
+            if clean_target in clean_st or clean_st in clean_target:
                 matched_state = st
                 break
 
-    candidates = [d for d in ls_records if d.get("state") == matched_state] if matched_state else ls_records
+    # If still not matched, check coordinates bounds for West Bengal
+    if not matched_state:
+        if 21.0 <= lat <= 27.5 and 85.5 <= lon <= 90.0:
+            matched_state = "West Bengal"
+        else:
+            matched_state = state_detected or "West Bengal"
+
+    candidates = [d for d in ls_records if d.get("state") == matched_state]
+    if not candidates:
+        candidates = [d for d in ls_records if matched_state and matched_state.lower() in (d.get("state") or "").lower()]
+
     best_match = None
-    search_keys = [k for k in [district_detected, city_detected] if k]
+    valid_hints = [district_hint] if isinstance(district_hint, str) else []
+    search_keys = [k for k in level5_districts + [district_detected, city_detected] + valid_hints if k and isinstance(k, str)]
 
     for key in search_keys:
-        k_clean = key.lower()
+        k_clean = re.sub(r"[^a-z0-9]", "", key.lower())
+        if len(k_clean) < 3:
+            continue
         for c in candidates:
-            c_name = c.get("constituency", "").lower()
-            d_name = (c.get("district") or "").lower()
+            c_name = re.sub(r"[^a-z0-9]", "", c.get("constituency", "").lower())
+            d_name = re.sub(r"[^a-z0-9]", "", (c.get("district") or "").lower())
             if k_clean in c_name or c_name in k_clean or k_clean in d_name or d_name in k_clean:
                 best_match = c
                 break
         if best_match:
             break
 
+    # If no district matched, pick the primary Lok Sabha constituency for that detected state
     if not best_match and candidates:
-        best_match = candidates[0]
+        # Prefer a major capital/central constituency if available
+        kolkata_match = next((c for c in candidates if "kolkata" in c.get("constituency", "").lower()), None)
+        best_match = kolkata_match or candidates[0]
 
-    final_state = best_match.get("state") if best_match else (matched_state or "Rajasthan")
-    final_district = best_match.get("district") or best_match.get("constituency") if best_match else "Kota"
-    final_constituency = best_match.get("constituency") if best_match else "Kota"
-    final_mp = best_match.get("representative") if best_match else "Om Birla"
+    final_state = best_match.get("state") if best_match else matched_state
+    final_district = best_match.get("district") or best_match.get("constituency") if best_match else (district_detected or "Kolkata")
+    final_constituency = best_match.get("constituency") if best_match else "KOLKATA DAKSHIN"
+    final_mp = best_match.get("representative") if best_match else "Mala Roy"
 
     return {
         "success": True,

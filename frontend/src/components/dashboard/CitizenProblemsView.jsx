@@ -217,7 +217,7 @@ export default function CitizenProblemsView({
     setSelectedMPName(item?.mp_name || '');
   };
 
-  // GPS Location detection handler
+  // GPS Location detection handler with client-side reverse geocoding
   const handleDetectLocation = () => {
     if (!navigator.geolocation) {
       toast.error('Geolocation is not supported by your browser.');
@@ -230,10 +230,36 @@ export default function CitizenProblemsView({
       async (pos) => {
         try {
           const { latitude, longitude } = pos.coords;
-          const res = await apiFetch(`/api/geography/reverse-geocode?lat=${latitude}&lon=${longitude}`);
+
+          // Quick browser client-side reverse geocode for direct local IP / GPS accuracy
+          let clientState = null;
+          let clientDistrict = null;
+
+          try {
+            const bdcUrl = `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${latitude}&longitude=${longitude}&localityLanguage=en`;
+            const bdcRes = await fetch(bdcUrl);
+            if (bdcRes.ok) {
+              const bdcJson = await bdcRes.json();
+              clientState = bdcJson.principalSubdivision || null;
+              const adminDivs = bdcJson.localityInfo?.administrative || [];
+              const lvl5 = adminDivs.find((a) => a.adminLevel === 5)?.name;
+              clientDistrict = lvl5 ? lvl5.replace(/ district/i, '') : (bdcJson.locality || bdcJson.city || null);
+            }
+          } catch (clientErr) {
+            console.warn('Client-side reverse geocode fetch warning:', clientErr);
+          }
+
+          const params = new URLSearchParams({
+            lat: latitude.toString(),
+            lon: longitude.toString(),
+          });
+          if (clientState) params.append('state_hint', clientState);
+          if (clientDistrict) params.append('district_hint', clientDistrict);
+
+          const res = await apiFetch(`/api/geography/reverse-geocode?${params.toString()}`);
           if (!res.ok) throw new Error('Reverse geocode failed');
           const data = await res.json();
-          if (data && data.constituency) {
+          if (data && data.success && data.constituency) {
             setNewProblem((prev) => ({
               ...prev,
               constituency: data.constituency,
@@ -252,7 +278,7 @@ export default function CitizenProblemsView({
               mp_name: data.mp_name,
               display_name: data.display_name
             });
-            toast.success(`📍 Located in ${data.constituency} (${data.state})!`);
+            toast.success(`📍 Located in ${data.constituency}, ${data.state}!`);
           } else {
             toast.info('GPS coordinates acquired; please confirm constituency from dropdown.');
           }
@@ -266,7 +292,11 @@ export default function CitizenProblemsView({
       (err) => {
         console.warn('Geolocation permission error:', err);
         setIsLocating(false);
-        toast.error('Location access denied or timed out. Please choose State and District below.');
+        if (err.code === 1) {
+          toast.error('Browser location permission was denied. Please select your State & District below.');
+        } else {
+          toast.error('Location detection timed out. Please choose State and District below.');
+        }
       },
       { timeout: 10000, enableHighAccuracy: true }
     );
