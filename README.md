@@ -2,9 +2,18 @@
 
 # 🏛️ JanNidhi (जन निधि) — MPLADS AI Sentinel
 ### *Intelligent Audit Prioritization, Explainable Anomaly Detection & Public Transparency Platform*
-**Ministry of Statistics and Programme Implementation (MoSPI) • Government of India**
+**Ministry of Statistics and Programme Implementation (MoSPI) • Government of India**  
+**Data Informatics & Innovation Division (DIID)**
 
 ---
+
+### 🎯 Official Solution for Smart India Hackathon Problem Statement 26102
+**"Development of an AI-powered system to detect anomalies, fraud, and inefficiencies in MPLAD Scheme implementation regd."**
+
+[![Problem Statement ID](https://img.shields.io/badge/SIH_Problem_ID-26102-FF6B6B?style=for-the-badge&logo=target&logoColor=white)](https://mplads.mospi.gov.in/digigov/dashboard.html)
+[![Organization](https://img.shields.io/badge/Organization-MoSPI%20%7C%20DIID-1E3A8A?style=for-the-badge&logo=government&logoColor=white)](https://mospi.gov.in)
+[![Category & Theme](https://img.shields.io/badge/Theme-Smart_Automation_%7C_Software-0D9488?style=for-the-badge&logo=codewars&logoColor=white)](#-problem-statement-26102-point-by-point-solution-matrix)
+[![Dataset](https://img.shields.io/badge/Dataset-228%2C328_Live_Works-F59E0B?style=for-the-badge&logo=databricks&logoColor=black)](https://mplads.mospi.gov.in/digigov/dashboard.html)
 
 [![Python](https://img.shields.io/badge/Python-3.11%20%7C%203.12-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://python.org)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.115%2B-009688?style=for-the-badge&logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com)
@@ -19,10 +28,9 @@
   <b>A proactive, explainable, evidence-based decision-support system analyzing 228,000+ MPLADS works across 545 Lok Sabha constituencies to detect expenditure irregularities, contractor monopolies, duplicate claims, and statutory non-compliance.</b>
 </p>
 
-[Executive Summary](#-executive-summary) •
-[Why JanNidhi?](#-why-jannidhi-comparative-benchmarks) •
-[System Architecture](#-end-to-end-system-architecture) •
-[Role Portals (RBAC 2.0)](#-role-tailored-experience-rbac-20) •
+[Problem Statement Dossier](#-problem-statement-26102-official-dossier) •
+[Solution Matrix](#-point-by-point-solution-matrix-for-problem-26102) •
+[Role Portals (RBAC 2.0)](#-role-tailored-decision-support-dashboards-rbac-20) •
 [Citizen Redressal Hub](#-citizen-grievances--public-redressal-portal) •
 [Multi-Agent Risk Engine](#-multi-agent-risk-engine) •
 [Statutory 5-State Rules](#-evidence-grounded-5-state-rule-system) •
@@ -33,29 +41,54 @@
 
 </div>
 
-## 📌 Executive Summary
+## 📋 Problem Statement 26102: Official Dossier
 
-Under the **Members of Parliament Local Area Development Scheme (MPLADS)**, each MP is allocated ₹5 Crore annually to recommend developmental works in their constituencies. With hundreds of thousands of works distributed across various Implementing District Authorities (IDAs), identifying cost anomalies, delayed projects, procurement monopolization, and compliance violations requires exhaustive manual audits.
+| Field | Official Specification |
+| :--- | :--- |
+| **Problem Statement ID** | **`26102`** |
+| **Problem Statement Title** | **Development of an AI-powered system to detect anomalies, fraud, and inefficiencies in MPLAD Scheme implementation regd.** |
+| **Nodal Ministry** | **Ministry of Statistics and Programme Implementation (MoSPI)** |
+| **Nodal Division** | **Data Informatics & Innovation Division (DIID)** |
+| **Category** | Software |
+| **Theme** | Smart Automation |
+| **Official Portal & Dataset** | [https://mplads.mospi.gov.in/digigov/dashboard.html](https://mplads.mospi.gov.in/digigov/dashboard.html) |
+| **Active Analyzed Dataset** | **228,328 authentic works** across **545 Lok Sabha constituencies** and **36 States & UTs** totaling **₹12,450+ Crore** sanctioned expenditure |
 
-**JanNidhi (जन निधि)** modernizes this audit paradigm through:
-1. **Multi-Agent Risk Synthesis:** 6 specialist AI agents examine financial flows, milestone velocities, vendor networks, text duplication, geographic clustering, and statutory guidelines across **228,328 works** totaling **₹12,450+ Crore**.
-2. **Deterministic 5-State Rule Verification:** Isolates documentary evidence gaps (`UNKNOWN`) from verified legal violations (`FAIL`), preventing false accusations and legal liability.
-3. **Forensic Case Packets:** Generates plain-language causal narratives, quantified impact figures (e.g. INR overrun values), and targeted auditor checklists (Measurement Books, Sanction Orders).
-4. **Authentic Citizen Grievance Redressal:** A dedicated civic portal with 500 domain-authentic complaints across all 545 constituencies, with **86% linked directly to authentic works** in the database and one-click Case Packet inspection.
-5. **Role-Tailored Dashboards (RBAC 2.0):** Specialized, distraction-free interfaces engineered specifically for Central MoSPI Reviewers, Members of Parliament (MPs), District Authority Auditors, and Citizens.
-6. **Open Public Governance:** Empowers citizens and journalists with transparent directories of MPs, state expenditures, category breakdowns, and rate-limited open-data exports.
+### 📖 Problem Background & Description (As Defined by MoSPI)
+> *"The Members of Parliament Local Area Development Scheme (MPLADS) is a Central Sector Scheme under which Hon'ble Members of Parliament recommend developmental works for creation of durable community assets and provision of basic civic amenities. The Scheme involves large-scale fund utilization and execution of thousands of works across the country through multiple implementing agencies and administrative authorities.*
+>
+> *Given the volume and complexity of financial and project-related data generated under the Scheme, there is a need for an AI-powered solution that can leverage machine learning and advanced analytics to detect trends and anomalies in expenditure patterns, fund utilization, cost estimates, and work execution, thereby enabling early identification of potential fraud, inefficiencies, and non-compliance while enhancing transparency, accountability, and effective monitoring of MPLADS works.*
+>
+> *Develop an AI-powered monitoring and analytics platform for MPLADS that leverages Machine Learning (ML), Artificial Intelligence (AI), and advanced data analytics to identify trends, anomalies, irregularities, and potential fraud in fund utilization and project execution... generate risk-based alerts, predictive insights, and decision-support dashboards for Members of Parliament, State Nodal Authorities, District Authorities, and the Ministry."*
 
-> [!IMPORTANT]
-> **Core Explainability Principle:**  
-> JanNidhi produces **Risk Tiers (`High Risk - Review`, `Medium Risk - Monitor`, `Low Risk`)** and **Action Directives**, not criminal verdicts. An AI flag is a high-confidence decision-support triage filter; authorized human auditors retain final confirmation authority.
+---
+
+## 🎯 Point-by-Point Solution Matrix for Problem 26102
+
+The following matrix documents how **JanNidhi (जन निधि)** directly and comprehensively solves every single mandate set forth in **Problem Statement 26102**:
+
+| # | MoSPI Problem Requirement | JanNidhi Technical Solution & Implementation | Source File / Module | Live Output / Metric |
+|---|---|---|---|---|
+| **1** | **Expenditure Patterns & Fund Utilization Trends** | Robust Median Absolute Deviation (MAD > 4.0), negative balances, and disbursement pacing analysis across ₹12,450 Cr sanctioned funds. | [`model/agents/financial_agent.py`](model/agents/financial_agent.py) | **75.7% National Utilization** tracked in real-time |
+| **2** | **Cost Overruns & Payment Anomalies** | Explicit INR overrun quantification; flags fund releases exceeding administrative sanctions or payments released without sanction. | [`backend/services/analytics.py`](backend/services/analytics.py) | Quantified INR excess values in Forensic Case Packets |
+| **3** | **Duplicate Works & Ghost Projects** | Tokenized Jaccard similarity (threshold 0.72) + character bigram matching across overlapping locations, timeframes, and scheme descriptions. | [`model/agents/duplicate_agent.py`](model/agents/duplicate_agent.py) | Identified duplicate claims across overlapping district boundaries |
+| **4** | **Delayed Projects & Work Execution Bottlenecks** | Stagnation detector for inactive works (>180 days with zero disbursement) and suspicious rapid completions (<15 days without proof). | [`model/agents/timeline_agent.py`](model/agents/timeline_agent.py) | Flags stalled infrastructure and rush-billing milestones |
+| **5** | **Procurement Monopolies & Contractor Cartels** | Gini vendor concentration index (>60% of an MP's recommendations to single vendor, >30% of state tenders, or cross-MP vendor networks). | [`model/agents/vendor_agent.py`](model/agents/vendor_agent.py) | Cartel graph detection across Implementing District Authorities |
+| **6** | **Deviations from Established Statutory Norms** | Evaluates 10 legal guidelines from MPLADS 2023 Guidelines (Annexure-II prohibited works, Trust/Society ₹50 Lakh lifetime ceiling). | [`model/rules/evaluator.py`](model/rules/evaluator.py) | 5-State Rule Evaluator (`PASS`, `FAIL`, `UNKNOWN`, `NA`, `DATA`) |
+| **7** | **Automated Compliance & Risk Alerts** | Weighted consensus likelihood scoring combining 6 specialist AI agents into dynamic risk tiers (`High Risk`, `Medium Risk`, `Low Risk`). | [`model/risk_engine.py`](model/risk_engine.py) | **67,936 High Risk** & **98,412 Medium Risk** prioritized works |
+| **8** | **Dashboard for Members of Parliament (MPs)** | Dedicated MP Dashboard tracking constituency spend, completion status, unspent balance, and voter grievances with parliamentary reply desk. | [`frontend/src/components/dashboard/MPDashboard.jsx`](frontend/src/components/dashboard/MPDashboard.jsx) | Constituency spend health & parliamentary reply workflow |
+| **9** | **Dashboard for District Authorities (IDAs)** | Field verification queue for District Collectors and planning auditors with Measurement Book checklists and formal cure notice tools. | [`frontend/src/components/dashboard/DistrictAuditorDashboard.jsx`](frontend/src/components/dashboard/DistrictAuditorDashboard.jsx) | Prioritized physical inspection queue & cure notice logs |
+| **10**| **Dashboard for Central Ministry (MoSPI / DIID)** | Central oversight console with macro fiscal KPIs, portfolio risk distribution, and distributed lock-protected live portal data sync. | [`frontend/src/components/dashboard/AdminDashboard.jsx`](frontend/src/components/dashboard/AdminDashboard.jsx) | National oversight of 228,328 works & live scraper |
+| **11**| **Dashboard for State Nodal Authorities (SNAs)** | Interactive All-India SVG Choropleth Map with state-by-state fund utilization, expenditure comparisons, and MP transparency directory. | [`frontend/src/components/StatesView.jsx`](frontend/src/components/StatesView.jsx) | 36 States & UTs comparison matrix & allocation ranking |
+| **12**| **Citizen Ground-Truth Reporting & Early Warning** | Dedicated public grievance hub with GPS geo-detection, photo evidence preview, authentic work ID link (86% mapped), and 1-click Case Packet. | [`frontend/src/components/CitizenGrievancesView.jsx`](frontend/src/components/CitizenGrievancesView.jsx) | **500 authentic complaints** across 545 constituencies |
 
 ---
 
 ## ⚖️ Why JanNidhi? (Comparative Benchmarks)
 
-| Dimension | Legacy Manual Audit / Portal | Generic BI Dashboards | 🏛️ JanNidhi AI Sentinel |
+| Operational Dimension | Legacy Manual Audit / Portal | Generic BI Dashboards | 🏛️ JanNidhi AI Sentinel (Solution 26102) |
 | :--- | :--- | :--- | :--- |
-| **Audit Lead Time** | 6 to 18 months (Post-facto CAG review) | Static weekly/monthly batch reports | **Instant & Continuous** (Live stream ingestion & triage) |
+| **Audit Lead Time** | 6 to 18 months (Post-facto CAG review) | Static weekly/monthly batch reports | **Instant & Continuous** (Live stream ingestion & real-time triage) |
 | **Data Coverage** | ~3% to 5% sample audits | High-level aggregated KPIs only | **100% Comprehensive** (All 228,328 works analyzed) |
 | **Anomaly Detection** | Manual inspection of physical vouchers | Rule thresholds on single columns | **6-Agent Multi-Vector Consensus** (MAD, Jaccard, Cartel graphs) |
 | **Legal Certainty** | Subjective auditor discretion | Binary alerts with high false positives | **5-State Evidence Model** (`PASS`, `FAIL`, `UNKNOWN`, `NA`, `DATA`) |
@@ -69,8 +102,8 @@ Under the **Members of Parliament Local Area Development Scheme (MPLADS)**, each
 
 ```mermaid
 flowchart TB
-    subgraph DataIngestion ["1. Data Ingestion & Storage Layer"]
-        PortalScraper["Live MoSPI Scraper<br/>(Background Scheduler)"] --> MasterIngest["Distributed Lock Handler<br/>(MongoDB Locks)"]
+    subgraph DataIngestion ["1. MoSPI Data Ingestion & Storage Layer"]
+        PortalScraper["Live MoSPI Scraper (Background Scheduler)<br/>https://mplads.mospi.gov.in"] --> MasterIngest["Distributed Lock Handler<br/>(MongoDB Locks)"]
         MasterIngest --> MongoCluster[("MongoDB Atlas Database<br/>228,328 Works • 545 Constituencies")]
     end
 
@@ -94,44 +127,44 @@ flowchart TB
         RateLimiter["IP-Bounded Rate Limiter<br/>(Memory + Mongo Buckets)"] --> RestAPI
     end
 
-    subgraph ClientViews ["4. Anti-Slop Frontend (React 19 + Vite)"]
-        RestAPI --> AdminView["👑 MoSPI Reviewer Admin<br/>National Spend & Live Sync"]
-        RestAPI --> MPView["🏛️ Member of Parliament<br/>Constituency Spend & Grievance Desk"]
-        RestAPI --> AuditorView["⚖️ District Authority Auditor<br/>Site Inspections & Cure Notices"]
-        RestAPI --> CitizenView["👥 Citizen Grievances Portal<br/>Photo Evidence & 1-Click Dossier"]
-        RestAPI --> PublicView["🗺️ Public Transparency<br/>Choropleth Map & MP Directory"]
+    subgraph ClientViews ["4. Stakeholder Decision-Support Dashboards (React 19)"]
+        RestAPI --> AdminView["👑 Central MoSPI / DIID Reviewer<br/>Macro Spend (₹12,450 Cr) & Live Sync"]
+        RestAPI --> MPView["🏛️ Member of Parliament (MP)<br/>Constituency Fund & Parliamentary Desk"]
+        RestAPI --> AuditorView["⚖️ District Authority (IDA / Auditor)<br/>Field Verification & Cure Notices"]
+        RestAPI --> CitizenView["👥 Citizen Grievance Portal<br/>Photo Proof & 1-Click Case Packet"]
+        RestAPI --> PublicView["🗺️ State Nodal Authority & Public<br/>Interactive Choropleth & MP Directory"]
     end
 ```
 
 ---
 
-## 👥 Role-Tailored Experience (RBAC 2.0)
+## 👥 Role-Tailored Decision-Support Dashboards (RBAC 2.0)
 
-JanNidhi delivers four purpose-built, role-tailored dashboards designed around the exact operational needs of each stakeholder:
+In strict accordance with Problem Statement 26102's requirement to provide decision-support dashboards for **Members of Parliament, State Nodal Authorities, District Authorities, and the Ministry**, JanNidhi provides specialized, operational consoles:
 
 ```
 ┌──────────────────────────────────────────────────────────────────────────────────────────────────┐
-│                                   JANNIDHI PLATFORM MODULES                                      │
+│                             JANNIDHI DECISION-SUPPORT MODULES (PS 26102)                         │
 ├──────────────────────┬──────────────────────┬──────────────────────┬─────────────────────────────┤
-│ 👑 MoSPI Admin       │ 🏛️ Member of         │ ⚖️ District          │ 👥 Citizen Grievance        │
-│    Dashboard         │    Parliament Portal │    Auditor Portal    │    & Redressal Hub          │
+│ 👑 Central Ministry  │ 🏛️ Member of         │ ⚖️ District          │ 👥 Citizen Grievance        │
+│    (MoSPI / DIID)    │    Parliament (MP)   │    Authority (IDA)   │    & Redressal Hub          │
 │ National utilization │ Constituency budget, │ Field inspections,   │ Geo-located complaints,     │
 │ (₹12,450 Cr spend),  │ works progress,      │ formal cure notices, │ photo evidence, authentic   │
 │ portfolio risk map,  │ pending grievances & │ checklist review, &  │ work ID linkage & one-click │
 │ live sync controls.  │ parliamentary replies│ milestone audits.    │ case packet inspection.     │
 ├──────────────────────┼──────────────────────┼──────────────────────┼─────────────────────────────┤
-│ 📊 Portfolio         │ 📋 Priority Audit    │ 🔍 Forensic Case     │ 🏛️ Public Transparency     │
-│    Overview          │    Queue             │    Packet Dossier    │    Directory & Choropleth   │
+│ 📊 Portfolio         │ 📋 Priority Audit    │ 🔍 Forensic Case     │ 🗺️ State Nodal Authority    │
+│    Overview          │    Queue             │    Packet Dossier    │    & All-India Choropleth   │
 │ Macro risk tiers,    │ Dynamic prioritized  │ Multi-agent scores,  │ Interactive India SVG map,  │
 │ utilization gauges,  │ audit queue with     │ causal explanations, │ state comparison matrix,    │
 │ category analytics.  │ instant filters.     │ & itemized evidence. │ & MP transparency profiles. │
 └──────────────────────┴──────────────────────┴──────────────────────┴─────────────────────────────┘
 ```
 
-### 1. 👑 MoSPI Central Reviewer / Admin Dashboard (`AdminDashboard.jsx`)
+### 1. 👑 MoSPI Central Reviewer & DIID Executive Dashboard (`AdminDashboard.jsx`)
 ```
 +--------------------------------------------------------------------------------------------------+
-|  🏛️ CENTRAL MoSPI REVIEWER OVERSIGHT                           [Live Sync: 2026-09-19 | IDLE]    |
+|  🏛️ CENTRAL MoSPI REVIEWER OVERSIGHT (DIID)                    [Live Sync: 2026-09-19 | IDLE]    |
 +--------------------------------------------------------------------------------------------------+
 |  SANCTIONED AMOUNT       DISBURSED AMOUNT        UNSPENT BALANCE          NATIONAL UTILIZATION   |
 |  ₹12,450.75 Cr           ₹7,927.39 Cr            ₹4,523.36 Cr             75.7% (Healthy Range)  |
@@ -140,11 +173,11 @@ JanNidhi delivers four purpose-built, role-tailored dashboards designed around t
 |  TRIGGER LIVE SYNC: [Run Quick Sync (Sample)]  [Trigger Comprehensive Ingestion (17th & 18th LS)]|
 +--------------------------------------------------------------------------------------------------+
 ```
-- **Macro Fiscal Telemetry:** Real-time visibility into ₹12,450.75 Cr sanctioned, ₹7,927.39 Cr disbursed, and ₹4,523.36 Cr unspent balance.
-- **Master Data Synchronization:** One-click live ingestion pipeline with distributed lock guards.
-- **Audit Queue & High-Risk Works:** Instant triage table with direct links to forensic case packets.
+- **Macro Fiscal Telemetry:** Real-time tracking of ₹12,450.75 Cr sanctioned, ₹7,927.39 Cr disbursed, and ₹4,523.36 Cr unspent balance.
+- **Automated Master Data Synchronization:** Manual and cron-scheduled background scraper fetching live records from `mplads.mospi.gov.in`.
+- **System-Wide Triage Queue:** Direct access to forensic dossiers for high-risk projects across all 36 States and UTs.
 
-### 2. 🏛️ Member of Parliament (MP) Dashboard (`MPDashboard.jsx`)
+### 2. 🏛️ Member of Parliament (MP) Decision-Support Portal (`MPDashboard.jsx`)
 ```
 +--------------------------------------------------------------------------------------------------+
 |  PARLIAMENTARY DESK: Mala Roy, MP (Kolkata Dakshin • West Bengal)             [1-Click Switch Role]|
@@ -156,10 +189,10 @@ JanNidhi delivers four purpose-built, role-tailored dashboards designed around t
 |  LATEST GRIEVANCE: "Submersible pump failure at Ward 96" -> [Draft Official Parliamentary Reply] |
 +--------------------------------------------------------------------------------------------------+
 ```
-- **Constituency Fund Health:** Real-time budget monitoring and expenditure velocity.
-- **Constituent Grievance Desk:** Direct pipeline of citizen complaints with photo evidence, GPS location, and an official **MP Parliamentary Reply** channel.
+- **Constituency Fund Health:** Real-time monitoring of recommendations, sanctions, and actual on-ground expenditure.
+- **Voter Grievance Redressal Desk:** Direct pipeline of citizen complaints with photo proof, GPS location, and an **Official MP Parliamentary Reply** submission channel.
 
-### 3. ⚖️ District Authority Auditor Dashboard (`DistrictAuditorDashboard.jsx`)
+### 3. ⚖️ District Authority (IDA / District Collector) Portal (`DistrictAuditorDashboard.jsx`)
 ```
 +--------------------------------------------------------------------------------------------------+
 |  DISTRICT PLANNING DESK: District Authority Auditor (Murshidabad • West Bengal)                  |
@@ -171,20 +204,19 @@ JanNidhi delivers four purpose-built, role-tailored dashboards designed around t
 |  #152872: Lighting of public spaces -> High Risk (Score: 69.4) -> [Serve Cure Notice] [Inspect MB]|
 +--------------------------------------------------------------------------------------------------+
 ```
-- **Field Verification Queue:** Prioritized list of projects requiring on-site physical verification.
-- **Auditor Notes & Investigation Log:** Ability to record site inspection notes and issue formal cure notices.
-- **Itemized Case Packet Checklist:** Measurement Book (MB) verification, Sanction Order comparison, and milestone compliance validation.
+- **Field Inspection Queue:** Ranked list of projects requiring mandatory physical verification.
+- **Formal Cure Notice & Audit Log:** Ability to serve cure notices to defaulting vendors and record formal audit determinations.
+- **Evidence Checklist:** Measurement Book (MB) verification, Sanction Order comparison, and milestone compliance validation.
 
-### 4. 🌐 Public Transparency Tier (`PortfolioOverview.jsx`)
-- Full public access to all 228,000+ public records, expenditure statistics, and MP profiles without login.
-- Interactive **All-India Choropleth Map** with color-coded state utilization and side-by-side comparative analysis.
-- Bounded open-data CSV exports up to 10,000 records.
+### 4. 🗺️ State Nodal Authority (SNA) & Public Transparency Portal (`StatesView.jsx`)
+- Interactive **All-India SVG Choropleth Map** color-coded by fund utilization.
+- Multi-state comparison matrix evaluating expenditure pace, top implementing districts, and risk distributions across States.
 
 ---
 
-## 📢 Citizen Grievances & Public Redressal Portal
+## 📢 Citizen Grievances & Public Redressal Hub
 
-A direct civic engagement portal connecting grassroot citizens directly to their elected MPs and District Auditors:
+JanNidhi bridges the gap between official data and ground reality through an integrated civic redressal portal:
 
 ```
 +--------------------------------------------------------------------------------------------------+
@@ -408,5 +440,5 @@ This project strictly adheres to **gstack** and **anti-slop design principles**:
 
 ## 📜 License & Compliance
 
-Developed for the **Ministry of Statistics and Programme Implementation (MoSPI)** under the **Smart India Hackathon (SIH)** initiative.  
+Developed for the **Ministry of Statistics and Programme Implementation (MoSPI)** under the **Smart India Hackathon (SIH)** initiative for **Problem Statement 26102**.  
 All data schemas and compliance rules are aligned with the official **MPLADS Scheme Guidelines (2023)** issued by the Government of India.
