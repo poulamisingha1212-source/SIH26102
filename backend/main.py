@@ -1004,13 +1004,23 @@ def list_citizen_problems(
     constituency: Optional[str] = Query(None, description="Filter by parliamentary constituency"),
     state: Optional[str] = Query(None, description="Filter by state"),
     status_filter: Optional[str] = Query(None, alias="status", description="Filter by problem status"),
+    category_filter: Optional[str] = Query(None, alias="category", description="Filter by category"),
+    search: Optional[str] = Query(None, description="Search keyword across title, description, citizen name"),
     work_id: Optional[str] = Query(None, description="Filter by specific work id"),
+    limit: int = Query(500, ge=1, le=1000),
+    skip: int = Query(0, ge=0),
     user_role: str = Depends(get_current_role),
     user: dict = Depends(get_current_user_optional),
     db=Depends(get_db)
 ):
-    """List citizen complaints and problems raised by the public, with role-aware scoping."""
+    """List citizen complaints and problems raised by the public, with role-aware scoping and pagination."""
     query = {}
+    # Clean ALL values
+    if constituency and constituency.upper() == "ALL":
+        constituency = None
+    if state and state.upper() == "ALL":
+        state = None
+
     # Scoping for MP and District Auditor
     if user_role == ROLE_MP and user and user.get("constituency") and not constituency:
         query["constituency"] = {"$regex": f"^{re.escape(user['constituency'])}$", "$options": "i"}
@@ -1021,12 +1031,29 @@ def list_citizen_problems(
 
     if state:
         query["state"] = {"$regex": re.escape(state), "$options": "i"}
-    if status_filter:
+    if status_filter and status_filter.upper() != "ALL":
         query["status"] = status_filter
+    if category_filter and category_filter != "All Categories":
+        if category_filter.lower() == "others":
+            query["category"] = {"$regex": "^others", "$options": "i"}
+        else:
+            query["category"] = {"$regex": re.escape(category_filter.split(" ")[0]), "$options": "i"}
     if work_id:
         query["work_id"] = work_id
 
-    docs = list(citizen_problems.find(query).sort([("created_at", DESCENDING)]).limit(100))
+    if search and search.strip():
+        s_term = search.strip()
+        query["$or"] = [
+            {"title": {"$regex": re.escape(s_term), "$options": "i"}},
+            {"description": {"$regex": re.escape(s_term), "$options": "i"}},
+            {"citizen_name": {"$regex": re.escape(s_term), "$options": "i"}},
+            {"constituency": {"$regex": re.escape(s_term), "$options": "i"}},
+            {"district": {"$regex": re.escape(s_term), "$options": "i"}},
+            {"work_id": {"$regex": re.escape(s_term), "$options": "i"}},
+        ]
+
+    total_count = citizen_problems.count_documents(query)
+    docs = list(citizen_problems.find(query).sort([("created_at", DESCENDING)]).skip(skip).limit(limit))
     items = []
     for d in docs:
         items.append(ProblemResponse(
@@ -1049,11 +1076,11 @@ def list_citizen_problems(
             created_at=d.get("created_at") or datetime.now(timezone.utc),
             status=d.get("status", "Pending Review"),
             mp_reply=d.get("mp_reply"),
-            mp_replied_at=d.get("mp_replied_at") or (d.get("mp_reply", {}).get("replied_at") if isinstance(d.get("mp_reply"), dict) else None),
+            mp_replied_at=d.get("mp_replied_at").isoformat() if hasattr(d.get("mp_replied_at"), "isoformat") else (d.get("mp_replied_at") or (d.get("mp_reply", {}).get("replied_at") if isinstance(d.get("mp_reply"), dict) else None)),
             auditor_notes=d.get("auditor_notes"),
-            auditor_reviewed_at=d.get("auditor_reviewed_at") or (d.get("auditor_notes", {}).get("audited_at") if isinstance(d.get("auditor_notes"), dict) else None),
+            auditor_reviewed_at=d.get("auditor_reviewed_at").isoformat() if hasattr(d.get("auditor_reviewed_at"), "isoformat") else (d.get("auditor_reviewed_at") or (d.get("auditor_notes", {}).get("audited_at") if isinstance(d.get("auditor_notes"), dict) else None)),
         ))
-    return ProblemListResponse(total=len(items), items=items)
+    return ProblemListResponse(total=total_count, items=items)
 
 
 @app.post("/api/problems", response_model=ProblemResponse)

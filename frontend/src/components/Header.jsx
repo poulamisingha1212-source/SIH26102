@@ -2,7 +2,7 @@ import React from 'react';
 import {
   UserCheck, Landmark, RefreshCw,
   LayoutDashboard, ListChecks, Users, MapPin, Scale,
-  Heart, ExternalLink, Globe, ShieldCheck,
+  Heart, ExternalLink, Globe, ShieldCheck, MessageSquare
 } from 'lucide-react';
 import BrandLogo from './BrandLogo';
 import { Button } from '@/components/ui/button';
@@ -16,6 +16,7 @@ const NAV_TABS = [
   { id: 'queue', label: 'Priority Queue', icon: ListChecks },
   { id: 'mps', label: 'MPs', icon: Users },
   { id: 'states', label: 'States', icon: MapPin },
+  { id: 'grievances', label: 'Citizen Grievances', icon: MessageSquare },
 ];
 
 export default function Header({

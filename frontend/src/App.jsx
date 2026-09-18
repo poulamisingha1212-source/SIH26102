@@ -10,6 +10,7 @@ import StatesView from './components/StatesView';
 import MPProfileModal from './components/MPProfileModal';
 import DistrictAuditorDashboard from './components/dashboard/DistrictAuditorDashboard';
 import MPDashboard from './components/dashboard/MPDashboard';
+import CitizenGrievancesView from './components/CitizenGrievancesView';
 import { Toaster } from '@/components/ui/sonner';
 import { DotPattern } from '@/components/magicui/dot-pattern';
 import { apiFetch, clearAuthToken } from '@/lib/api';
@@ -394,11 +395,19 @@ export default function App() {
               isSyncing={isSyncing}
               currentRole={currentRole}
               onFilterByEntity={handleFilterByEntity}
+              onNavigateTab={setActiveTab}
             />
           )
         )}
 
-
+        {activeTab === 'grievances' && (
+          <CitizenGrievancesView
+            currentRole={currentRole}
+            loggedInUser={loggedInUser}
+            userProfile={userProfile}
+            onOpenWork={handleSelectWork}
+          />
+        )}
       </main>
 
       {/* MP Transparency Profile (opens beneath the case packet) */}

@@ -17,8 +17,7 @@ import RiskTierDonut from '@/components/dashboard/RiskTierDonut';
 import RiskWatchlist from '@/components/dashboard/RiskWatchlist';
 import { apiFetch } from '@/lib/api';
 import { Button } from '@/components/ui/button';
-import { RefreshCw, Database, ShieldAlert, CheckCircle2 } from 'lucide-react';
-import CitizenProblemsView from './dashboard/CitizenProblemsView';
+import { RefreshCw, Database, ShieldAlert, CheckCircle2, MessageSquare, ArrowRight } from 'lucide-react';
 
 export default function PortfolioOverview({
   stats,
@@ -27,7 +26,8 @@ export default function PortfolioOverview({
   onTriggerSync,
   isSyncing,
   currentRole = 'Read-Only Public Tier',
-  onFilterByEntity
+  onFilterByEntity,
+  onNavigateTab,
 }) {
   const [categoryData, setCategoryData] = useState(null);
   const [statusData, setStatusData] = useState(null);
@@ -375,15 +375,39 @@ export default function PortfolioOverview({
         onFilterByEntity={onFilterByEntity}
       />
 
-      {/* Citizen Grievances & Problems Raised Section */}
-      <div className="pt-2">
-        <CitizenProblemsView
-          constituency="Kota"
-          state="Rajasthan"
-          currentRole={currentRole}
-          loggedInUser={currentRole}
-        />
-      </div>
+      {/* Dedicated Citizen Grievance Portal Banner / Quick Access */}
+      <Card className="glass-panel p-5 rounded-2xl border-indigo-100 dark:border-indigo-950/60 bg-gradient-to-r from-indigo-50/50 via-white to-indigo-50/30 dark:from-indigo-950/30 dark:via-slate-900 dark:to-indigo-950/20 shadow-xs">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div className="flex items-center gap-3.5">
+            <div className="p-3 rounded-xl bg-indigo-600 text-white shadow-xs shrink-0">
+              <MessageSquare className="w-5 h-5" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2 flex-wrap">
+                <h3 className="text-sm font-bold text-slate-900 dark:text-slate-100 font-display">
+                  Citizen Grievances & Live Action Desk
+                </h3>
+                <Badge variant="outline" className="text-[11px] font-semibold border-indigo-200 bg-indigo-50 text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300">
+                  500 Verified Complaints Across 240+ Seats
+                </Badge>
+              </div>
+              <p className="text-xs text-slate-600 dark:text-slate-400 mt-1">
+                Direct citizen accountability channel routing field complaints with photo proof to elected MPs and District Authority Auditors.
+              </p>
+            </div>
+          </div>
+          {onNavigateTab && (
+            <Button
+              size="sm"
+              onClick={() => onNavigateTab('grievances')}
+              className="h-8 px-4 text-xs font-semibold bg-indigo-600 hover:bg-indigo-700 text-white shadow-2xs gap-1.5 cursor-pointer shrink-0"
+            >
+              <span>Explore All Grievances</span>
+              <ArrowRight className="w-3.5 h-3.5" />
+            </Button>
+          )}
+        </div>
+      </Card>
 
       {/* About JanNidhi */}
       <Card className="glass-panel p-6 rounded-2xl border-slate-200/80 space-y-4">

@@ -109,108 +109,12 @@ def seed_users():
 
 
 def seed_citizen_problems():
-    """Seed sample citizen grievances and problems for realistic demonstration."""
-    from datetime import datetime, timezone
-    now = datetime.now(timezone.utc)
-
-    if citizen_problems.count_documents({}) > 0:
+    """Seed 500 authentic citizen grievances and problems for realistic demonstration across India."""
+    if citizen_problems.count_documents({}) >= 100:
         return
+    from backend.scripts.seed_500_grievances import seed_500_complaints_into_db
+    seed_500_complaints_into_db(purge_old=True)
 
-    sample_problems = [
-        {
-            "id": "PRB-KOT-2026-001",
-            "work_id": "WS/RJ-KOT/2025/4412",
-            "work_title": "Installation of Deep Tube Well & Solar Pump at Ramnagar Ward 14",
-            "constituency": "Kota",
-            "state": "Rajasthan",
-            "category": "Delay in Execution",
-            "comment": "Sanctioned 8 months ago with full advance, but drilling stalled at 80ft. Villagers facing severe drinking water shortage as summer approaches.",
-            "photo_proof": None,
-            "reporter_name": "Ramesh Kumar Meena",
-            "latitude": 25.178,
-            "longitude": 75.837,
-            "created_at": now,
-            "status": "Action Initiated",
-            "mp_reply": {
-                "reply_text": "I have taken up this matter directly with the Chief Engineer, PHED Kota. Additional drilling rig deployed yesterday; completion committed within 10 days.",
-                "replied_at": now.isoformat(),
-                "replied_by": "Shri Kota Representative",
-                "action_taken": "Emergency rig mobilized by PHED District Division"
-            },
-            "auditor_notes": {
-                "notes": "Verified physical progress stalled at stage 1. Contractor given 7-day cure notice.",
-                "audited_at": now.isoformat(),
-                "audited_by": "District Authority Auditor"
-            }
-        },
-        {
-            "id": "PRB-KOT-2026-002",
-            "work_id": "WS/RJ-KOT/2025/8921",
-            "work_title": "Bituminous Layering on Ladpura Link Road to Primary School",
-            "constituency": "Kota",
-            "state": "Rajasthan",
-            "category": "Substandard Quality & Materials",
-            "comment": "The newly laid asphalt has developed potholes within 3 weeks of completion. Bitumen thickness is less than half the sanctioned 40mm spec.",
-            "photo_proof": None,
-            "reporter_name": "Priya Sharma (Gram Panchayat Member)",
-            "latitude": 25.185,
-            "longitude": 75.845,
-            "created_at": now,
-            "status": "Under Investigation",
-            "mp_reply": {
-                "reply_text": "Thank you for the vigilant report. District Collector instructed to hold contractor security deposit pending core sample testing.",
-                "replied_at": now.isoformat(),
-                "replied_by": "Shri Kota Representative",
-                "action_taken": "Laboratory core sample testing ordered"
-            },
-            "auditor_notes": None
-        },
-        {
-            "id": "PRB-KOT-2026-003",
-            "work_id": "WS/RJ-KOT/2025/3011",
-            "work_title": "Construction of Two Additional Classrooms at Govt Sr Sec School, Sultanpur",
-            "constituency": "Kota",
-            "state": "Rajasthan",
-            "category": "Incomplete Works / Payment Discrepancy",
-            "comment": "Roofing sheet incomplete and electrical fittings missing, but portal shows 90% funds already disbursed to vendor.",
-            "photo_proof": None,
-            "reporter_name": "Mukesh Gujjar",
-            "latitude": 25.192,
-            "longitude": 75.811,
-            "created_at": now,
-            "status": "Pending Review",
-            "mp_reply": None,
-            "auditor_notes": None
-        },
-        {
-            "id": "PRB-KOT-2026-004",
-            "work_id": "WS/RJ-KOT/2025/1105",
-            "work_title": "Solar High-Mast Lighting System at Mandi Chowk",
-            "constituency": "Kota",
-            "state": "Rajasthan",
-            "category": "Equipment Fault / Maintenance",
-            "comment": "Timer malfunction causing lights to shut off at 8 PM. Replacement inverter unit required.",
-            "photo_proof": None,
-            "reporter_name": "Dinesh Chandra",
-            "latitude": 25.166,
-            "longitude": 75.831,
-            "created_at": now,
-            "status": "Resolved",
-            "mp_reply": {
-                "reply_text": "Vendor service technician has replaced the faulty charge controller and timer unit on-site under the 5-year AMC warranty.",
-                "replied_at": now.isoformat(),
-                "replied_by": "Shri Kota Representative",
-                "action_taken": "Replaced unit under AMC warranty"
-            },
-            "auditor_notes": {
-                "notes": "Inspected on-site; system fully operational.",
-                "audited_at": now.isoformat(),
-                "audited_by": "District Authority Auditor"
-            }
-        }
-    ]
-
-    citizen_problems.insert_many(sample_problems)
 
 
 

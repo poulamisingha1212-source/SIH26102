@@ -1,4 +1,4 @@
-from typing import Optional, List, Any
+from typing import Optional, List, Any, Union
 from pydantic import BaseModel, Field, ConfigDict
 from datetime import datetime
 
@@ -354,9 +354,9 @@ class ProblemResponse(BaseModel):
     created_at: datetime
     status: str
     mp_reply: Optional[Any] = None
-    mp_replied_at: Optional[str] = None
+    mp_replied_at: Optional[Union[str, datetime]] = None
     auditor_notes: Optional[Any] = None
-    auditor_reviewed_at: Optional[str] = None
+    auditor_reviewed_at: Optional[Union[str, datetime]] = None
 
 
 class ProblemListResponse(BaseModel):
