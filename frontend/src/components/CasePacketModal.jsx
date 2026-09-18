@@ -284,7 +284,7 @@ export default function CasePacketModal({
         className="glass-panel max-w-4xl sm:max-w-4xl max-h-[92vh] overflow-y-auto rounded-3xl gap-0 p-0"
         style={{ zIndex: 70 }}
       >
-        {(isLoading || !packet) ? (
+        {(isLoading || !packet || !packet.work_id) ? (
           /* Loading skeleton while the case packet is assembled */
           <div className="p-8 space-y-5">
             <div className="flex items-center gap-3">

@@ -173,21 +173,34 @@ export default function App() {
 
   // Handle work selection for Case Packet modal
   const handleSelectWork = (workId) => {
-    setSelectedWorkId(workId);
+    if (!workId) return;
+    const cleanId = String(workId).trim();
+    setSelectedWorkId(cleanId);
     setIsLoadingPacket(true);
-    fetchCasePacket(workId);
+    fetchCasePacket(cleanId);
   };
 
   const fetchCasePacket = (workId) => {
     apiFetch(`/api/works/${encodeURIComponent(workId)}`)
-      .then((res) => res.json())
+      .then(async (res) => {
+        if (!res.ok) {
+          const errData = await res.json().catch(() => ({}));
+          throw new Error(errData.detail || `Work #${workId} could not be retrieved from audit database.`);
+        }
+        return res.json();
+      })
       .then((data) => {
+        if (!data || !data.work_id) {
+          throw new Error('Case packet returned empty or invalid data.');
+        }
         setCasePacket(data);
         setIsLoadingPacket(false);
       })
       .catch((err) => {
         console.error('Error fetching case packet:', err);
+        toast.error(err.message || `Audit case packet for Work #${workId} unavailable`);
         setIsLoadingPacket(false);
+        setSelectedWorkId(null);
       });
   };
 

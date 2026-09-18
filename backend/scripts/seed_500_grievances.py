@@ -14,7 +14,7 @@ import sys
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 sys.path.insert(0, str(BASE_DIR))
 
-from backend.database import citizen_problems, is_mock
+from backend.database import citizen_problems, works, is_mock
 
 COMPLAINT_TEMPLATES = [
     # Drinking Water
@@ -339,6 +339,30 @@ def generate_500_grievances():
     now = datetime.now(timezone.utc)
     random.seed(42)  # Deterministic high-quality seeding
 
+    works_by_const = {}
+    works_by_state = {}
+
+    def fetch_real_works_for_const(c_name, s_name):
+        upper_c = c_name.strip().upper()
+        if upper_c in works_by_const:
+            return works_by_const[upper_c]
+        
+        # 1. Exact uppercase match on full constituency name (including (ST)/(SC))
+        cand = list(works.find({"constituency": upper_c}, {"_id": 0, "work_id": 1, "work_type": 1, "sanction_amount": 1, "final_risk_score": 1, "risk_tier": 1}).limit(30))
+        # 2. Match cleaned name without parentheses
+        if not cand:
+            clean = re.sub(r'\s*\([^)]*\)', '', c_name).strip().upper()
+            cand = list(works.find({"constituency": clean}, {"_id": 0, "work_id": 1, "work_type": 1, "sanction_amount": 1, "final_risk_score": 1, "risk_tier": 1}).limit(30))
+        # 3. Fallback to state using indexed _state_lower
+        if not cand:
+            s_lower = s_name.lower().strip()
+            if s_lower not in works_by_state:
+                works_by_state[s_lower] = list(works.find({"_state_lower": s_lower}, {"_id": 0, "work_id": 1, "work_type": 1, "sanction_amount": 1, "final_risk_score": 1, "risk_tier": 1}).limit(30))
+            cand = works_by_state[s_lower]
+        
+        works_by_const[upper_c] = cand
+        return cand
+
     target_count = 500
 
     for i in range(1, target_count + 1):
@@ -404,7 +428,17 @@ def generate_500_grievances():
         clean_code = re.sub(r'[^A-Z]', '', const_name.upper())[:3] or "PRB"
         st_code = re.sub(r'[^A-Z]', '', state_name.upper())[:2] or "IN"
         prob_id = f"PRB-{st_code}-{clean_code}-{i:04d}"
-        work_id = f"WRK/{st_code}-{clean_code}/{created_time.year}/{random.randint(1000, 9999)}" if random.random() > 0.3 else None
+
+        # Real authentic work linking: ~85% of complaints link to an actual work in works collection
+        real_works = fetch_real_works_for_const(const_name, state_name)
+        linked_work = None
+        if real_works and random.random() > 0.15:
+            first_word = tmpl["category"].split()[0].lower()
+            matched = [w for w in real_works if first_word in (w.get("work_type") or "").lower()]
+            linked_work = random.choice(matched) if matched else random.choice(real_works)
+
+        work_id = str(linked_work["work_id"]).strip() if linked_work else None
+        work_title = f"{linked_work['work_type']} (Work #{work_id})" if linked_work else None
 
         # Status distribution: 40% Pending Review, 25% Action Initiated, 20% Under Investigation, 15% Resolved
         roll = random.random()
@@ -475,7 +509,7 @@ def generate_500_grievances():
         record = {
             "id": prob_id,
             "work_id": work_id,
-            "work_title": f"MPLADS Project: {tmpl['category']} Scheme at {place}",
+            "work_title": work_title or f"MPLADS Project: {tmpl['category']} Scheme at {place}",
             "title": title,
             "description": desc,
             "constituency": const_name,

@@ -4,7 +4,7 @@ import {
   Filter, Plus, Send, ShieldAlert, FileText, ArrowRight,
   ExternalLink, User, Calendar, MapPin, Sparkles, X,
   Building, CheckCircle, RefreshCw, Camera, Upload, Trash2,
-  Navigation, Eye, Check, ChevronRight, LocateFixed
+  Navigation, Eye, Check, ChevronRight, LocateFixed, Landmark
 } from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -696,6 +696,15 @@ export default function CitizenProblemsView({
                     </p>
                   </div>
 
+                  {/* Sanctioned Work Title (if present) */}
+                  {p.work_title && (
+                    <div className="flex items-center gap-1.5 text-[11px] text-slate-600 dark:text-slate-400 bg-slate-100/70 dark:bg-slate-800/60 px-2.5 py-1 rounded-lg border border-slate-200/60 dark:border-slate-800 w-fit">
+                      <Landmark className="w-3 h-3 text-amber-500 shrink-0" />
+                      <span className="font-medium text-slate-700 dark:text-slate-300">Sanctioned Work:</span>
+                      <span className="truncate max-w-md">{p.work_title}</span>
+                    </div>
+                  )}
+
                   {/* Attached Photo Proof Thumbnail (if present) */}
                   {p.photo_proof && (
                     <div className="pt-1">
@@ -736,14 +745,22 @@ export default function CitizenProblemsView({
                     {p.work_id && (
                       <div className="flex items-center gap-1.5">
                         <span className="text-slate-400 text-[11px]">Linked Work:</span>
-                        <Badge
-                          variant="outline"
-                          onClick={() => onOpenWork && onOpenWork(p.work_id)}
-                          className="text-[11px] font-mono font-medium hover:bg-indigo-50 hover:text-indigo-700 cursor-pointer border-indigo-200"
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            if (onOpenWork) onOpenWork(p.work_id);
+                          }}
+                          title={`Inspect official MoSPI Case Packet & Audit Dossier for Work #${p.work_id}`}
+                          className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-mono font-bold bg-amber-500/10 hover:bg-amber-500/20 text-amber-700 dark:text-amber-400 border border-amber-500/30 hover:border-amber-500 cursor-pointer shadow-xs active:scale-95 transition-all group"
                         >
-                          {p.work_id}
-                          <ExternalLink className="w-2.5 h-2.5 ml-1" />
-                        </Badge>
+                          <FileText className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400 group-hover:scale-110 transition-transform" />
+                          <span>#{p.work_id}</span>
+                          <span className="text-[10px] font-sans font-medium text-amber-800 dark:text-amber-300 opacity-90 underline underline-offset-2">
+                            Inspect Case Packet
+                          </span>
+                          <ExternalLink className="w-2.5 h-2.5 opacity-70 group-hover:translate-x-0.5 transition-transform" />
+                        </button>
                       </div>
                     )}
                   </div>
@@ -1334,7 +1351,7 @@ export default function CitizenProblemsView({
                   Linked MPLADS Work ID (Optional)
                 </label>
                 <Input
-                  placeholder="e.g. WRK-2024-00123"
+                  placeholder="e.g. 152872 (Official MoSPI Work ID)"
                   value={newProblem.work_id}
                   onChange={(e) => setNewProblem({ ...newProblem, work_id: e.target.value })}
                   className="text-xs h-9 rounded-xl border-slate-200 font-mono"
