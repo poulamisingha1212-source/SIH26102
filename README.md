@@ -118,72 +118,148 @@ The following matrix documents how **JanNidhi (जन निधि)** directly a
 
 ## 🏗️ End-to-End System Architecture
 
-Designed specifically for **Smart India Hackathon (Problem Statement 26102)**, JanNidhi replaces bureaucratic manual audits with a streamlined, 4-stage AI pipeline connecting official data to ground action:
+Designed specifically for **Smart India Hackathon (Problem Statement 26102)**, JanNidhi transforms raw government spreadsheets into a **closed-loop, 4-tier decision-support intelligence platform**. It replaces delayed post-facto sampling with continuous, 100% pre-audit anomaly detection:
 
 ```mermaid
-flowchart LR
-    %% 4-Stage High-Impact Architecture for SIH Problem Statement 26102
-    
-    subgraph S1 ["1. DATA INGESTION"]
-        direction TB
-        D1["🏛️ MoSPI Official Data<br/>(228,328 Live Works)"]
-        D2["👥 Citizen Ground Truth<br/>(Geo-tagged Photo Proof)"]
+flowchart TD
+    %% ─────────────────────────────────────────────────────────────────
+    %% JANNIDHI END-TO-END SYSTEM ARCHITECTURE (SIH PROBLEM 26102)
+    %% ─────────────────────────────────────────────────────────────────
+
+    subgraph L1 ["📥 LAYER 1: DUAL DATA INGESTION & GROUND TRUTH"]
+        direction LR
+        S_GOV[("🏛️ <b>Official MoSPI Portal</b><br/><code>mplads.mospi.gov.in</code><br/>228,328 Records • 545 LS Seats")]
+        S_CIT[("👥 <b>Citizen Ground-Truth</b><br/>Geo-tagged Photos & GPS<br/>500 Verified Civic Complaints")]
+        S_SYNC["🔄 <b>Distributed Ingestion Sync</b><br/>Background Cron & Mongo Locks<br/>Live Scraper Failover"]
+        S_GOV --> S_SYNC
+        S_CIT --> S_SYNC
     end
 
-    subgraph S2 ["2. AI ANOMALY ENGINE"]
-        direction TB
-        A1["💰 Cost Overrun & Outliers (MAD)"]
-        A2["👯 Duplicate & Ghost Works (NLP)"]
-        A3["🏢 Contractor Cartels (Gini Index)"]
-        A4["⏱️ Project Delays & Stagnation"]
-        A5["📜 Statutory Violations (Annexure-II)"]
+    subgraph L2 ["🗄️ STORAGE & NORMALIZED DATA LAKE"]
+        DB[("🍃 <b>MongoDB Atlas Cluster</b><br/>Constituency Graph • Work Dossiers • Audit Ledgers")]
     end
 
-    subgraph S3 ["3. FORENSIC DECISION"]
+    subgraph L3 ["🧠 LAYER 2: MULTI-AGENT AI ANOMALY ENGINE"]
         direction TB
-        E1["⚖️ Multi-Agent Risk Consensus<br/>(High • Medium • Low)"]
-        E2["📁 1-Click Forensic Case Packet<br/>(Evidence & Audit Checklist)"]
+        subgraph AGENTS ["6 Parallel Domain AI Agents (model/agents/)"]
+            direction LR
+            AG_FIN["💰 <b>Financial</b><br/>MAD > 4.0 Outliers<br/>Negative Balances"]
+            AG_DUP["👯 <b>Duplicate</b><br/>Jaccard 0.72 NLP<br/>Ghost Schemes"]
+            AG_VEN["🏢 <b>Vendor Cartel</b><br/>Gini > 0.60 Monopoly<br/>Cross-MP Billing"]
+            AG_TIM["⏱️ <b>Timeline</b><br/>>180d Stagnation<br/><15d Rapid Rushes"]
+            AG_CMP["📜 <b>Compliance</b><br/>Annexure-II Checks<br/>₹50L Trust Ceilings"]
+            AG_GEO["📍 <b>Geographic</b><br/>IDA Budget Capture<br/>Spatial Clusters"]
+        end
+        SYNTH["⚖️ <b>Consensus Scoring Synthesizer (model/risk_engine.py)</b><br/><code>Likelihood Score = Σ (w_i × AgentScore_i)  |  Normalized to 0–100 Risk Index</code>"]
+        AGENTS --> SYNTH
     end
 
-    subgraph S4 ["4. STAKEHOLDER ACTION"]
-        direction TB
-        P1["👑 Central Ministry (MoSPI)<br/>Macro ₹12,450 Cr Oversight"]
-        P2["🏛️ Member of Parliament<br/>Constituency Fund & Grievance Desk"]
-        P3["⚖️ District Authority (IDA)<br/>Field Queue & Cure Notices"]
-        P4["👥 Public Transparency Hub<br/>Citizen Redressal & Tracking"]
+    subgraph L4 ["🔍 LAYER 3: FORENSIC TRIAGE & EVIDENCE PACKET"]
+        direction LR
+        TRIAGE["🚦 <b>Dynamic Risk Triage</b><br/>🔴 High Risk (≥ 70)<br/>🟡 Medium Risk (50–70)<br/>🟢 Low Risk (< 50)"]
+        EVAL["⚖️ <b>5-State Legal Model</b><br/><code>PASS | FAIL | UNKNOWN</code><br/><code>NA | DATA_DEFICIENT</code>"]
+        DOSSIER["📁 <b>1-Click Forensic Case Packet</b><br/>Itemized Causal Narrative<br/>Measurement Book (MB) Checklist"]
+        TRIAGE --> EVAL --> DOSSIER
     end
 
-    S1 ==>|Raw Records + Photos| S2
-    S2 ==>|Anomaly Signals| S3
-    S3 ==>|Actionable Dossiers| S4
+    subgraph L5 ["🚀 LAYER 4: SECURE API GATEWAY & STAKEHOLDER PORTALS"]
+        direction TB
+        GATEWAY["⚡ <b>FastAPI REST Core + RBAC 2.0 Security</b><br/>JWT Bearer Tokens • Bcrypt Hashing • IP Rate Limiting • 82/82 Validated Tests"]
+        
+        subgraph VIEWS ["Role-Tailored Decision Portals (React 19 + Tailwind CSS)"]
+            direction LR
+            V_ADMIN["👑 <b>MoSPI Central</b><br/>₹12,450 Cr Macro Spend<br/>Live Data Sync Console"]
+            V_MP["🏛️ <b>Member of Parliament</b><br/>Constituency Fund Health<br/>Parliamentary Reply Desk"]
+            V_AUDIT["⚖️ <b>District Collector / IDA</b><br/>Prioritized Field Queue<br/>Formal Cure Notices"]
+            V_CIT["👥 <b>Public Transparency</b><br/>Interactive Choropleth<br/>Civic Grievance Redressal"]
+        end
+        GATEWAY --> VIEWS
+    end
+
+    %% Pipeline Inter-Layer Connections
+    L1 ==>|Normalized JSON Stream| L2
+    L2 ==>|Query Dossiers| L3
+    L3 ==>|Consensus Risk Metrics| L4
+    L4 ==>|Forensic Evidence Packets| GATEWAY
+
+    %% Custom Styling
+    classDef l1Style fill:#0f172a,stroke:#38bdf8,stroke-width:2px,color:#f8fafc;
+    classDef l2Style fill:#064e3b,stroke:#34d399,stroke-width:2px,color:#f8fafc;
+    classDef l3Style fill:#1e1b4b,stroke:#818cf8,stroke-width:2px,color:#f8fafc;
+    classDef l4Style fill:#451a03,stroke:#f59e0b,stroke-width:2px,color:#f8fafc;
+    classDef l5Style fill:#18181b,stroke:#e4e4e7,stroke-width:2px,color:#f8fafc;
+
+    class S_GOV,S_CIT,S_SYNC l1Style;
+    class DB l2Style;
+    class AG_FIN,AG_DUP,AG_VEN,AG_TIM,AG_CMP,AG_GEO,SYNTH l3Style;
+    class TRIAGE,EVAL,DOSSIER l4Style;
+    class GATEWAY,V_ADMIN,V_MP,V_AUDIT,V_CIT l5Style;
 ```
 
-### 📊 SIH Presentation Slide Snapshot (4-Layer Pipeline)
+---
 
-Use this structured overview directly in your **SIH Presentation PPT**:
+### 🧩 Architectural Specification Matrix
+
+| Architectural Layer | Core Components & Modules | Technology Stack | SIH Problem 26102 Direct Impact |
+|:---|:---|:---|:---|
+| **1. Ingestion & Ground Truth** | Live MoSPI Scraper, Citizen Photo-GPS Capture, Distributed Lock Handler | Python, Playwright/Requests, MongoDB Locks, Web Geolocation API | Integrates official government records with grassroots citizen ground-truth. |
+| **2. Storage & Data Lake** | 228,328 Works Collection, 545 MP Profiles, 500 Grievances, Audit Event Ledgers | MongoDB Atlas, PyMongo, Compound Geospatial & Search Indexes | Single source of truth with sub-10ms query execution across national data. |
+| **3. AI Anomaly Engine** | 6 Specialist Agents: Financial, Duplicate, Vendor Cartel, Timeline, Compliance, Geographic | NumPy, Scikit-learn, SciPy, Custom Jaccard & N-gram Tokenizers | 100% automated coverage detecting overruns, cartels, delays, and ghost projects. |
+| **4. Forensic Triage & Rules** | Consensus Likelihood Synthesizer, 5-State Rule Evaluator, Case Packet Builder | Python, LaTeX Scoring Formulations, Statutory Annexure-II Rules | Eliminates black-box AI; produces legally grounded audit evidence and MB checklists. |
+| **5. Stakeholder Portals** | MoSPI Admin, MP Desk, District Collector Console, Public Choropleth | React 19, Vite, Tailwind CSS 3.4, Lucide Icons, FastAPI REST Core | Delivers customized, actionable operational tools for all 4 government tiers. |
+
+---
+
+### 🔄 End-to-End Data Lifecycle (From Raw Data to Legal Action)
+
+```
+[Official MoSPI Portal] + [Citizen Geo-Photos]
+                 │
+                 ▼
+     ┌───────────────────────┐
+     │ 1. INGEST & CORRELATE │  Scrape official works and link 86% of citizen complaints to genuine Work IDs
+     └───────────┬───────────┘
+                 ▼
+     ┌───────────────────────┐
+     │ 2. PARALLEL AI SCREEN │  6 Specialist Agents evaluate MAD outliers, Jaccard duplicates & vendor Gini
+     └───────────┬───────────┘
+                 ▼
+     ┌───────────────────────┐
+     │ 3. FORENSIC SYNTHESIS │  Calculate Consensus Score (0-100) and evaluate 10 statutory 5-state rules
+     └───────────┬───────────┘
+                 ▼
+     ┌───────────────────────┐
+     │ 4. STAKEHOLDER ACTION │  District Collector issues Cure Notice ➔ MP submits Reply ➔ MoSPI tracks Spend
+     └───────────────────────┘
+```
+
+---
+
+### 📊 SIH Presentation Slide Snapshot (16:9 Presentation Blueprint)
+
+Copy the structured blueprint below directly onto your **SIH PowerPoint Architecture Slide**:
 
 ```
 ┌────────────────────────────────────────────────────────────────────────────────────────────────────────┐
 │                        🏛️ JANNIDHI: END-TO-END SOLUTION ARCHITECTURE (SIH 26102)                       │
 ├────────────────────┬─────────────────────────────┬──────────────────────────┬──────────────────────────┤
-│ 1. DATA INGESTION  │ 2. AI ANOMALY ENGINE        │ 3. FORENSIC DECISION     │ 4. STAKEHOLDER ACTION    │
+│ 1. DATA INGESTION  │ 2. AI ANOMALY ENGINE        │ 3. FORENSIC TRIAGE       │ 4. STAKEHOLDER ACTION    │
 ├────────────────────┼─────────────────────────────┼──────────────────────────┼──────────────────────────┤
-│ • 228,328 Official │ • 💰 Cost Overruns (MAD)    │ • Multi-Agent Consensus  │ • 👑 MoSPI Ministry      │
-│   MoSPI Works      │ • 👯 Duplicate Works (NLP)  │   Risk Scoring (0-100)   │   National Macro Spend   │
-│ • 545 Constituencies│ • 🏢 Contractor Cartels     │ • 5-State Rule Evaluator │ • 🏛️ Member of Parliament│
-│ • 36 States & UTs  │ • ⏱️ Project Stagnation    │   (Statutory Compliance) │   Constituency & Replies │
-│ • Citizen Geo-Photo│ • 📜 Prohibited Categories  │ • 1-Click Forensic Dossier│ • ⚖️ District Collector │
-│   Ground-Truth     │   (MPLADS 2023 Guidelines)  │   with MB Audit Check    │   Field Queue & Notices  │
-│                    │                             │                          │ • 👥 Citizen Hub         │
+│ • 228,328 Official │ • 💰 Cost Overruns (MAD)    │ • Multi-Agent Consensus  │ • 👑 MoSPI Central       │
+│   MoSPI Works      │ • 👯 Duplicate Works (NLP)  │   Risk Scoring (0-100)   │   ₹12,450 Cr Macro Spend │
+│ • 545 Constituencies│ • 🏢 Contractor Cartels     │ • 5-State Legal Model    │ • 🏛️ Member of Parliament│
+│ • 36 States & UTs  │ • ⏱️ Milestone Delays       │   (PASS / FAIL / UNK)    │   Constituency & Replies │
+│ • Citizen Geo-Photo│ • 📜 Statutory Violations   │ • 1-Click Forensic Case  │ • ⚖️ District Collector │
+│   Ground-Truth     │   (MPLADS 2023 Guidelines)  │   Packet with MB Check   │   Field Queue & Notices  │
+│                    │                             │                          │ • 👥 Citizen Portal      │
 │                    │                             │                          │   Transparent Redressal  │
 ├────────────────────┴─────────────────────────────┴──────────────────────────┴──────────────────────────┤
-│ 💡 CORE INNOVATION: 100% automated pre-audit triage converting raw portal data into verified           │
-│    legal evidence packets, saving 6-18 months of post-facto audit delay.                              │
+│ 💡 WHY JANNIDHI WINS SIH:                                                                              │
+│  1. Continuous Screening: 100% automated pre-audit replaces 6-18 month delayed 3% manual audits.        │
+│  2. Explainable AI: Every alert links to MPLADS 2023 legal clauses and physical inspection checklists.  │
+│  3. Dual-Validation: Top-down official portal data correlated with bottom-up citizen photo evidence.   │
 └────────────────────────────────────────────────────────────────────────────────────────────────────────┘
 ```
-
-- **Problem Addressed:** Legacy manual audits cover <5% of projects post-facto (6-18 months late). Unchecked contractor cartels, inflated estimates, and ghost duplicates go undetected.
-- **Solution Delivered:** Automated continuous screening across **100% of works (228,328 works)**, multi-vector anomaly consensus, and instant forensic dossiers for prompt administrative action.
 
 ---
 
