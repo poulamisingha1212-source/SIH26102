@@ -73,6 +73,19 @@ def test_get_stats_overview():
     assert "latest_sync_status" in stats
 
 
+def test_get_analytics_states():
+    """Verify /api/analytics/states returns top state anomalies."""
+    res = client.get("/api/analytics/states")
+    assert res.status_code == 200
+    data = res.json()
+    assert isinstance(data, list)
+    if len(data) > 0:
+        first = data[0]
+        assert "state" in first or "name" in first
+        assert "high_risk_count" in first
+        assert "works_count" in first or "count" in first
+
+
 def test_stats_overview_house_filter_does_not_inflate_allocation():
     """House scope must filter mp_allocations.house, not cross-join works."""
     unscoped = client.get("/api/stats/overview")

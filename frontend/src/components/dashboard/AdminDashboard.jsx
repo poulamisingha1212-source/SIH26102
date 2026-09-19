@@ -23,8 +23,9 @@ export default function AdminDashboard({
   onNavigateTab,
 }) {
   const [highRiskWorks, setHighRiskWorks] = useState([]);
-  const [statesAnalytics, setStatesAnalytics] = useState([]);
+  const [statesAnalytics, setStatesAnalytics] = useState(() => (stats?.top_risk_states?.length ? stats.top_risk_states.slice(0, 8) : []));
   const [isLoadingQueue, setIsLoadingQueue] = useState(true);
+  const [isLoadingStates, setIsLoadingStates] = useState(!stats?.top_risk_states?.length);
   const [isExporting, setIsExporting] = useState(false);
 
   // Fetch top high-risk works requiring MoSPI intervention
@@ -45,18 +46,68 @@ export default function AdminDashboard({
 
   // Fetch state-level risk and audit rankings
   useEffect(() => {
+    let isMounted = true;
+    setIsLoadingStates(true);
     const qs = house ? `?house=${encodeURIComponent(house)}` : '';
     apiFetch(`/api/analytics/states${qs}`)
-      .then((res) => res.json())
-      .then((data) => setStatesAnalytics(Array.isArray(data) ? data.slice(0, 8) : []))
-      .catch((err) => console.error('Failed to load state analytics for admin:', err));
-  }, [house]);
+      .then((res) => {
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        return res.json();
+      })
+      .then((data) => {
+        if (!isMounted) return;
+        const items = Array.isArray(data) ? data : (data?.items || []);
+        if (items.length > 0) {
+          setStatesAnalytics(items.slice(0, 8));
+        } else if (stats?.top_risk_states?.length) {
+          setStatesAnalytics(stats.top_risk_states.slice(0, 8));
+        } else {
+          setStatesAnalytics([]);
+        }
+        setIsLoadingStates(false);
+      })
+      .catch((err) => {
+        console.warn('Failed to load /api/analytics/states, attempting fallback to /api/states:', err);
+        apiFetch(`/api/states?page_size=8&sort_by=high_risk_count&order=desc${house ? `&house=${encodeURIComponent(house)}` : ''}`)
+          .then((res) => {
+            if (!res.ok) throw new Error(`HTTP ${res.status}`);
+            return res.json();
+          })
+          .then((data) => {
+            if (!isMounted) return;
+            const items = data?.items || [];
+            if (items.length > 0) {
+              setStatesAnalytics(items.slice(0, 8));
+            } else if (stats?.top_risk_states?.length) {
+              setStatesAnalytics(stats.top_risk_states.slice(0, 8));
+            } else {
+              setStatesAnalytics([]);
+            }
+            setIsLoadingStates(false);
+          })
+          .catch((fallbackErr) => {
+            console.error('All state analytics fetch attempts failed:', fallbackErr);
+            if (!isMounted) return;
+            if (stats?.top_risk_states?.length) {
+              setStatesAnalytics(stats.top_risk_states.slice(0, 8));
+            }
+            setIsLoadingStates(false);
+          });
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, [house, stats]);
 
   const [localStats, setLocalStats] = useState(stats);
 
   useEffect(() => {
     if (stats) {
       setLocalStats(stats);
+      if (statesAnalytics.length === 0 && stats.top_risk_states?.length) {
+        setStatesAnalytics(stats.top_risk_states.slice(0, 8));
+      }
     }
     // Always ensure fresh national stats on mount or house change
     const qs = house ? `?house=${encodeURIComponent(house)}` : '';
@@ -66,10 +117,15 @@ export default function AdminDashboard({
         return null;
       })
       .then((data) => {
-        if (data) setLocalStats(data);
+        if (data) {
+          setLocalStats(data);
+          if (statesAnalytics.length === 0 && data.top_risk_states?.length) {
+            setStatesAnalytics(data.top_risk_states.slice(0, 8));
+          }
+        }
       })
       .catch((err) => console.error('Failed to load admin overview stats:', err));
-  }, [stats, house]);
+  }, [stats, house, statesAnalytics.length]);
 
   // Master CSV Export handler
   const handleExportCSV = async () => {
@@ -399,31 +455,39 @@ export default function AdminDashboard({
             </CardHeader>
             <CardContent className="p-0">
               <div className="divide-y divide-slate-100 dark:divide-slate-800">
-                {statesAnalytics.length === 0 ? (
+                {isLoadingStates && statesAnalytics.length === 0 ? (
                   <div className="p-6 text-center text-xs text-slate-400">Loading state rankings…</div>
+                ) : statesAnalytics.length === 0 ? (
+                  <div className="p-6 text-center text-xs text-slate-400">No flagged state anomalies recorded</div>
                 ) : (
-                  statesAnalytics.map((st, idx) => (
-                    <div
-                      key={st.state || idx}
-                      onClick={() => onFilterByEntity && onFilterByEntity('state', st.state)}
-                      className="p-3.5 px-5 flex items-center justify-between hover:bg-slate-50/80 dark:hover:bg-slate-800/40 cursor-pointer transition-colors"
-                    >
-                      <div className="space-y-0.5">
-                        <span className="font-bold text-xs text-slate-800 dark:text-slate-200 flex items-center gap-2">
-                          <span className="text-[11px] font-mono text-slate-400 w-4">{idx + 1}.</span>
-                          {st.state}
-                        </span>
-                        <span className="text-[11px] text-slate-500 block">
-                          {formatNumber(st.works_count || 0)} works • {formatINR(st.total_sanctioned || 0)}
-                        </span>
+                  statesAnalytics.map((st, idx) => {
+                    const stateName = st.state || st.name || `State ${idx + 1}`;
+                    const worksCount = st.works_count ?? st.count ?? 0;
+                    const sanctioned = st.total_sanctioned || 0;
+                    const highRisk = st.high_risk_count || 0;
+                    return (
+                      <div
+                        key={stateName || idx}
+                        onClick={() => onFilterByEntity && onFilterByEntity('state', stateName)}
+                        className="p-3.5 px-5 flex items-center justify-between hover:bg-slate-50/80 dark:hover:bg-slate-800/40 cursor-pointer transition-colors"
+                      >
+                        <div className="space-y-0.5">
+                          <span className="font-bold text-xs text-slate-800 dark:text-slate-200 flex items-center gap-2">
+                            <span className="text-[11px] font-mono text-slate-400 w-4">{idx + 1}.</span>
+                            {stateName}
+                          </span>
+                          <span className="text-[11px] text-slate-500 block">
+                            {formatNumber(worksCount)} works • {formatINR(sanctioned)}
+                          </span>
+                        </div>
+                        <div className="text-right">
+                          <span className="inline-flex items-center font-mono font-bold text-xs px-2 py-0.5 rounded bg-rose-50 text-rose-700 border border-rose-200">
+                            {highRisk} Flagged
+                          </span>
+                        </div>
                       </div>
-                      <div className="text-right">
-                        <span className="inline-flex items-center font-mono font-bold text-xs px-2 py-0.5 rounded bg-rose-50 text-rose-700 border border-rose-200">
-                          {st.high_risk_count || 0} Flagged
-                        </span>
-                      </div>
-                    </div>
-                  ))
+                    );
+                  })
                 )}
               </div>
             </CardContent>

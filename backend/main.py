@@ -412,6 +412,45 @@ def get_status_analytics(
     return analytics.get_status_analytics(db, house=house)
 
 
+@app.get("/api/analytics/states")
+def get_state_analytics(
+    house: Optional[str] = Query(None, description="Filter by House"),
+    limit: int = Query(8, ge=1, le=100),
+    db=Depends(get_db),
+    user_role: str = Depends(get_current_role)
+):
+    """Top states by anomaly / high-risk density for administrative review."""
+    dir_res = analytics.get_state_directory(
+        db,
+        house=house,
+        page=1,
+        page_size=limit,
+        sort_by="high_risk_count",
+        order="desc"
+    )
+    items = []
+    for it in dir_res.get("items", []):
+        items.append({
+            **it,
+            "name": it.get("state"),
+            "count": it.get("works_count", 0),
+        })
+    if not items:
+        # Fallback to top_entity_stats if directory had no rows (e.g. freshly initialized mock DB)
+        top_stats = analytics.top_entity_stats("state", house, limit=limit)
+        for s in top_stats:
+            items.append({
+                "state": s.get("name"),
+                "name": s.get("name"),
+                "works_count": s.get("count", 0),
+                "count": s.get("count", 0),
+                "total_sanctioned": s.get("total_sanctioned", 0.0),
+                "high_risk_count": s.get("high_risk_count", 0),
+                "avg_risk_score": s.get("avg_risk_score", 0.0),
+            })
+    return items
+
+
 # ==============================================================================
 # 3. GET /api/stats/overview — Macro KPI Summary
 # ==============================================================================
