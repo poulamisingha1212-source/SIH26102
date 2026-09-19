@@ -1,39 +1,48 @@
 <div align="center">
 
+<img src="frontend/public/brand/jannidhi-portal-primary-dark.svg" alt="JanNidhi Portal" width="340"/>
+
+<br/><br/>
+
 # 🏛️ JanNidhi (जन निधि) — MPLADS AI Sentinel
 ### *Intelligent Audit Prioritization, Explainable Anomaly Detection & Public Transparency Platform*
+
 **Ministry of Statistics and Programme Implementation (MoSPI) • Government of India**  
 **Data Informatics & Innovation Division (DIID)**
 
 ---
 
-### 🎯 Official Solution for Smart India Hackathon Problem Statement 26102
+### 🎯 Official Solution for Smart India Hackathon — Problem Statement 26102
 **"Development of an AI-powered system to detect anomalies, fraud, and inefficiencies in MPLAD Scheme implementation regd."**
+
+<br/>
 
 [![Problem Statement ID](https://img.shields.io/badge/SIH_Problem_ID-26102-FF6B6B?style=for-the-badge&logo=target&logoColor=white)](https://mplads.mospi.gov.in/digigov/dashboard.html)
 [![Organization](https://img.shields.io/badge/Organization-MoSPI%20%7C%20DIID-1E3A8A?style=for-the-badge&logo=government&logoColor=white)](https://mospi.gov.in)
-[![Category & Theme](https://img.shields.io/badge/Theme-Smart_Automation_%7C_Software-0D9488?style=for-the-badge&logo=codewars&logoColor=white)](#-problem-statement-26102-point-by-point-solution-matrix)
+[![Category & Theme](https://img.shields.io/badge/Theme-Smart_Automation_%7C_Software-0D9488?style=for-the-badge&logo=codewars&logoColor=white)](#-point-by-point-solution-matrix-for-problem-26102)
 [![Dataset](https://img.shields.io/badge/Dataset-228%2C328_Live_Works-F59E0B?style=for-the-badge&logo=databricks&logoColor=black)](https://mplads.mospi.gov.in/digigov/dashboard.html)
 
-[![Python](https://img.shields.io/badge/Python-3.11%20%7C%203.12-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://python.org)
-[![FastAPI](https://img.shields.io/badge/FastAPI-0.115%2B-009688?style=for-the-badge&logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com)
-[![React](https://img.shields.io/badge/React-19.0-61DAFB?style=for-the-badge&logo=react&logoColor=black)](https://react.dev)
-[![Vite](https://img.shields.io/badge/Vite-6.0-646CFF?style=for-the-badge&logo=vite&logoColor=white)](https://vitejs.dev)
-[![MongoDB Atlas](https://img.shields.io/badge/MongoDB-Atlas%20%2F%20PyMongo-47A248?style=for-the-badge&logo=mongodb&logoColor=white)](https://mongodb.com)
-[![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-3.4-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)](https://tailwindcss.com)
-[![Tests](https://img.shields.io/badge/Tests-82%20Passed-success?style=for-the-badge&logo=pytest&logoColor=white)](tests/)
-[![Security](https://img.shields.io/badge/Security-RBAC%202.0%20%7C%20JWT%20%7C%20Bcrypt-F59E0B?style=for-the-badge&logo=auth0&logoColor=black)](backend/auth.py)
+[![Python](https://img.shields.io/badge/Python-3.11%20%7C%203.12-3776AB?style=flat-square&logo=python&logoColor=white)](https://python.org)
+[![FastAPI](https://img.shields.io/badge/FastAPI-0.115%2B-009688?style=flat-square&logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com)
+[![React](https://img.shields.io/badge/React-19.0-61DAFB?style=flat-square&logo=react&logoColor=black)](https://react.dev)
+[![Vite](https://img.shields.io/badge/Vite-6.0-646CFF?style=flat-square&logo=vite&logoColor=white)](https://vitejs.dev)
+[![MongoDB](https://img.shields.io/badge/MongoDB-Atlas%20%2F%20PyMongo-47A248?style=flat-square&logo=mongodb&logoColor=white)](https://mongodb.com)
+[![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-3.4-38B2AC?style=flat-square&logo=tailwind-css&logoColor=white)](https://tailwindcss.com)
+[![Tests](https://img.shields.io/badge/Tests-82%20Passed-success?style=flat-square&logo=pytest&logoColor=white)](tests/)
+[![Security](https://img.shields.io/badge/Security-RBAC%202.0%20%7C%20JWT%20%7C%20Bcrypt-F59E0B?style=flat-square&logo=auth0&logoColor=black)](backend/auth.py)
 
 <p align="center">
   <b>A proactive, explainable, evidence-based decision-support system analyzing 228,000+ MPLADS works across 545 Lok Sabha constituencies to detect expenditure irregularities, contractor monopolies, duplicate claims, and statutory non-compliance.</b>
 </p>
 
-[Problem Statement Dossier](#-problem-statement-26102-official-dossier) •
+[Problem Dossier](#-problem-statement-26102-official-dossier) •
 [Solution Matrix](#-point-by-point-solution-matrix-for-problem-26102) •
-[Role Portals (RBAC 2.0)](#-role-tailored-decision-support-dashboards-rbac-20) •
-[Citizen Redressal Hub](#-citizen-grievances--public-redressal-portal) •
-[Multi-Agent Risk Engine](#-multi-agent-risk-engine) •
-[Statutory 5-State Rules](#-evidence-grounded-5-state-rule-system) •
+[Comparative Benchmarks](#-why-jannidhi-comparative-benchmarks) •
+[Architecture](#-end-to-end-system-architecture) •
+[Decision Portals](#-role-tailored-decision-support-dashboards-rbac-20) •
+[Citizen Redressal](#-citizen-grievances--public-redressal-hub) •
+[Multi-Agent Engine](#-multi-agent-risk-engine) •
+[5-State Rules](#-evidence-grounded-5-state-rule-system) •
 [Quick Start](#-quick-start-guide) •
 [API Reference](#-public--auditor-api-reference)
 
@@ -41,20 +50,29 @@
 
 </div>
 
+> [!IMPORTANT]
+> ### 🌟 National Governance Impact At A Glance
+> - **₹12,450.75 Crore** in sanctioned public capital tracked across **545 Lok Sabha constituencies** and **36 States & UTs**.
+> - **100% Comprehensive Audit:** Continuous screening of all **228,328 works**, eliminating the 6 to 18-month delay of traditional 3–5% sample audits.
+> - **Multi-Vector Anomaly Consensus:** 6 specialized AI agents detect cost overruns, contractor cartels, milestone delays, and ghost duplicate claims.
+> - **Evidence-Grounded Legal Dossiers:** 1-click forensic Case Packets equipped with causal narratives and Measurement Book (MB) verification checklists.
+> - **Citizen Ground-Truth Feedback:** Geo-tagged photo grievances mapped to real works with an official MP response channel.
+
+---
+
 ## 📋 Problem Statement 26102: Official Dossier
 
-| Field | Official Specification |
+| Specification Field | Official MoSPI Detail |
 | :--- | :--- |
 | **Problem Statement ID** | **`26102`** |
 | **Problem Statement Title** | **Development of an AI-powered system to detect anomalies, fraud, and inefficiencies in MPLAD Scheme implementation regd.** |
 | **Nodal Ministry** | **Ministry of Statistics and Programme Implementation (MoSPI)** |
 | **Nodal Division** | **Data Informatics & Innovation Division (DIID)** |
-| **Category** | Software |
-| **Theme** | Smart Automation |
+| **Category & Theme** | Software • Smart Automation |
 | **Official Portal & Dataset** | [https://mplads.mospi.gov.in/digigov/dashboard.html](https://mplads.mospi.gov.in/digigov/dashboard.html) |
-| **Active Analyzed Dataset** | **228,328 authentic works** across **545 Lok Sabha constituencies** and **36 States & UTs** totaling **₹12,450+ Crore** sanctioned expenditure |
+| **Analyzed Production Dataset** | **228,328 authentic works** across **545 Lok Sabha constituencies** and **36 States & UTs** totaling **₹12,450+ Crore** sanctioned spend |
 
-### 📖 Problem Background & Description (As Defined by MoSPI)
+### 📖 Problem Background & Mandate (As Defined by MoSPI)
 > *"The Members of Parliament Local Area Development Scheme (MPLADS) is a Central Sector Scheme under which Hon'ble Members of Parliament recommend developmental works for creation of durable community assets and provision of basic civic amenities. The Scheme involves large-scale fund utilization and execution of thousands of works across the country through multiple implementing agencies and administrative authorities.*
 >
 > *Given the volume and complexity of financial and project-related data generated under the Scheme, there is a need for an AI-powered solution that can leverage machine learning and advanced analytics to detect trends and anomalies in expenditure patterns, fund utilization, cost estimates, and work execution, thereby enabling early identification of potential fraud, inefficiencies, and non-compliance while enhancing transparency, accountability, and effective monitoring of MPLADS works.*
@@ -68,7 +86,7 @@
 The following matrix documents how **JanNidhi (जन निधि)** directly and comprehensively solves every single mandate set forth in **Problem Statement 26102**:
 
 | # | MoSPI Problem Requirement | JanNidhi Technical Solution & Implementation | Source File / Module | Live Output / Metric |
-|---|---|---|---|---|
+|:---:|---|---|---|---|
 | **1** | **Expenditure Patterns & Fund Utilization Trends** | Robust Median Absolute Deviation (MAD > 4.0), negative balances, and disbursement pacing analysis across ₹12,450 Cr sanctioned funds. | [`model/agents/financial_agent.py`](model/agents/financial_agent.py) | **75.7% National Utilization** tracked in real-time |
 | **2** | **Cost Overruns & Payment Anomalies** | Explicit INR overrun quantification; flags fund releases exceeding administrative sanctions or payments released without sanction. | [`backend/services/analytics.py`](backend/services/analytics.py) | Quantified INR excess values in Forensic Case Packets |
 | **3** | **Duplicate Works & Ghost Projects** | Tokenized Jaccard similarity (threshold 0.72) + character bigram matching across overlapping locations, timeframes, and scheme descriptions. | [`model/agents/duplicate_agent.py`](model/agents/duplicate_agent.py) | Identified duplicate claims across overlapping district boundaries |
@@ -93,7 +111,7 @@ The following matrix documents how **JanNidhi (जन निधि)** directly a
 | **Anomaly Detection** | Manual inspection of physical vouchers | Rule thresholds on single columns | **6-Agent Multi-Vector Consensus** (MAD, Jaccard, Cartel graphs) |
 | **Legal Certainty** | Subjective auditor discretion | Binary alerts with high false positives | **5-State Evidence Model** (`PASS`, `FAIL`, `UNKNOWN`, `NA`, `DATA`) |
 | **Citizen Voice** | Bureaucratic paper petitions | Non-existent / external social media | **Direct Geo-Photo Grievance Hub** with MP reply tracking |
-| **Project Linkage** | Disconnected grievance records | Unlinked free-text fields | **Authentic Work ID Mapping** to live database dossiers |
+| **Project Linkage** | Disconnected grievance records | Unlinked free-text fields | **Authentic Work ID Mapping** (86% linked to live database dossiers) |
 | **Actionability** | Lengthy bureaucratic reports | Raw data dumps | **Forensic Case Packet** with MB checklist & cure notice logs |
 
 ---
@@ -194,15 +212,15 @@ In strict accordance with Problem Statement 26102's requirement to provide decis
 
 ### 1. 👑 MoSPI Central Reviewer & DIID Executive Dashboard (`AdminDashboard.jsx`)
 ```
-+--------------------------------------------------------------------------------------------------+
-|  🏛️ CENTRAL MoSPI REVIEWER OVERSIGHT (DIID)                    [Live Sync: 2026-09-19 | IDLE]    |
-+--------------------------------------------------------------------------------------------------+
-|  SANCTIONED AMOUNT       DISBURSED AMOUNT        UNSPENT BALANCE          NATIONAL UTILIZATION   |
-|  ₹12,450.75 Cr           ₹7,927.39 Cr            ₹4,523.36 Cr             75.7% (Healthy Range)  |
-|                                                                                                  |
-|  PORTFOLIO RISK PROFILE: 67,936 High Risk (Review) | 98,412 Medium Risk (Monitor) | 61,980 Low   |
-|  TRIGGER LIVE SYNC: [Run Quick Sync (Sample)]  [Trigger Comprehensive Ingestion (17th & 18th LS)]|
-+--------------------------------------------------------------------------------------------------+
+┌──────────────────────────────────────────────────────────────────────────────────────────────────┐
+│ 🏛️ CENTRAL MoSPI REVIEWER OVERSIGHT (DIID)                    [Live Sync: 2026-09-19 | IDLE]     │
+├──────────────────────────────────────────────────────────────────────────────────────────────────┤
+│ SANCTIONED AMOUNT       DISBURSED AMOUNT        UNSPENT BALANCE          NATIONAL UTILIZATION    │
+│ ₹12,450.75 Cr           ₹7,927.39 Cr            ₹4,523.36 Cr             75.7% (Healthy Range)   │
+│                                                                                                  │
+│ PORTFOLIO RISK PROFILE: 67,936 High Risk (Review) | 98,412 Medium Risk (Monitor) | 61,980 Low    │
+│ TRIGGER LIVE SYNC: [Run Quick Sync (Sample)]  [Trigger Comprehensive Ingestion (17th & 18th LS)] │
+└──────────────────────────────────────────────────────────────────────────────────────────────────┘
 ```
 - **Macro Fiscal Telemetry:** Real-time tracking of ₹12,450.75 Cr sanctioned, ₹7,927.39 Cr disbursed, and ₹4,523.36 Cr unspent balance.
 - **Automated Master Data Synchronization:** Manual and cron-scheduled background scraper fetching live records from `mplads.mospi.gov.in`.
@@ -210,30 +228,30 @@ In strict accordance with Problem Statement 26102's requirement to provide decis
 
 ### 2. 🏛️ Member of Parliament (MP) Decision-Support Portal (`MPDashboard.jsx`)
 ```
-+--------------------------------------------------------------------------------------------------+
-|  PARLIAMENTARY DESK: Mala Roy, MP (Kolkata Dakshin • West Bengal)             [1-Click Switch Role]|
-+--------------------------------------------------------------------------------------------------+
-|  TOTAL ALLOCATED         SANCTIONED FUNDS        TOTAL DISBURSED          CONSTITUENCY UTILIZATION|
-|  ₹25.00 Cr               ₹24.85 Cr               ₹22.10 Cr                88.9% (Optimal Pace)    |
-|                                                                                                  |
-|  CIVIC GRIEVANCES PENDING: 14 Active Complaints | 8 Requiring MP Reply | 6 Under Field Audit     |
-|  LATEST GRIEVANCE: "Submersible pump failure at Ward 96" -> [Draft Official Parliamentary Reply] |
-+--------------------------------------------------------------------------------------------------+
+┌──────────────────────────────────────────────────────────────────────────────────────────────────┐
+│ PARLIAMENTARY DESK: Mala Roy, MP (Kolkata Dakshin • West Bengal)             [1-Click Switch Role]│
+├──────────────────────────────────────────────────────────────────────────────────────────────────┤
+│ TOTAL ALLOCATED         SANCTIONED FUNDS        TOTAL DISBURSED          CONSTITUENCY UTILIZATION│
+│ ₹25.00 Cr               ₹24.85 Cr               ₹22.10 Cr                88.9% (Optimal Pace)    │
+│                                                                                                  │
+│ CIVIC GRIEVANCES PENDING: 14 Active Complaints | 8 Requiring MP Reply | 6 Under Field Audit      │
+│ LATEST GRIEVANCE: "Submersible pump failure at Ward 96" -> [Draft Official Parliamentary Reply]  │
+└──────────────────────────────────────────────────────────────────────────────────────────────────┘
 ```
 - **Constituency Fund Health:** Real-time monitoring of recommendations, sanctions, and actual on-ground expenditure.
 - **Voter Grievance Redressal Desk:** Direct pipeline of citizen complaints with photo proof, GPS location, and an **Official MP Parliamentary Reply** submission channel.
 
 ### 3. ⚖️ District Authority (IDA / District Collector) Portal (`DistrictAuditorDashboard.jsx`)
 ```
-+--------------------------------------------------------------------------------------------------+
-|  DISTRICT PLANNING DESK: District Authority Auditor (Murshidabad • West Bengal)                  |
-+--------------------------------------------------------------------------------------------------+
-|  WORKS UNDER SCRUTINY    INSPECTIONS DUE         PENDING CURE NOTICES     VERIFIED COMPLETIONS   |
-|  412 High-Risk Projects  18 Field Visits         7 Contractors Flagged    128 Verified On-Site    |
-|                                                                                                  |
-|  INSPECTION WORKLIST:                                                                            |
-|  #152872: Lighting of public spaces -> High Risk (Score: 69.4) -> [Serve Cure Notice] [Inspect MB]|
-+--------------------------------------------------------------------------------------------------+
+┌──────────────────────────────────────────────────────────────────────────────────────────────────┐
+│ DISTRICT PLANNING DESK: District Authority Auditor (Murshidabad • West Bengal)                   │
+├──────────────────────────────────────────────────────────────────────────────────────────────────┤
+│ WORKS UNDER SCRUTINY    INSPECTIONS DUE         PENDING CURE NOTICES     VERIFIED COMPLETIONS    │
+│ 412 High-Risk Projects  18 Field Visits         7 Contractors Flagged    128 Verified On-Site    │
+│                                                                                                  │
+│ INSPECTION WORKLIST:                                                                             │
+│ #152872: Lighting of public spaces -> High Risk (Score: 69.4) -> [Serve Cure Notice] [Inspect MB]│
+└──────────────────────────────────────────────────────────────────────────────────────────────────┘
 ```
 - **Field Inspection Queue:** Ranked list of projects requiring mandatory physical verification.
 - **Formal Cure Notice & Audit Log:** Ability to serve cure notices to defaulting vendors and record formal audit determinations.
@@ -250,24 +268,24 @@ In strict accordance with Problem Statement 26102's requirement to provide decis
 JanNidhi bridges the gap between official data and ground reality through an integrated civic redressal portal:
 
 ```
-+--------------------------------------------------------------------------------------------------+
-| 📍 CIVIC COMPLAINT #PRB-WE-MUR-0002                                          [STATUS: IN PROGRESS]|
-+--------------------------------------------------------------------------------------------------+
-| Title: High-mast solar lighting system non-functional at Station Road Ward 4                     |
-| Raised By: Tanushree Ghosh (+91 9830*****) • Murshidabad • West Bengal                           |
-|                                                                                                  |
-| [📷 Photo Evidence: Verified Site Inspection Image Attached]                                     |
-|                                                                                                  |
-| 🏛️ SANCTIONED WORK: Lighting of public spaces (Work #152872)                                     |
-| ⚡ LINKED WORK:  [📄 #152872  Inspect Case Packet  ↗]  <-- Warm Amber 1-Click Audit Inspection   |
-|                                                                                                  |
-| 💬 OFFICIAL MP RESPONSE:                                                                         |
-| "I have taken note of this critical civic issue. PHED Executive Engineer instructed to replace    |
-| defective components under warranty clause within 7 days."                                       |
-|                                                                                                  |
-| 🔍 DISTRICT AUDITOR NOTE:                                                                        |
-| "Physical verification confirmed electrical breakdown. Formal cure notice served to contractor." |
-+--------------------------------------------------------------------------------------------------+
+┌──────────────────────────────────────────────────────────────────────────────────────────────────┐
+│ 📍 CIVIC COMPLAINT #PRB-WE-MUR-0002                                          [STATUS: IN PROGRESS]│
+├──────────────────────────────────────────────────────────────────────────────────────────────────┤
+│ Title: High-mast solar lighting system non-functional at Station Road Ward 4                     │
+│ Raised By: Tanushree Ghosh (+91 9830*****) • Murshidabad • West Bengal                            │
+│                                                                                                  │
+│ [📷 Photo Evidence: Verified Site Inspection Image Attached]                                      │
+│                                                                                                  │
+│ 🏛️ SANCTIONED WORK: Lighting of public spaces (Work #152872)                                      │
+│ ⚡ LINKED WORK:  [📄 #152872  Inspect Case Packet  ↗]  <-- Warm Amber 1-Click Audit Inspection    │
+│                                                                                                  │
+│ 💬 OFFICIAL MP RESPONSE:                                                                         │
+│ "I have taken note of this critical civic issue. PHED Executive Engineer instructed to replace    │
+│ defective components under warranty clause within 7 days."                                       │
+│                                                                                                  │
+│ 🔍 DISTRICT AUDITOR NOTE:                                                                        │
+│ "Physical verification confirmed electrical breakdown. Formal cure notice served to contractor." │
+└──────────────────────────────────────────────────────────────────────────────────────────────────┘
 ```
 
 ### 🌟 Key Highlights
@@ -293,6 +311,7 @@ JanNidhi employs **6 specialist domain agents** governed by a central coordinato
 | **📍 Geographic Agent** | `5%` | Cluster Anomalies & IDA Capture | Implementing District Authority budget capture (>40% of state budget), IDA vendor monopolies (>80%), and multi-MP IDA clusters. |
 
 ### Consensus Scoring Formulation
+
 $$\text{Likelihood Score} = \sum_{i=1}^{6} w_i \cdot \text{AgentScore}_i \quad \text{where} \quad \sum w_i = 1.0$$
 
 Works with a weighted consensus score $\ge 0.40$ are flagged as anomalous, and normalized against portfolio percentiles into actionable tiers:
@@ -304,7 +323,7 @@ Works with a weighted consensus score $\ge 0.40$ are flagged as anomalous, and n
 
 ## ⚖️ Evidence-Grounded 5-State Rule System
 
-JanNidhi enforces an **evidence-grounded five-state evaluation model** across all statutory guidelines:
+JanNidhi enforces an **evidence-grounded five-state evaluation model** (`PASS`, `FAIL`, `UNKNOWN`, `NA`, `DATA`) across all statutory guidelines:
 
 | Rule Code | Statutory Guideline | Detection Mechanism | Example Flag |
 |---|---|---|---|
@@ -332,7 +351,8 @@ JanNidhi includes built-in, self-healing demo authentication presets allowing ev
 | **District Authority Auditor**| `auditor` | `Auditor@MPLADS2026!` | Access District Auditor Dashboard, schedule site inspections, serve formal cure notices, submit Case Packet determinations. |
 | **MoSPI Reviewer / Admin** | `admin` | `Admin@MPLADS2026!` | Access MoSPI Admin Dashboard, monitor national utilization (₹12,450 Cr), trigger live portal sync, manage system-wide audit queues. |
 
-*Self-Healing Security Note: If demo user records are missing upon container initialization, the authentication layer automatically creates them securely with bcrypt password hashing on first login.*
+> [!NOTE]
+> *Self-Healing Security Note: If demo user records are missing upon container initialization, the authentication layer automatically creates them securely with bcrypt password hashing on first login.*
 
 ---
 
@@ -350,10 +370,7 @@ cd SIH26102
 ```
 
 ### 2. Environment Configuration
-Create a local `.env` file in the root directory.
-
-> [!NOTE]
-> All `.env` files are strictly excluded from git tracking to prevent credential leaks. Configure your local file as follows:
+Create a local `.env` file in the root directory:
 
 ```env
 # MongoDB Connection
@@ -392,7 +409,7 @@ python -m backend.scripts.seed_500_grievances
 # Start the FastAPI server
 uvicorn backend.main:app --host 0.0.0.0 --port 8000 --reload
 ```
-API Documentation will be live at `http://localhost:8000/docs`.
+Interactive API Documentation will be live at `http://localhost:8000/docs`.
 
 ### 4. Frontend Setup
 ```bash
@@ -469,7 +486,7 @@ This project strictly adheres to **gstack** and **anti-slop design principles**:
 
 ---
 
-## 📜 License & Compliance
+## 📜 License & Statutory Compliance
 
 Developed for the **Ministry of Statistics and Programme Implementation (MoSPI)** under the **Smart India Hackathon (SIH)** initiative for **Problem Statement 26102**.  
-All data schemas and compliance rules are aligned with the official **MPLADS Scheme Guidelines (2023)** issued by the Government of India.
+All data schemas and compliance rules are aligned with the official **[MPLADS Scheme Guidelines (2023)](https://mplads.mospi.gov.in)** issued by the Government of India.
