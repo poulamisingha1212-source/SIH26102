@@ -156,3 +156,30 @@ def test_distributed_locking_concurrency():
     lock3 = acquire_sync_lock(lease_seconds=60)
     assert lock3 is not None
     release_sync_lock(lock3)
+
+
+def test_resolve_house_selection_excludes_17th_lok_sabha_and_uses_small_chunks():
+    """Verify live sync selects only 18th Lok Sabha & Rajya Sabha by default (excluding 17th Lok Sabha)
+    and processes data in small batches."""
+    from backend.services.mplads_live import resolve_house_selection
+    from backend.services.ingestion import _SCORE_CHUNK, _UPSERT_CHUNK
+
+    # 1. Defaults & 'all'/'both' must only include 18th Lok Sabha and Rajya Sabha
+    assert set(resolve_house_selection(None)) == {"rajya_sabha", "lok_sabha_18"}
+    assert set(resolve_house_selection("all")) == {"rajya_sabha", "lok_sabha_18"}
+    assert set(resolve_house_selection("both")) == {"rajya_sabha", "lok_sabha_18"}
+    assert resolve_house_selection("lok_sabha") == ["lok_sabha_18"]
+
+    # 2. Comma-separated specs must parse cleanly without crashing
+    assert set(resolve_house_selection("rajya_sabha,lok_sabha_18")) == {"rajya_sabha", "lok_sabha_18"}
+    assert set(resolve_house_selection("lok_sabha_18, rajya_sabha")) == {"rajya_sabha", "lok_sabha_18"}
+
+    # 3. 17th Lok Sabha must NEVER be in default/all/both
+    assert "lok_sabha_17" not in resolve_house_selection("all")
+    assert "lok_sabha_17" not in resolve_house_selection("both")
+    assert "lok_sabha_17" not in resolve_house_selection()
+
+    # 4. Small chunk guarantees (<= 250 records per chunk to prevent memory spikes & OOM)
+    assert _SCORE_CHUNK <= 250
+    assert _UPSERT_CHUNK <= 250
+

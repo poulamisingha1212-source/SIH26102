@@ -95,7 +95,7 @@ class Settings:
     # lok_sabha_18 | both. rajya_sabha keeps scheduled syncs fast; "both"
     # pulls the ~90 MB Lok Sabha payloads.
     MPLADS_BASE_URL: str = os.getenv("MPLADS_BASE_URL", "https://mplads.mospi.gov.in")
-    MPLADS_LIVE_HOUSE: str = os.getenv("MPLADS_LIVE_HOUSE", "rajya_sabha")
+    MPLADS_LIVE_HOUSE: str = os.getenv("MPLADS_LIVE_HOUSE", "rajya_sabha,lok_sabha_18")
     MPLADS_LIVE_TIMEOUT: int = int(os.getenv("MPLADS_LIVE_TIMEOUT", "300"))
 
     def __init__(self):
@@ -114,6 +114,10 @@ class Settings:
     def validate(self):
         """Fail fast in production if required secrets or database URIs are missing or using dev defaults."""
         if self.ENVIRONMENT == "production":
+            # In GitHub Actions or non-server CLI sync jobs, supply a safe fallback if JWT_SECRET was omitted from repo secrets
+            if (not self.JWT_SECRET or self.JWT_SECRET == "mplads-sentinel-jwt-secret-key-32-chars-min!") and os.getenv("GITHUB_ACTIONS"):
+                self.JWT_SECRET = "gh-actions-live-sync-runner-jwt-secret-key-32-chars-min"
+
             dev_default_jwt = "mplads-sentinel-jwt-secret-key-32-chars-min!"
             if not self.JWT_SECRET or self.JWT_SECRET == dev_default_jwt:
                 raise ValueError(

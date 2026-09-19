@@ -67,11 +67,11 @@ def format_duration(seconds: float) -> str:
 def feed_house_data(
     client: MPLADSLiveClient,
     combo_key: str,
-    chunk_size: int = 2000,
+    chunk_size: int = 200,
     alloc_map: Optional[dict] = None,
 ) -> Dict[str, int]:
     """
-    Fetch, reshape, score, and upsert all datasets for a single house in chunks of 2,000.
+    Fetch, reshape, score, and upsert all datasets for a single house in chunks of 200.
     """
     house_label = HOUSE_LABELS[combo_key]
     logger.info("=" * 70)
@@ -208,7 +208,7 @@ def feed_house_data(
 
 def run_full_feed(
     houses: List[str],
-    chunk_size: int = 2000,
+    chunk_size: int = 200,
     purge_preloaded: bool = True,
     mongo_uri: Optional[str] = None,
     force: bool = False,
@@ -257,9 +257,9 @@ def run_full_feed(
 
         grand_totals = {"fetched": 0, "processed": 0, "inserted": 0, "updated": 0, "allocations": 0}
 
-        # Sequence: Rajya Sabha -> Lok Sabha 18 -> Lok Sabha 17
+        # Sequence: Rajya Sabha -> 18th Lok Sabha (17th Lok Sabha excluded from live feed)
         house_order = []
-        for h in ["rajya_sabha", "lok_sabha_18", "lok_sabha_17"]:
+        for h in ["rajya_sabha", "lok_sabha_18"]:
             if h in houses:
                 house_order.append(h)
         for h in houses:
@@ -335,17 +335,17 @@ def run_full_feed(
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Feed live MPLADS portal data into MongoDB in chunks.")
+    parser = argparse.ArgumentParser(description="Feed live MPLADS portal data into MongoDB in small chunks.")
     parser.add_argument(
         "--houses",
-        default="rajya_sabha,lok_sabha_18,lok_sabha_17",
-        help="Comma-separated houses to feed: rajya_sabha,lok_sabha_18,lok_sabha_17 (or 'all'/'both')",
+        default="rajya_sabha,lok_sabha_18",
+        help="Comma-separated houses to feed: rajya_sabha,lok_sabha_18 (or 'all'/'both')",
     )
     parser.add_argument(
         "--chunk-size",
         type=int,
-        default=2000,
-        help="Number of records per scoring batch & MongoDB bulk upsert (default: 2000)",
+        default=200,
+        help="Number of records per scoring batch & MongoDB bulk upsert (default: 200)",
     )
     parser.add_argument(
         "--skip-purge",
@@ -366,7 +366,7 @@ def main():
     args = parser.parse_args()
 
     if args.houses.strip().lower() in ("all", "both"):
-        target_houses = ["rajya_sabha", "lok_sabha_18", "lok_sabha_17"]
+        target_houses = ["rajya_sabha", "lok_sabha_18"]
     else:
         target_houses = [h.strip().lower() for h in args.houses.split(",") if h.strip()]
 

@@ -89,22 +89,37 @@ _BROWSER_HEADERS = {
 
 def resolve_house_selection(spec: Optional[str] = None) -> List[str]:
     """Map a house spec string to combo keys. Accepts rajya_sabha, lok_sabha
-    (both terms), lok_sabha_18 / 18th_lok_sabha, lok_sabha_17 / 17th_lok_sabha,
-    and both/all."""
-    s = (spec or settings.MPLADS_LIVE_HOUSE or "rajya_sabha").strip().lower().replace(" ", "_").replace("-", "_")
-    if s in ("both", "all"):
-        return ["lok_sabha_18", "lok_sabha_17", "rajya_sabha"]
-    if s in ("lok_sabha", "loksabha"):
-        return ["lok_sabha_18", "lok_sabha_17"]
-    if s in ("lok_sabha_18", "18th_lok_sabha", "18th_loksabha", "18"):
+    (18th Lok Sabha), lok_sabha_18 / 18th_lok_sabha, comma-separated combinations,
+    and both/all (which defaults to Rajya Sabha + 18th Lok Sabha).
+    17th Lok Sabha is excluded by default."""
+    raw = spec or settings.MPLADS_LIVE_HOUSE or "rajya_sabha,lok_sabha_18"
+    raw_str = str(raw).strip().lower()
+
+    # If comma-separated, split and resolve each token
+    if "," in raw_str:
+        tokens = [t.strip() for t in raw_str.split(",") if t.strip()]
+        result = []
+        for t in tokens:
+            resolved = resolve_house_selection(t)
+            for r in resolved:
+                if r not in result:
+                    result.append(r)
+        return result or ["rajya_sabha", "lok_sabha_18"]
+
+    s = raw_str.replace(" ", "_").replace("-", "_")
+    if s in ("both", "all", "default"):
+        return ["rajya_sabha", "lok_sabha_18"]
+    if s in ("lok_sabha", "loksabha", "lok_sabha_18", "18th_lok_sabha", "18th_loksabha", "18"):
         return ["lok_sabha_18"]
+    if s in ("rajya_sabha", "rajyasabha", "rs"):
+        return ["rajya_sabha"]
     if s in ("lok_sabha_17", "17th_lok_sabha", "17th_loksabha", "17"):
         return ["lok_sabha_17"]
     if s in HOUSE_COMBOS:
         return [s]
     raise ValueError(
         f"Invalid MPLADS_LIVE_HOUSE '{spec}'. Must be one of: "
-        f"rajya_sabha, lok_sabha, lok_sabha_17, lok_sabha_18, both, all."
+        f"rajya_sabha, lok_sabha, lok_sabha_18, both, all."
     )
 
 

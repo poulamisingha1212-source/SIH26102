@@ -44,8 +44,8 @@ SOURCE_LIVE = "MPLADS Live Dashboard API (mplads.mospi.gov.in)"
 
 VALID_MODES = {"live"}
 
-_UPSERT_CHUNK = 2000   # records per MongoDB bulk_write round-trip
-_SCORE_CHUNK  = 2000   # records scored per batch (memory control)
+_UPSERT_CHUNK = 200    # records per MongoDB bulk_write round-trip (small chunks)
+_SCORE_CHUNK  = 200    # records scored per batch (memory control & small chunks)
 SYNC_LOCK_NAME = "mplads_ingestion_lock"
 LOCK_LEASE_SECONDS = 900  # 15 minutes max lock duration before expiration
 

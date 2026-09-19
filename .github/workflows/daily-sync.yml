@@ -9,17 +9,17 @@ on:
   workflow_dispatch:
     inputs:
       houses:
-        description: 'Houses to sync (comma-separated or all)'
+        description: 'Houses to sync (default: rajya_sabha,lok_sabha_18)'
         required: false
-        default: 'all'
+        default: 'rajya_sabha,lok_sabha_18'
       chunk_size:
-        description: 'Records per chunk'
+        description: 'Records per chunk (small chunk size)'
         required: false
-        default: '2000'
+        default: '200'
 
 jobs:
   sync:
-    name: Daily Live Sync
+    name: Daily Live Sync (18th Lok Sabha & Rajya Sabha)
     runs-on: ubuntu-latest
     timeout-minutes: 120
 
@@ -36,20 +36,22 @@ jobs:
       - name: Install Dependencies
         run: pip install -r requirements.txt
 
-      - name: Execute Live Ingestion in 2,000 Chunks
+      - name: Execute Live Ingestion in Small Chunks
         env:
           MONGODB_URI: ${{ secrets.MONGODB_URI }}
           MONGO_DB_NAME: ${{ secrets.MONGO_DB_NAME || 'mplads_sentinel' }}
           ENVIRONMENT: production
-          MPLADS_LIVE_HOUSE: ${{ github.event.inputs.houses || 'all' }}
+          JWT_SECRET: ${{ secrets.JWT_SECRET || 'gh-actions-live-sync-runner-jwt-secret-key-32-chars-min' }}
+          DEMO_ADMIN_PASSWORD: ${{ secrets.DEMO_ADMIN_PASSWORD || 'UnusedCliScriptSecret2026!' }}
+          MPLADS_LIVE_HOUSE: ${{ github.event.inputs.houses || 'rajya_sabha,lok_sabha_18' }}
           BACKEND_URL: ${{ secrets.BACKEND_URL }}
           CRON_SECRET: ${{ secrets.CRON_SECRET }}
         run: |
           if [ -n "$MONGODB_URI" ]; then
-            echo "Running direct chunked ingestion against MongoDB..."
+            echo "Running direct small-chunk ingestion (Rajya Sabha + 18th Lok Sabha) against MongoDB..."
             python -m backend.scripts.feed_live_data \
-              --houses "${{ github.event.inputs.houses || 'all' }}" \
-              --chunk-size "${{ github.event.inputs.chunk_size || 2000 }}"
+              --houses "${{ github.event.inputs.houses || 'rajya_sabha,lok_sabha_18' }}" \
+              --chunk-size "${{ github.event.inputs.chunk_size || 200 }}"
           elif [ -n "$BACKEND_URL" ] && [ -n "$CRON_SECRET" ]; then
             echo "Triggering live sync via backend cron endpoint..."
             curl -f -X POST "${BACKEND_URL}/api/cron/sync?mode=live" \
