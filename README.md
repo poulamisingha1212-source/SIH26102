@@ -100,41 +100,72 @@ The following matrix documents how **JanNidhi (जन निधि)** directly a
 
 ## 🏗️ End-to-End System Architecture
 
+Designed specifically for **Smart India Hackathon (Problem Statement 26102)**, JanNidhi replaces bureaucratic manual audits with a streamlined, 4-stage AI pipeline connecting official data to ground action:
+
 ```mermaid
-flowchart TB
-    subgraph DataIngestion ["1. MoSPI Data Ingestion & Storage Layer"]
-        PortalScraper["Live MoSPI Scraper (Background Scheduler)<br/>https://mplads.mospi.gov.in"] --> MasterIngest["Distributed Lock Handler<br/>(MongoDB Locks)"]
-        MasterIngest --> MongoCluster[("MongoDB Atlas Database<br/>228,328 Works • 545 Constituencies")]
+flowchart LR
+    %% 4-Stage High-Impact Architecture for SIH Problem Statement 26102
+    
+    subgraph S1 ["1. DATA INGESTION"]
+        direction TB
+        D1["🏛️ MoSPI Official Data<br/>(228,328 Live Works)"]
+        D2["👥 Citizen Ground Truth<br/>(Geo-tagged Photo Proof)"]
     end
 
-    subgraph RiskEngine ["2. Multi-Agent Risk Engine & Forensic Analysis"]
-        MongoCluster --> Coordinator["Multi-Agent Coordinator<br/>(Consensus Likelihood Synthesizer)"]
-        Coordinator --> FA["💰 Financial Agent<br/>(MAD Outliers & Overruns)"]
-        Coordinator --> DA["👯 Duplicate Agent<br/>(Jaccard & N-gram Overlap)"]
-        Coordinator --> TA["⏱️ Timeline Agent<br/>(Stagnation & Velocity)"]
-        Coordinator --> VA["🏢 Vendor Agent<br/>(Cartels & Monopolies)"]
-        Coordinator --> CA["📜 Compliance Agent<br/>(Statutory Annexure-II)"]
-        Coordinator --> GA["📍 Geographic Agent<br/>(IDA Budget Capture)"]
-        
-        FA & DA & TA & VA & CA & GA --> ScoreAgg["Consensus Scoring Pipeline<br/>Percentile Normalization"]
-        ScoreAgg --> FiveState["5-State Statutory Evaluator<br/>(PASS / FAIL / UNKNOWN / NA / DATA)"]
-        FiveState --> CasePacketGen["Forensic Case Packet Builder<br/>Causal Narrative + MB Checklist"]
+    subgraph S2 ["2. AI ANOMALY ENGINE"]
+        direction TB
+        A1["💰 Cost Overrun & Outliers (MAD)"]
+        A2["👯 Duplicate & Ghost Works (NLP)"]
+        A3["🏢 Contractor Cartels (Gini Index)"]
+        A4["⏱️ Project Delays & Stagnation"]
+        A5["📜 Statutory Violations (Annexure-II)"]
     end
 
-    subgraph APIAndAuth ["3. FastAPI Core & RBAC 2.0 Security"]
-        CasePacketGen --> RestAPI["FastAPI REST API Core<br/>(/api/works, /api/problems, /api/stats)"]
-        AuthLayer["JWT Bearer Authentication<br/>Bcrypt Password Hashing"] --> RestAPI
-        RateLimiter["IP-Bounded Rate Limiter<br/>(Memory + Mongo Buckets)"] --> RestAPI
+    subgraph S3 ["3. FORENSIC DECISION"]
+        direction TB
+        E1["⚖️ Multi-Agent Risk Consensus<br/>(High • Medium • Low)"]
+        E2["📁 1-Click Forensic Case Packet<br/>(Evidence & Audit Checklist)"]
     end
 
-    subgraph ClientViews ["4. Stakeholder Decision-Support Dashboards (React 19)"]
-        RestAPI --> AdminView["👑 Central MoSPI / DIID Reviewer<br/>Macro Spend (₹12,450 Cr) & Live Sync"]
-        RestAPI --> MPView["🏛️ Member of Parliament (MP)<br/>Constituency Fund & Parliamentary Desk"]
-        RestAPI --> AuditorView["⚖️ District Authority (IDA / Auditor)<br/>Field Verification & Cure Notices"]
-        RestAPI --> CitizenView["👥 Citizen Grievance Portal<br/>Photo Proof & 1-Click Case Packet"]
-        RestAPI --> PublicView["🗺️ State Nodal Authority & Public<br/>Interactive Choropleth & MP Directory"]
+    subgraph S4 ["4. STAKEHOLDER ACTION"]
+        direction TB
+        P1["👑 Central Ministry (MoSPI)<br/>Macro ₹12,450 Cr Oversight"]
+        P2["🏛️ Member of Parliament<br/>Constituency Fund & Grievance Desk"]
+        P3["⚖️ District Authority (IDA)<br/>Field Queue & Cure Notices"]
+        P4["👥 Public Transparency Hub<br/>Citizen Redressal & Tracking"]
     end
+
+    S1 ==>|Raw Records + Photos| S2
+    S2 ==>|Anomaly Signals| S3
+    S3 ==>|Actionable Dossiers| S4
 ```
+
+### 📊 SIH Presentation Slide Snapshot (4-Layer Pipeline)
+
+Use this structured overview directly in your **SIH Presentation PPT**:
+
+```
+┌────────────────────────────────────────────────────────────────────────────────────────────────────────┐
+│                        🏛️ JANNIDHI: END-TO-END SOLUTION ARCHITECTURE (SIH 26102)                       │
+├────────────────────┬─────────────────────────────┬──────────────────────────┬──────────────────────────┤
+│ 1. DATA INGESTION  │ 2. AI ANOMALY ENGINE        │ 3. FORENSIC DECISION     │ 4. STAKEHOLDER ACTION    │
+├────────────────────┼─────────────────────────────┼──────────────────────────┼──────────────────────────┤
+│ • 228,328 Official │ • 💰 Cost Overruns (MAD)    │ • Multi-Agent Consensus  │ • 👑 MoSPI Ministry      │
+│   MoSPI Works      │ • 👯 Duplicate Works (NLP)  │   Risk Scoring (0-100)   │   National Macro Spend   │
+│ • 545 Constituencies│ • 🏢 Contractor Cartels     │ • 5-State Rule Evaluator │ • 🏛️ Member of Parliament│
+│ • 36 States & UTs  │ • ⏱️ Project Stagnation    │   (Statutory Compliance) │   Constituency & Replies │
+│ • Citizen Geo-Photo│ • 📜 Prohibited Categories  │ • 1-Click Forensic Dossier│ • ⚖️ District Collector │
+│   Ground-Truth     │   (MPLADS 2023 Guidelines)  │   with MB Audit Check    │   Field Queue & Notices  │
+│                    │                             │                          │ • 👥 Citizen Hub         │
+│                    │                             │                          │   Transparent Redressal  │
+├────────────────────┴─────────────────────────────┴──────────────────────────┴──────────────────────────┤
+│ 💡 CORE INNOVATION: 100% automated pre-audit triage converting raw portal data into verified           │
+│    legal evidence packets, saving 6-18 months of post-facto audit delay.                              │
+└────────────────────────────────────────────────────────────────────────────────────────────────────────┘
+```
+
+- **Problem Addressed:** Legacy manual audits cover <5% of projects post-facto (6-18 months late). Unchecked contractor cartels, inflated estimates, and ghost duplicates go undetected.
+- **Solution Delivered:** Automated continuous screening across **100% of works (228,328 works)**, multi-vector anomaly consensus, and instant forensic dossiers for prompt administrative action.
 
 ---
 
