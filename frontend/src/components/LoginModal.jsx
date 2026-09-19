@@ -89,65 +89,6 @@ export default function LoginModal({ targetRole, onClose, onSuccess }) {
           </div>
         </div>
 
-        {/* Quick Demo Credentials Pill Bar with 1-Click Quick Login */}
-        <div className="mb-4 p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/80 dark:border-slate-700/80 space-y-1.5">
-          <div className="text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 flex items-center justify-between">
-            <span>Quick Login Presets</span>
-            <span className="text-[9px] font-medium text-indigo-600 dark:text-indigo-400">Click to enter instantly</span>
-          </div>
-          <div className="grid grid-cols-3 gap-1.5">
-            <button
-              type="button"
-              disabled={isSubmitting}
-              onClick={() => executeLoginWith('admin', 'Admin@MPLADS2026!')}
-              className={`p-2 rounded-lg text-[11px] font-medium border text-left transition-all cursor-pointer select-none hover:shadow-xs active:scale-[0.98] ${
-                username === 'admin'
-                  ? 'bg-amber-100/90 border-amber-300 text-amber-900 dark:bg-amber-950/60 dark:border-amber-700 dark:text-amber-200 ring-1 ring-amber-400/40'
-                  : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 hover:border-amber-300 text-slate-700 dark:text-slate-300'
-              }`}
-            >
-              <span className="font-bold truncate flex items-center justify-between">
-                <span>Admin</span>
-                <span className="text-[9px] font-semibold text-amber-700 bg-amber-50 dark:bg-amber-950 px-1 py-0.2 rounded border border-amber-200/80">Login</span>
-              </span>
-              <span className="text-[10px] text-slate-400 truncate block mt-0.5">MoSPI Exec</span>
-            </button>
-
-            <button
-              type="button"
-              disabled={isSubmitting}
-              onClick={() => executeLoginWith('auditor', 'Auditor@MPLADS2026!')}
-              className={`p-2 rounded-lg text-[11px] font-medium border text-left transition-all cursor-pointer select-none hover:shadow-xs active:scale-[0.98] ${
-                username === 'auditor'
-                  ? 'bg-indigo-100/90 border-indigo-300 text-indigo-900 dark:bg-indigo-950/60 dark:border-indigo-700 dark:text-indigo-200 ring-1 ring-indigo-400/40'
-                  : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 hover:border-indigo-300 text-slate-700 dark:text-slate-300'
-              }`}
-            >
-              <span className="font-bold truncate flex items-center justify-between">
-                <span>Auditor</span>
-                <span className="text-[9px] font-semibold text-indigo-700 bg-indigo-50 dark:bg-indigo-950 px-1 py-0.2 rounded border border-indigo-200/80">Login</span>
-              </span>
-              <span className="text-[10px] text-slate-400 truncate block mt-0.5">Kota District</span>
-            </button>
-
-            <button
-              type="button"
-              disabled={isSubmitting}
-              onClick={() => executeLoginWith('mp', 'MP@MPLADS2026!')}
-              className={`p-2 rounded-lg text-[11px] font-medium border text-left transition-all cursor-pointer select-none hover:shadow-xs active:scale-[0.98] ${
-                username === 'mp'
-                  ? 'bg-emerald-100/90 border-emerald-300 text-emerald-900 dark:bg-emerald-950/60 dark:border-emerald-700 dark:text-emerald-200 ring-1 ring-emerald-400/40'
-                  : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 hover:border-emerald-300 text-slate-700 dark:text-slate-300'
-              }`}
-            >
-              <span className="font-bold truncate flex items-center justify-between">
-                <span>MP</span>
-                <span className="text-[9px] font-semibold text-emerald-700 bg-emerald-50 dark:bg-emerald-950 px-1 py-0.2 rounded border border-emerald-200/80">Login</span>
-              </span>
-              <span className="text-[10px] text-slate-400 truncate block mt-0.5">Om Birla (Kota)</span>
-            </button>
-          </div>
-        </div>
 
         {/* Form */}
         <form onSubmit={handleSubmit} className="space-y-4">
