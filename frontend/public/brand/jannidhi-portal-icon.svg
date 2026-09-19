@@ -1,51 +1,65 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" fill="none">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128" fill="none">
   <defs>
-    <linearGradient id="embBg" x1="0%" y1="0%" x2="100%" y2="100%">
+    <!-- Background Gradient -->
+    <linearGradient id="iconBgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
       <stop offset="0%" stop-color="#0F172A" />
       <stop offset="60%" stop-color="#0B132B" />
       <stop offset="100%" stop-color="#030712" />
     </linearGradient>
 
-    <linearGradient id="embBorder" x1="0%" y1="0%" x2="100%" y2="100%">
+    <!-- Border Accent Gradient -->
+    <linearGradient id="iconBorderGrad" x1="0%" y1="0%" x2="100%" y2="100%">
       <stop offset="0%" stop-color="#F59E0B" stop-opacity="0.9" />
-      <stop offset="35%" stop-color="#D97706" stop-opacity="0.6" />
+      <stop offset="30%" stop-color="#D97706" stop-opacity="0.6" />
       <stop offset="70%" stop-color="#0284C7" stop-opacity="0.6" />
       <stop offset="100%" stop-color="#10B981" stop-opacity="0.9" />
     </linearGradient>
 
-    <linearGradient id="embSolar" x1="0%" y1="100%" x2="0%" y2="0%">
+    <!-- Solar Rays Gradient -->
+    <linearGradient id="iconSolarRay" x1="0%" y1="100%" x2="0%" y2="0%">
       <stop offset="0%" stop-color="#F59E0B" stop-opacity="0.3" />
       <stop offset="60%" stop-color="#FBBF24" />
       <stop offset="100%" stop-color="#FDE047" />
     </linearGradient>
 
-    <linearGradient id="embArc" x1="0%" y1="0%" x2="100%" y2="0%">
+    <!-- Citizen Community Arc -->
+    <linearGradient id="iconCitizenArc" x1="0%" y1="0%" x2="100%" y2="0%">
       <stop offset="0%" stop-color="#2563EB" />
       <stop offset="40%" stop-color="#38BDF8" />
       <stop offset="80%" stop-color="#2DD4BF" />
       <stop offset="100%" stop-color="#34D399" />
     </linearGradient>
 
-    <linearGradient id="embSprout" x1="0%" y1="100%" x2="0%" y2="0%">
+    <!-- Sprout Leaves -->
+    <linearGradient id="iconSprout" x1="0%" y1="100%" x2="0%" y2="0%">
       <stop offset="0%" stop-color="#059669" />
       <stop offset="100%" stop-color="#34D399" />
     </linearGradient>
 
-    <linearGradient id="embVessel" x1="0%" y1="0%" x2="0%" y2="100%">
+    <!-- Treasury Vessel (Nidhi) -->
+    <linearGradient id="iconVessel" x1="0%" y1="0%" x2="0%" y2="100%">
       <stop offset="0%" stop-color="#0284C7" />
       <stop offset="50%" stop-color="#0369A1" />
       <stop offset="100%" stop-color="#0F766E" />
     </linearGradient>
+
+    <!-- Center Aura Glow -->
+    <radialGradient id="iconAura" cx="50%" cy="45%" r="50%">
+      <stop offset="0%" stop-color="#0284C7" stop-opacity="0.25" />
+      <stop offset="100%" stop-color="#0284C7" stop-opacity="0" />
+    </radialGradient>
   </defs>
 
-  <!-- Squircle Base Frame -->
-  <rect x="1.5" y="1.5" width="61" height="61" rx="16" fill="url(#embBg)" stroke="url(#embBorder)" stroke-width="1.5" />
+  <!-- Base Squircle Container -->
+  <rect x="3" y="3" width="122" height="122" rx="34" fill="url(#iconBgGrad)" stroke="url(#iconBorderGrad)" stroke-width="2.5" />
   
-  <circle cx="32" cy="30" r="22" fill="#0284C7" fill-opacity="0.1" />
+  <!-- Subtle Internal Glow -->
+  <circle cx="64" cy="62" r="48" fill="url(#iconAura)" />
 
-  <g transform="translate(32, 32) scale(0.92) translate(-35, -35)">
+  <!-- Vector Emblem Scaled to 128x128 Canvas -->
+  <g transform="translate(64, 64) scale(1.65) translate(-35, -35)">
     <!-- 1. Solar Rays (5 Beams) -->
-    <g stroke="url(#embSolar)" stroke-linecap="round">
+    <g stroke="url(#iconSolarRay)" stroke-linecap="round">
       <line x1="35" y1="16" x2="35" y2="10" stroke-width="2.4" />
       <line x1="28" y1="17.5" x2="22.5" y2="12" stroke-width="2.0" />
       <line x1="42" y1="17.5" x2="47.5" y2="12" stroke-width="2.0" />
@@ -54,28 +68,34 @@
     </g>
 
     <!-- 2. Citizens ("Jan") -->
-    <circle cx="35" cy="18.5" r="4" fill="#38BDF8" stroke="#0B132B" stroke-width="0.8" />
-    <circle cx="23" cy="24" r="3.4" fill="#60A5FA" stroke="#0B132B" stroke-width="0.8" />
-    <circle cx="47" cy="24" r="3.4" fill="#34D399" stroke="#0B132B" stroke-width="0.8" />
+    <!-- Center Citizen Head -->
+    <circle cx="35" cy="18.5" r="4" fill="#38BDF8" stroke="#0B132B" stroke-width="1" />
+    <!-- Left Citizen Head -->
+    <circle cx="23" cy="24" r="3.4" fill="#60A5FA" stroke="#0B132B" stroke-width="1" />
+    <!-- Right Citizen Head -->
+    <circle cx="47" cy="24" r="3.4" fill="#34D399" stroke="#0B132B" stroke-width="1" />
 
     <!-- Civic Arch / Portal Canopy -->
     <path
       d="M 16.5 33.5 C 16.5 26.5 24 23.5 35 23.5 C 46 23.5 53.5 26.5 53.5 33.5 C 49 29.5 43 27.2 35 27.2 C 27 27.2 21 29.5 16.5 33.5 Z"
-      fill="url(#embArc)"
+      fill="url(#iconCitizenArc)"
     />
 
     <!-- 3. Growth Sprout -->
-    <path d="M 35 27.5 C 32.5 33 33.5 38.5 35 40.5 C 36.5 38.5 37.5 33 35 27.5 Z" fill="url(#embSprout)" />
+    <!-- Center Sprout Leaf -->
+    <path d="M 35 27.5 C 32.5 33 33.5 38.5 35 40.5 C 36.5 38.5 37.5 33 35 27.5 Z" fill="url(#iconSprout)" />
+    <!-- Left Leaf -->
     <path d="M 33.5 36.5 C 28 33.5 24 33.5 22 35.5 C 25 39 29.5 39.5 33.5 37.5 Z" fill="#34D399" />
+    <!-- Right Leaf -->
     <path d="M 36.5 36.5 C 42 33.5 46 33.5 48 35.5 C 45 39 40.5 39.5 36.5 37.5 Z" fill="#10B981" />
 
     <!-- 4. Treasury Vessel ("Nidhi") -->
     <ellipse cx="35" cy="40.5" rx="16.5" ry="2.2" fill="#38BDF8" fill-opacity="0.5" stroke="#38BDF8" stroke-width="0.8" />
     <path
       d="M 18.5 41 C 18.5 52 51.5 52 51.5 41 C 51.5 40 18.5 40 18.5 41 Z"
-      fill="url(#embVessel)"
+      fill="url(#iconVessel)"
       stroke="#38BDF8"
-      stroke-width="0.8"
+      stroke-width="0.9"
     />
     <path d="M 27.5 52 L 42.5 52 L 40 55 L 30 55 Z" fill="#0369A1" />
 
@@ -94,9 +114,9 @@
     </g>
   </g>
 
-  <!-- Sentinel Micro Dots -->
-  <circle cx="8" cy="8" r="1.2" fill="#F59E0B" opacity="0.8" />
-  <circle cx="56" cy="8" r="1.2" fill="#10B981" opacity="0.8" />
-  <circle cx="56" cy="56" r="1.2" fill="#38BDF8" opacity="0.8" />
-  <circle cx="8" cy="56" r="1.2" fill="#F59E0B" opacity="0.8" />
+  <!-- Sentinel Corner Indicator Dots -->
+  <circle cx="16" cy="16" r="2.2" fill="#F59E0B" />
+  <circle cx="112" cy="16" r="2.2" fill="#10B981" />
+  <circle cx="112" cy="112" r="2.2" fill="#38BDF8" />
+  <circle cx="16" cy="112" r="2.2" fill="#F59E0B" />
 </svg>

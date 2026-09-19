@@ -1,0 +1,159 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 260 220" width="260" height="220" fill="none">
+  <defs>
+    <!-- Solar Dawn Gold -->
+    <linearGradient id="stkDarkSolar" x1="0%" y1="100%" x2="0%" y2="0%">
+      <stop offset="0%" stop-color="#F59E0B" stop-opacity="0.3" />
+      <stop offset="60%" stop-color="#FBBF24" />
+      <stop offset="100%" stop-color="#FDE047" />
+    </linearGradient>
+
+    <!-- Citizen Community Arc -->
+    <linearGradient id="stkDarkArc" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#2563EB" />
+      <stop offset="40%" stop-color="#38BDF8" />
+      <stop offset="80%" stop-color="#2DD4BF" />
+      <stop offset="100%" stop-color="#34D399" />
+    </linearGradient>
+
+    <!-- Sprout Leaves -->
+    <linearGradient id="stkDarkSprout" x1="0%" y1="100%" x2="0%" y2="0%">
+      <stop offset="0%" stop-color="#10B981" />
+      <stop offset="100%" stop-color="#4ADE80" />
+    </linearGradient>
+
+    <!-- Treasury Vessel (Nidhi) -->
+    <linearGradient id="stkDarkVessel" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#0284C7" />
+      <stop offset="50%" stop-color="#0369A1" />
+      <stop offset="100%" stop-color="#0F766E" />
+    </linearGradient>
+
+    <!-- Squircle Dark Container -->
+    <linearGradient id="stkDarkBg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1E293B" />
+      <stop offset="100%" stop-color="#0F172A" />
+    </linearGradient>
+
+    <linearGradient id="stkDarkBorder" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#F59E0B" stop-opacity="0.7" />
+      <stop offset="50%" stop-color="#38BDF8" stop-opacity="0.4" />
+      <stop offset="100%" stop-color="#10B981" stop-opacity="0.7" />
+    </linearGradient>
+
+    <linearGradient id="stkDarkWordmarkEmerald" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#2DD4BF" />
+      <stop offset="100%" stop-color="#34D399" />
+    </linearGradient>
+  </defs>
+
+  <!-- ==================== CENTERED ICON (x=90, y=12, 80x80) ==================== -->
+  <g transform="translate(90, 12)">
+    <rect x="0.5" y="0.5" width="79" height="79" rx="22" fill="url(#stkDarkBg)" stroke="url(#stkDarkBorder)" stroke-width="1.2" />
+    <circle cx="40" cy="41" r="30" fill="#0284C7" fill-opacity="0.12" />
+
+    <g transform="translate(40, 40) scale(1.1) translate(-35, -35)">
+      <!-- 1. Solar Rays (5 Beams) -->
+      <g stroke="url(#stkDarkSolar)" stroke-linecap="round">
+        <line x1="35" y1="16" x2="35" y2="10" stroke-width="2.4" />
+        <line x1="28" y1="17.5" x2="23" y2="12" stroke-width="2.0" />
+        <line x1="42" y1="17.5" x2="47" y2="12" stroke-width="2.0" />
+        <line x1="22.5" y1="21" x2="16" y2="17.5" stroke-width="1.8" />
+        <line x1="47.5" y1="21" x2="54" y2="17.5" stroke-width="1.8" />
+      </g>
+
+      <!-- 2. Citizens ("Jan") -->
+      <circle cx="35" cy="18.5" r="4" fill="#38BDF8" stroke="#0F172A" stroke-width="0.8" />
+      <circle cx="23" cy="24" r="3.4" fill="#60A5FA" stroke="#0F172A" stroke-width="0.8" />
+      <circle cx="47" cy="24" r="3.4" fill="#34D399" stroke="#0F172A" stroke-width="0.8" />
+
+      <!-- Civic Arch / Portal Canopy -->
+      <path
+        d="M 16.5 33.5 C 16.5 26.5 24 23.5 35 23.5 C 46 23.5 53.5 26.5 53.5 33.5 C 49 29.5 43 27.2 35 27.2 C 27 27.2 21 29.5 16.5 33.5 Z"
+        fill="url(#stkDarkArc)"
+      />
+
+      <!-- 3. Growth Sprout -->
+      <path d="M 35 27.5 C 32.5 33 33.5 38.5 35 40.5 C 36.5 38.5 37.5 33 35 27.5 Z" fill="url(#stkDarkSprout)" />
+      <path d="M 33.5 36.5 C 28 33.5 24 33.5 22 35.5 C 25 39 29.5 39.5 33.5 37.5 Z" fill="#34D399" />
+      <path d="M 36.5 36.5 C 42 33.5 46 33.5 48 35.5 C 45 39 40.5 39.5 36.5 37.5 Z" fill="#10B981" />
+
+      <!-- 4. Treasury Vessel ("Nidhi") -->
+      <ellipse cx="35" cy="40.5" rx="16.5" ry="2.2" fill="#38BDF8" fill-opacity="0.4" stroke="#38BDF8" stroke-width="0.8" />
+      <path
+        d="M 18.5 41 C 18.5 52 51.5 52 51.5 41 C 51.5 40 18.5 40 18.5 41 Z"
+        fill="url(#stkDarkVessel)"
+        stroke="#38BDF8"
+        stroke-width="0.8"
+      />
+      <path d="M 27.5 52 L 42.5 52 L 40 55 L 30 55 Z" fill="#0369A1" />
+
+      <!-- 5. Rupee Symbol (₹) -->
+      <g transform="translate(35, 46.5) scale(0.6)">
+        <line x1="-5.5" y1="-5" x2="5.5" y2="-5" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" />
+        <line x1="-5.5" y1="-2" x2="3.8" y2="-2" stroke="#FFFFFF" stroke-width="1.8" stroke-linecap="round" />
+        <path
+          d="M -1.8 -5 L -1.8 1 C 1.8 1, 4.4 0, 4.4 -2 C 4.4 -3.8, 2.2 -4.8, -1.8 -4.8"
+          fill="none"
+          stroke="#FFFFFF"
+          stroke-width="2"
+          stroke-linecap="round"
+        />
+        <line x1="-0.8" y1="0.5" x2="4.5" y2="6.5" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" />
+      </g>
+    </g>
+
+    <circle cx="10" cy="10" r="1.6" fill="#F59E0B" fill-opacity="0.9" />
+    <circle cx="70" cy="10" r="1.6" fill="#34D399" fill-opacity="0.9" />
+  </g>
+
+  <!-- ==================== CENTERED WORDMARK ==================== -->
+  <g transform="translate(130, 126)" text-anchor="middle">
+    <!-- Main Title -->
+    <text font-family="'Satoshi', 'Inter', system-ui, sans-serif" font-weight="900" font-size="24" letter-spacing="-0.03em">
+      <tspan fill="#FFFFFF">Jan</tspan><tspan fill="url(#stkDarkWordmarkEmerald)">Nidhi</tspan>
+      <tspan dx="5" font-weight="500" fill="#E2E8F0">Portal</tspan>
+    </text>
+  </g>
+
+  <!-- Devanagari Badge Centered -->
+  <g transform="translate(97, 142)">
+    <rect x="0" y="0" width="66" height="20" rx="5" fill="#78350F" fill-opacity="0.4" stroke="#F59E0B" stroke-opacity="0.4" stroke-width="0.8" />
+    <text
+      x="33"
+      y="14"
+      font-family="'Noto Sans Devanagari', 'DM Sans', sans-serif"
+      font-weight="700"
+      font-size="11"
+      fill="#FDE047"
+      text-anchor="middle"
+    >जननिधि पोर्टल</text>
+  </g>
+
+  <!-- Bottom Divider & Government Authority Metadata -->
+  <g transform="translate(130, 186)" text-anchor="middle">
+    <!-- Tricolor Bar -->
+    <g transform="translate(-18, -9)">
+      <rect x="0" y="0" width="10" height="2.5" rx="1" fill="#F59E0B" />
+      <rect x="13" y="0" width="10" height="2.5" rx="1" fill="#64748B" />
+      <rect x="26" y="0" width="10" height="2.5" rx="1" fill="#10B981" />
+    </g>
+
+    <text
+      y="10"
+      font-family="'JetBrains Mono', monospace"
+      font-weight="700"
+      font-size="8.5"
+      letter-spacing="0.14em"
+      fill="#94A3B8"
+    >NATIONAL PUBLIC FUND SENTINEL</text>
+
+    <text
+      y="24"
+      font-family="'Satoshi', 'Inter', system-ui, sans-serif"
+      font-weight="800"
+      font-size="9"
+      letter-spacing="0.1em"
+      fill="#38BDF8"
+    >MINISTRY OF STATISTICS &amp; PROGRAMME IMPLEMENTATION</text>
+  </g>
+</svg>

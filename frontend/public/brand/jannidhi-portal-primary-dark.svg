@@ -1,0 +1,197 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 380 84" width="380" height="84" fill="none">
+  <defs>
+    <!-- Dark Mode Color Palette -->
+    <linearGradient id="darkSolarRay" x1="0%" y1="100%" x2="0%" y2="0%">
+      <stop offset="0%" stop-color="#F59E0B" stop-opacity="0.3" />
+      <stop offset="60%" stop-color="#FBBF24" />
+      <stop offset="100%" stop-color="#FDE047" />
+    </linearGradient>
+
+    <linearGradient id="darkCitizenArc" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#2563EB" />
+      <stop offset="40%" stop-color="#38BDF8" />
+      <stop offset="80%" stop-color="#2DD4BF" />
+      <stop offset="100%" stop-color="#34D399" />
+    </linearGradient>
+
+    <linearGradient id="darkSprout" x1="0%" y1="100%" x2="0%" y2="0%">
+      <stop offset="0%" stop-color="#10B981" />
+      <stop offset="100%" stop-color="#4ADE80" />
+    </linearGradient>
+
+    <linearGradient id="darkVessel" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#0284C7" />
+      <stop offset="50%" stop-color="#0369A1" />
+      <stop offset="100%" stop-color="#0F766E" />
+    </linearGradient>
+
+    <linearGradient id="darkSquircleBg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1E293B" />
+      <stop offset="100%" stop-color="#0F172A" />
+    </linearGradient>
+
+    <linearGradient id="darkSquircleBorder" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#F59E0B" stop-opacity="0.7" />
+      <stop offset="50%" stop-color="#38BDF8" stop-opacity="0.4" />
+      <stop offset="100%" stop-color="#10B981" stop-opacity="0.7" />
+    </linearGradient>
+
+    <linearGradient id="darkWordmarkEmerald" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#2DD4BF" />
+      <stop offset="100%" stop-color="#34D399" />
+    </linearGradient>
+  </defs>
+
+  <!-- ==================== ICON EMBLEM (70x70 at x=6, y=7) ==================== -->
+  <g transform="translate(6, 7)">
+    <!-- Base Squircle -->
+    <rect x="0.5" y="0.5" width="69" height="69" rx="19" fill="url(#darkSquircleBg)" stroke="url(#darkSquircleBorder)" stroke-width="1.2" />
+    
+    <!-- Ambient Internal Center Glow -->
+    <circle cx="35" cy="36" r="26" fill="#0284C7" fill-opacity="0.12" />
+
+    <!-- 1. Solar Rays (5 Beams) -->
+    <g stroke="url(#darkSolarRay)" stroke-linecap="round">
+      <line x1="35" y1="16" x2="35" y2="10.5" stroke-width="2.2" />
+      <line x1="28.5" y1="17.5" x2="23.5" y2="12.5" stroke-width="1.8" />
+      <line x1="41.5" y1="17.5" x2="46.5" y2="12.5" stroke-width="1.8" />
+      <line x1="23" y1="20.5" x2="16.5" y2="17.5" stroke-width="1.6" />
+      <line x1="47" y1="20.5" x2="53.5" y2="17.5" stroke-width="1.6" />
+    </g>
+
+    <!-- 2. Citizens ("Jan") -->
+    <circle cx="35" cy="18.5" r="3.8" fill="#38BDF8" stroke="#0F172A" stroke-width="0.8" />
+    <circle cx="23" cy="24" r="3.2" fill="#60A5FA" stroke="#0F172A" stroke-width="0.8" />
+    <circle cx="47" cy="24" r="3.2" fill="#34D399" stroke="#0F172A" stroke-width="0.8" />
+
+    <!-- Civic Arch / Portal Canopy -->
+    <path
+      d="M 17 33 C 17 26.5 24 23.5 35 23.5 C 46 23.5 53 26.5 53 33 C 48.5 29.2 43 27.2 35 27.2 C 27 27.2 21.5 29.2 17 33 Z"
+      fill="url(#darkCitizenArc)"
+    />
+
+    <!-- 3. Growth Sprout -->
+    <path d="M 35 27.5 C 32.5 33 33.5 38.5 35 40.5 C 36.5 38.5 37.5 33 35 27.5 Z" fill="url(#darkSprout)" />
+    <path d="M 33.5 36.5 C 28 33.5 24 33.5 22 35.5 C 25 39 29.5 39.5 33.5 37.5 Z" fill="#34D399" />
+    <path d="M 36.5 36.5 C 42 33.5 46 33.5 48 35.5 C 45 39 40.5 39.5 36.5 37.5 Z" fill="#10B981" />
+
+    <!-- 4. Treasury Vessel ("Nidhi") -->
+    <ellipse cx="35" cy="40.5" rx="16" ry="2.2" fill="#38BDF8" fill-opacity="0.4" stroke="#38BDF8" stroke-width="0.8" />
+    <path
+      d="M 19 41 C 19 51.5 51 51.5 51 41 C 51 40 19 40 19 41 Z"
+      fill="url(#darkVessel)"
+      stroke="#38BDF8"
+      stroke-width="0.8"
+    />
+    <path d="M 28 51.5 L 42 51.5 L 40 54.5 L 30 54.5 Z" fill="#0369A1" />
+
+    <!-- 5. Rupee Symbol (₹) -->
+    <g transform="translate(35, 46.2) scale(0.56)">
+      <line x1="-5.5" y1="-5" x2="5.5" y2="-5" stroke="#FFFFFF" stroke-width="1.8" stroke-linecap="round" />
+      <line x1="-5.5" y1="-2" x2="3.8" y2="-2" stroke="#FFFFFF" stroke-width="1.6" stroke-linecap="round" />
+      <path
+        d="M -1.8 -5 L -1.8 1 C 1.8 1, 4.4 0, 4.4 -2 C 4.4 -3.8, 2.2 -4.8, -1.8 -4.8"
+        fill="none"
+        stroke="#FFFFFF"
+        stroke-width="1.8"
+        stroke-linecap="round"
+      />
+      <line x1="-0.8" y1="0.5" x2="4.5" y2="6.5" stroke="#FFFFFF" stroke-width="1.8" stroke-linecap="round" />
+    </g>
+
+    <!-- Corner Sentinel Micro Dots -->
+    <circle cx="9" cy="9" r="1.4" fill="#F59E0B" fill-opacity="0.9" />
+    <circle cx="61" cy="9" r="1.4" fill="#34D399" fill-opacity="0.9" />
+  </g>
+
+  <!-- ==================== BRAND WORDMARK ==================== -->
+  <g transform="translate(90, 0)">
+    <!-- Primary Line: Jannidhi + Portal -->
+    <g transform="translate(0, 40)">
+      <!-- "Jan" - Crisp Sovereign White -->
+      <text
+        x="0"
+        y="0"
+        font-family="'Satoshi', 'Inter', system-ui, -apple-system, sans-serif"
+        font-weight="900"
+        font-size="31"
+        letter-spacing="-0.04em"
+        fill="#FFFFFF"
+      >Jan</text>
+
+      <!-- "Nidhi" - Luminous Mint/Emerald -->
+      <text
+        x="55"
+        y="0"
+        font-family="'Satoshi', 'Inter', system-ui, -apple-system, sans-serif"
+        font-weight="900"
+        font-size="31"
+        letter-spacing="-0.04em"
+        fill="url(#darkWordmarkEmerald)"
+      >Nidhi</text>
+
+      <!-- Golden Sun Dot on the second 'i' -->
+      <circle cx="127.8" cy="-21.2" r="2.2" fill="#FBBF24" />
+
+      <!-- "Portal" - High-Legibility Light Slate -->
+      <text
+        x="137"
+        y="0"
+        font-family="'Satoshi', 'Inter', system-ui, -apple-system, sans-serif"
+        font-weight="500"
+        font-size="31"
+        letter-spacing="-0.02em"
+        fill="#E2E8F0"
+      >Portal</text>
+    </g>
+
+    <!-- Devanagari Authenticity Badge -->
+    <g transform="translate(236, 21)">
+      <rect x="0" y="0" width="50" height="19" rx="4" fill="#78350F" fill-opacity="0.4" stroke="#F59E0B" stroke-opacity="0.4" stroke-width="0.8" />
+      <text
+        x="25"
+        y="13"
+        font-family="'Noto Sans Devanagari', 'DM Sans', sans-serif"
+        font-weight="700"
+        font-size="10.5"
+        fill="#FDE047"
+        text-anchor="middle"
+      >जननिधि</text>
+    </g>
+
+    <!-- Subtitle: Digital Governance & Authority -->
+    <g transform="translate(1, 61)">
+      <!-- Official Mini Tricolor Flag Pin -->
+      <g transform="translate(0, -9)">
+        <rect x="0" y="0" width="2.5" height="10" rx="1.2" fill="#F59E0B" />
+        <rect x="4" y="0" width="2.5" height="10" rx="1.2" fill="#64748B" />
+        <rect x="8" y="0" width="2.5" height="10" rx="1.2" fill="#10B981" />
+      </g>
+
+      <!-- Descriptor Text -->
+      <text
+        x="17"
+        y="0"
+        font-family="'JetBrains Mono', monospace"
+        font-weight="700"
+        font-size="9.5"
+        letter-spacing="0.14em"
+        fill="#94A3B8"
+      >NATIONAL PUBLIC FUND SENTINEL</text>
+
+      <!-- Divider Bullet -->
+      <circle cx="206" cy="-3.5" r="1.6" fill="#475569" />
+
+      <!-- Ministry / Govt Node -->
+      <text
+        x="214"
+        y="0"
+        font-family="'Satoshi', 'Inter', system-ui, sans-serif"
+        font-weight="800"
+        font-size="10"
+        letter-spacing="0.08em"
+        fill="#38BDF8"
+      >MoSPI • GOVT OF INDIA</text>
+    </g>
+  </g>
+</svg>

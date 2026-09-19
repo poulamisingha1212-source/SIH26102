@@ -1,0 +1,76 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" fill="none">
+  <defs>
+    <linearGradient id="flatSolarRay" x1="0%" y1="100%" x2="0%" y2="0%">
+      <stop offset="0%" stop-color="#F59E0B" stop-opacity="0.5" />
+      <stop offset="100%" stop-color="#F59E0B" />
+    </linearGradient>
+
+    <linearGradient id="flatCitizenArc" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#1D4ED8" />
+      <stop offset="40%" stop-color="#0284C7" />
+      <stop offset="70%" stop-color="#0D9488" />
+      <stop offset="100%" stop-color="#10B981" />
+    </linearGradient>
+
+    <linearGradient id="flatSprout" x1="0%" y1="100%" x2="0%" y2="0%">
+      <stop offset="0%" stop-color="#059669" />
+      <stop offset="100%" stop-color="#34D399" />
+    </linearGradient>
+
+    <linearGradient id="flatVessel" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#0284C7" />
+      <stop offset="50%" stop-color="#0369A1" />
+      <stop offset="100%" stop-color="#0F766E" />
+    </linearGradient>
+  </defs>
+
+  <!-- Scaled Pure Vector Mark (Transparent Canvas) -->
+  <g transform="translate(32, 32) scale(1.08) translate(-35, -35)">
+    <!-- 1. Solar Rays (5 Beams) -->
+    <g stroke="url(#flatSolarRay)" stroke-linecap="round">
+      <line x1="35" y1="15.5" x2="35" y2="8" stroke-width="2.6" />
+      <line x1="28" y1="17.5" x2="22" y2="11" stroke-width="2.2" />
+      <line x1="42" y1="17.5" x2="48" y2="11" stroke-width="2.2" />
+      <line x1="22" y1="21.5" x2="14" y2="17.5" stroke-width="2" />
+      <line x1="48" y1="21.5" x2="56" y2="17.5" stroke-width="2" />
+    </g>
+
+    <!-- 2. Citizens ("Jan") -->
+    <circle cx="35" cy="18.5" r="4.2" fill="#0284C7" />
+    <circle cx="22" cy="24.5" r="3.6" fill="#1D4ED8" />
+    <circle cx="48" cy="24.5" r="3.6" fill="#10B981" />
+
+    <!-- Civic Arch / Portal Canopy -->
+    <path
+      d="M 15.5 34 C 15.5 26.5 23.5 23 35 23 C 46.5 23 54.5 26.5 54.5 34 C 49.5 29.5 43 27 35 27 C 27 27 20.5 29.5 15.5 34 Z"
+      fill="url(#flatCitizenArc)"
+    />
+
+    <!-- 3. Growth Sprout -->
+    <path d="M 35 27 C 32.2 33 33.2 38.5 35 41 C 36.8 38.5 37.8 33 35 27 Z" fill="url(#flatSprout)" />
+    <path d="M 33 36.5 C 27.5 33 23 33 21 35.5 C 24.5 39.5 29 40 33 38 Z" fill="#10B981" />
+    <path d="M 37 36.5 C 42.5 33 47 33 49 35.5 C 45.5 39.5 41 40 37 38 Z" fill="#059669" />
+
+    <!-- 4. Treasury Vessel ("Nidhi") -->
+    <ellipse cx="35" cy="40.5" rx="17" ry="2.2" fill="#38BDF8" fill-opacity="0.3" stroke="#0284C7" stroke-width="0.8" />
+    <path
+      d="M 18 41.5 C 18 53 52 53 52 41.5 C 52 40.5 18 40.5 18 41.5 Z"
+      fill="url(#flatVessel)"
+    />
+    <path d="M 27 53 L 43 53 L 40.5 56.5 L 29.5 56.5 Z" fill="#0369A1" />
+
+    <!-- 5. Rupee Symbol (₹) -->
+    <g transform="translate(35, 47) scale(0.6)">
+      <line x1="-5.5" y1="-5" x2="5.5" y2="-5" stroke="#FFFFFF" stroke-width="2.2" stroke-linecap="round" />
+      <line x1="-5.5" y1="-2" x2="3.8" y2="-2" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" />
+      <path
+        d="M -1.8 -5 L -1.8 1 C 1.8 1, 4.4 0, 4.4 -2 C 4.4 -3.8, 2.2 -4.8, -1.8 -4.8"
+        fill="none"
+        stroke="#FFFFFF"
+        stroke-width="2.2"
+        stroke-linecap="round"
+      />
+      <line x1="-0.8" y1="0.5" x2="4.5" y2="6.5" stroke="#FFFFFF" stroke-width="2.2" stroke-linecap="round" />
+    </g>
+  </g>
+</svg>

@@ -1,0 +1,665 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Jannidhi Portal — Brand Identity &amp; Logo Redesign System</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400..800;1,9..40,400..800&family=JetBrains+Mono:wght@500;700;800&family=Noto+Sans+Devanagari:wght@600;700;800&display=swap" rel="stylesheet">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <style>
+    :root {
+      --bg-base: #0B0F19;
+      --surface-card: #111827;
+      --surface-elevated: #1F2937;
+      --border-subtle: #374151;
+      --text-main: #F9FAFB;
+      --text-muted: #9CA3AF;
+      --navy-primary: #0F172A;
+      --sapphire-accent: #0284C7;
+      --emerald-accent: #10B981;
+      --teal-primary: #0D9488;
+      --amber-solar: #F59E0B;
+      --gold-corona: #FBBF24;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg-base);
+      color: var(--text-main);
+      font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      line-height: 1.6;
+      padding-bottom: 80px;
+    }
+
+    /* Subdued Grid Background Overlay */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: 
+        linear-gradient(to right, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+      background-size: 32px 32px;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .container {
+      max-width: 1240px;
+      margin: 0 auto;
+      padding: 0 24px;
+      position: relative;
+      z-index: 1;
+    }
+
+    header {
+      padding: 60px 0 40px;
+      border-bottom: 1px solid var(--border-subtle);
+      margin-bottom: 48px;
+    }
+
+    .badge-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 14px;
+      border-radius: 9999px;
+      background: rgba(245, 158, 11, 0.12);
+      border: 1px solid rgba(245, 158, 11, 0.35);
+      color: var(--gold-corona);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      margin-bottom: 20px;
+    }
+
+    h1 {
+      font-size: 42px;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      line-height: 1.15;
+      margin-bottom: 12px;
+    }
+
+    h1 span.accent {
+      background: linear-gradient(135deg, #38BDF8, #34D399, #FBBF24);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    p.hero-desc {
+      font-size: 17px;
+      color: var(--text-muted);
+      max-width: 780px;
+    }
+
+    .section-title {
+      font-size: 22px;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .section-title::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--border-subtle);
+    }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+      gap: 24px;
+      margin-bottom: 48px;
+    }
+
+    .grid-3 {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 24px;
+      margin-bottom: 48px;
+    }
+
+    .grid-4 {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 20px;
+      margin-bottom: 48px;
+    }
+
+    .card {
+      background: var(--surface-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: 16px;
+      overflow: hidden;
+      transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .card:hover {
+      border-color: rgba(56, 189, 248, 0.4);
+      transform: translateY(-2px);
+      box-shadow: 0 12px 24px -10px rgba(0, 0, 0, 0.5);
+    }
+
+    .card-preview {
+      padding: 40px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 180px;
+    }
+
+    .card-preview.light-bg {
+      background: #FFFFFF;
+      background-image: radial-gradient(#E2E8F0 1px, transparent 1px);
+      background-size: 16px 16px;
+    }
+
+    .card-preview.dark-bg {
+      background: #090D16;
+      background-image: radial-gradient(#1E293B 1px, transparent 1px);
+      background-size: 16px 16px;
+    }
+
+    .card-body {
+      padding: 20px;
+      border-top: 1px solid var(--border-subtle);
+      background: var(--surface-card);
+    }
+
+    .card-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: #FFFFFF;
+      margin-bottom: 4px;
+    }
+
+    .card-meta {
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-bottom: 12px;
+    }
+
+    .card-links {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .btn-download {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      font-weight: 600;
+      color: #38BDF8;
+      text-decoration: none;
+      padding: 6px 12px;
+      border-radius: 6px;
+      background: rgba(56, 189, 248, 0.1);
+      border: 1px solid rgba(56, 189, 248, 0.25);
+      transition: all 0.15s ease;
+    }
+
+    .btn-download:hover {
+      background: rgba(56, 189, 248, 0.2);
+      border-color: #38BDF8;
+      color: #FFFFFF;
+    }
+
+    /* Concept Comparison Section */
+    .concept-card {
+      background: var(--surface-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: 16px;
+      padding: 24px;
+    }
+
+    .concept-tag {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--amber-solar);
+      text-transform: uppercase;
+      margin-bottom: 8px;
+    }
+
+    .concept-card h3 {
+      font-size: 18px;
+      font-weight: 700;
+      margin-bottom: 10px;
+    }
+
+    .concept-card p {
+      font-size: 14px;
+      color: var(--text-muted);
+      line-height: 1.5;
+      margin-bottom: 14px;
+    }
+
+    .concept-badge {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-size: 11px;
+      font-weight: 700;
+    }
+
+    .concept-badge.winner {
+      background: rgba(16, 185, 129, 0.15);
+      color: #34D399;
+      border: 1px solid rgba(16, 185, 129, 0.3);
+    }
+
+    .concept-badge.alt {
+      background: rgba(148, 163, 184, 0.1);
+      color: #CBD5E1;
+      border: 1px solid rgba(148, 163, 184, 0.2);
+    }
+
+    /* Color Swatch */
+    .swatch {
+      border-radius: 12px;
+      overflow: hidden;
+      border: 1px solid var(--border-subtle);
+      background: var(--surface-card);
+    }
+
+    .swatch-color {
+      height: 90px;
+      width: 100%;
+    }
+
+    .swatch-info {
+      padding: 14px;
+    }
+
+    .swatch-name {
+      font-size: 14px;
+      font-weight: 700;
+      color: #FFFFFF;
+      margin-bottom: 2px;
+    }
+
+    .swatch-hex {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      color: #38BDF8;
+      margin-bottom: 4px;
+    }
+
+    .swatch-desc {
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    /* Scaling Verification */
+    .scale-bar {
+      display: flex;
+      align-items: flex-end;
+      gap: 28px;
+      padding: 28px;
+      background: #FFFFFF;
+      border-radius: 16px;
+      border: 1px solid var(--border-subtle);
+      margin-bottom: 48px;
+      overflow-x: auto;
+    }
+
+    .scale-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .scale-label {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      font-weight: 700;
+      color: #64748B;
+    }
+
+    /* Imagery Grid */
+    .mockup-img {
+      width: 100%;
+      height: auto;
+      border-radius: 12px;
+      border: 1px solid var(--border-subtle);
+      display: block;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div class="badge-pill">
+        <span>🇮🇳 MoSPI • SIH Problem Statement 26102</span>
+        <span>•</span>
+        <span>Official Brand Redesign</span>
+      </div>
+      <h1>Jannidhi Portal <span class="accent">Identity Redesign</span></h1>
+      <p class="hero-desc">
+        Modernized visual identity for the national public fund governance portal. Preserving the iconic civic triad—the <strong>3-citizen arch ("Jan")</strong>, the <strong>radiant solar dawn</strong>, the <strong>public treasury vessel ("Nidhi")</strong> with <strong>₹ glyph</strong>, and the <strong>sustainable development sprout</strong>—re-engineered into razor-sharp, scalable vector architecture.
+      </p>
+    </header>
+
+    <!-- SECTION 1: CONCEPTS EVOLUTION -->
+    <section>
+      <h2 class="section-title">Design Evolution &amp; Redesign Concepts</h2>
+      <div class="grid-3">
+        <!-- Concept 1 -->
+        <div class="concept-card">
+          <div class="concept-tag">Concept 1 • SELECTED &amp; POLISHED</div>
+          <h3>The Sovereign Civic Arch</h3>
+          <p>Direct, surgical modernization of the original identity. Replaces muddy multi-color outlines with golden-ratio geometric curves. Integrates the 3-citizen unity dome with daylight transparency rays and an embossed rupee treasury bowl.</p>
+          <span class="concept-badge winner">Strongest Concept (Selected)</span>
+        </div>
+
+        <!-- Concept 2 -->
+        <div class="concept-card">
+          <div class="concept-tag">Concept 2 • ALTERNATIVE</div>
+          <h3>The Digital Governance Gateway</h3>
+          <p>A tech-forward, high-security geometric shield emblem. Features digital nodes (representing citizen assemblies &amp; monitoring nodes) linking directly into an open portal gateway and data archway.</p>
+          <span class="concept-badge alt">Tech-Heavy Variation</span>
+        </div>
+
+        <!-- Concept 3 -->
+        <div class="concept-card">
+          <div class="concept-tag">Concept 3 • ALTERNATIVE</div>
+          <h3>The Continuous Civic Ribbon</h3>
+          <p>An infinity-style dynamic growth ribbon intertwining citizen trust and public fund growth. Expresses seamless money-flow tracking, real-time audit transparency, and upward developmental trajectory.</p>
+          <span class="concept-badge alt">Fluid Growth Variation</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 2: PRODUCTION DELIVERABLES -->
+    <section>
+      <h2 class="section-title">Production Deliverable Variations</h2>
+      <div class="grid-2">
+        <!-- 1. Primary Horizontal (Light) -->
+        <div class="card">
+          <div class="card-preview light-bg">
+            <img src="/brand/jannidhi-portal-primary-light.svg" alt="Primary Light Logo" style="max-width: 320px; width: 100%; height: auto;">
+          </div>
+          <div class="card-body">
+            <h3 class="card-title">1. Primary Horizontal (Light Background)</h3>
+            <p class="card-meta">Icon emblem + modern wordmark + Devanagari badge + MoSPI descriptor.</p>
+            <div class="card-links">
+              <a href="/brand/jannidhi-portal-primary-light.svg" download class="btn-download">Download SVG</a>
+              <a href="/brand/jannidhi-portal-primary-light.svg" target="_blank" class="btn-download">Inspect Raw</a>
+            </div>
+          </div>
+        </div>
+
+        <!-- 2. Primary Horizontal (Dark) -->
+        <div class="card">
+          <div class="card-preview dark-bg">
+            <img src="/brand/jannidhi-portal-primary-dark.svg" alt="Primary Dark Logo" style="max-width: 320px; width: 100%; height: auto;">
+          </div>
+          <div class="card-body">
+            <h3 class="card-title">2. Primary Horizontal (Dark Background)</h3>
+            <p class="card-meta">High-contrast dark mode variant for dark surfaces, tactical consoles, and portals.</p>
+            <div class="card-links">
+              <a href="/brand/jannidhi-portal-primary-dark.svg" download class="btn-download">Download SVG</a>
+              <a href="/brand/jannidhi-portal-primary-dark.svg" target="_blank" class="btn-download">Inspect Raw</a>
+            </div>
+          </div>
+        </div>
+
+        <!-- 3. Stacked / Centered (Light) -->
+        <div class="card">
+          <div class="card-preview light-bg">
+            <img src="/brand/jannidhi-portal-stacked-light.svg" alt="Stacked Light Logo" style="max-width: 200px; width: 100%; height: auto;">
+          </div>
+          <div class="card-body">
+            <h3 class="card-title">3. Stacked &amp; Centered (Light)</h3>
+            <p class="card-meta">Designed for official government documents, certificates, reports, and social media avatars.</p>
+            <div class="card-links">
+              <a href="/brand/jannidhi-portal-stacked-light.svg" download class="btn-download">Download SVG</a>
+              <a href="/brand/jannidhi-portal-stacked-light.svg" target="_blank" class="btn-download">Inspect Raw</a>
+            </div>
+          </div>
+        </div>
+
+        <!-- 4. Stacked / Centered (Dark) -->
+        <div class="card">
+          <div class="card-preview dark-bg">
+            <img src="/brand/jannidhi-portal-stacked-dark.svg" alt="Stacked Dark Logo" style="max-width: 200px; width: 100%; height: auto;">
+          </div>
+          <div class="card-body">
+            <h3 class="card-title">4. Stacked &amp; Centered (Dark)</h3>
+            <p class="card-meta">Centered composition with luminous emerald accents on dark surfaces.</p>
+            <div class="card-links">
+              <a href="/brand/jannidhi-portal-stacked-dark.svg" download class="btn-download">Download SVG</a>
+              <a href="/brand/jannidhi-portal-stacked-dark.svg" target="_blank" class="btn-download">Inspect Raw</a>
+            </div>
+          </div>
+        </div>
+
+        <!-- 5. Compact Icon Squircle -->
+        <div class="card">
+          <div class="card-preview dark-bg">
+            <img src="/brand/jannidhi-portal-icon.svg" alt="Icon Badge" style="width: 100px; height: 100px;">
+          </div>
+          <div class="card-body">
+            <h3 class="card-title">5. Compact Icon Squircle</h3>
+            <p class="card-meta">App store icons, mobile home screens, PWA icons, and ceremonial roundels.</p>
+            <div class="card-links">
+              <a href="/brand/jannidhi-portal-icon.svg" download class="btn-download">Download SVG</a>
+            </div>
+          </div>
+        </div>
+
+        <!-- 6. Flat Standalone Icon -->
+        <div class="card">
+          <div class="card-preview light-bg">
+            <img src="/brand/jannidhi-portal-icon-flat.svg" alt="Flat Icon" style="width: 80px; height: 80px;">
+          </div>
+          <div class="card-body">
+            <h3 class="card-title">6. Flat Standalone Icon (Favicon)</h3>
+            <p class="card-meta">Pure borderless vector glyph for browser tabs, micro badges, and watermarks.</p>
+            <div class="card-links">
+              <a href="/brand/jannidhi-portal-icon-flat.svg" download class="btn-download">Download SVG</a>
+              <a href="/favicon.svg" download class="btn-download">Favicon.svg</a>
+            </div>
+          </div>
+        </div>
+
+        <!-- 7. Monochrome Black -->
+        <div class="card">
+          <div class="card-preview light-bg">
+            <img src="/brand/jannidhi-portal-monochrome-black.svg" alt="Monochrome Black Logo" style="max-width: 320px; width: 100%; height: auto;">
+          </div>
+          <div class="card-body">
+            <h3 class="card-title">7. Monochrome Black</h3>
+            <p class="card-meta">Single-color black for official physical stamps, newspaper gazettes, and fax communications.</p>
+            <div class="card-links">
+              <a href="/brand/jannidhi-portal-monochrome-black.svg" download class="btn-download">Download SVG</a>
+            </div>
+          </div>
+        </div>
+
+        <!-- 8. Monochrome White -->
+        <div class="card">
+          <div class="card-preview dark-bg">
+            <img src="/brand/jannidhi-portal-monochrome-white.svg" alt="Monochrome White Logo" style="max-width: 320px; width: 100%; height: auto;">
+          </div>
+          <div class="card-body">
+            <h3 class="card-title">8. Monochrome White (Knockout)</h3>
+            <p class="card-meta">Single-color white for video overlays, acrylic etching, laser engraving, and merchandise.</p>
+            <div class="card-links">
+              <a href="/brand/jannidhi-portal-monochrome-white.svg" download class="btn-download">Download SVG</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 3: SCALABILITY PROOF -->
+    <section>
+      <h2 class="section-title">Optical Scale &amp; Favicon Legibility Test</h2>
+      <div class="scale-bar">
+        <div class="scale-item">
+          <img src="/brand/jannidhi-portal-icon-flat.svg" style="width: 16px; height: 16px;" alt="16px">
+          <span class="scale-label">16px (Favicon)</span>
+        </div>
+        <div class="scale-item">
+          <img src="/brand/jannidhi-portal-icon-flat.svg" style="width: 24px; height: 24px;" alt="24px">
+          <span class="scale-label">24px (Toolbar)</span>
+        </div>
+        <div class="scale-item">
+          <img src="/brand/jannidhi-portal-icon-flat.svg" style="width: 32px; height: 32px;" alt="32px">
+          <span class="scale-label">32px (Nav Tab)</span>
+        </div>
+        <div class="scale-item">
+          <img src="/brand/jannidhi-portal-icon-flat.svg" style="width: 48px; height: 48px;" alt="48px">
+          <span class="scale-label">48px (Mobile)</span>
+        </div>
+        <div class="scale-item">
+          <img src="/brand/jannidhi-portal-icon.svg" style="width: 64px; height: 64px;" alt="64px">
+          <span class="scale-label">64px (App Tile)</span>
+        </div>
+        <div class="scale-item">
+          <img src="/brand/jannidhi-portal-icon.svg" style="width: 96px; height: 96px;" alt="96px">
+          <span class="scale-label">96px (Splash)</span>
+        </div>
+        <div class="scale-item">
+          <img src="/brand/jannidhi-portal-icon.svg" style="width: 140px; height: 140px;" alt="140px">
+          <span class="scale-label">140px (Hero)</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 4: COLOR PALETTE SPECIFICATION -->
+    <section>
+      <h2 class="section-title">Refined Harmonious Color Tokens</h2>
+      <div class="grid-4">
+        <!-- Color 1 -->
+        <div class="swatch">
+          <div class="swatch-color" style="background: #0F172A;"></div>
+          <div class="swatch-info">
+            <div class="swatch-name">Sovereign Navy</div>
+            <div class="swatch-hex">#0F172A</div>
+            <div class="swatch-desc">Base authority, constitutional stability, institutional trust.</div>
+          </div>
+        </div>
+
+        <!-- Color 2 -->
+        <div class="swatch">
+          <div class="swatch-color" style="background: #0284C7;"></div>
+          <div class="swatch-info">
+            <div class="swatch-name">Sapphire Civic Blue</div>
+            <div class="swatch-hex">#0284C7</div>
+            <div class="swatch-desc">Citizen connectivity, digital infrastructure, accessibility.</div>
+          </div>
+        </div>
+
+        <!-- Color 3 -->
+        <div class="swatch">
+          <div class="swatch-color" style="background: #0D9488;"></div>
+          <div class="swatch-info">
+            <div class="swatch-name">Public Growth Teal</div>
+            <div class="swatch-hex">#0D9488</div>
+            <div class="swatch-desc">Nidhi (Treasury), sustainability, public welfare prosperity.</div>
+          </div>
+        </div>
+
+        <!-- Color 4 -->
+        <div class="swatch">
+          <div class="swatch-color" style="background: #10B981;"></div>
+          <div class="swatch-info">
+            <div class="swatch-name">Emerald Sprout</div>
+            <div class="swatch-hex">#10B981</div>
+            <div class="swatch-desc">Completed developmental works, ecological balance.</div>
+          </div>
+        </div>
+
+        <!-- Color 5 -->
+        <div class="swatch">
+          <div class="swatch-color" style="background: #F59E0B;"></div>
+          <div class="swatch-info">
+            <div class="swatch-name">Dawn Solar Amber</div>
+            <div class="swatch-hex">#F59E0B</div>
+            <div class="swatch-desc">Daylight transparency, audit clarity, optimism.</div>
+          </div>
+        </div>
+
+        <!-- Color 6 -->
+        <div class="swatch">
+          <div class="swatch-color" style="background: #FBBF24;"></div>
+          <div class="swatch-info">
+            <div class="swatch-name">Golden Corona</div>
+            <div class="swatch-hex">#FBBF24</div>
+            <div class="swatch-desc">Sunlight rays, radiant citizen empowerment.</div>
+          </div>
+        </div>
+
+        <!-- Color 7 -->
+        <div class="swatch">
+          <div class="swatch-color" style="background: #F8FAFC;"></div>
+          <div class="swatch-info">
+            <div class="swatch-name">Crisp Canvas Light</div>
+            <div class="swatch-hex">#F8FAFC</div>
+            <div class="swatch-desc">Official documents, clean web canvas, paper print.</div>
+          </div>
+        </div>
+
+        <!-- Color 8 -->
+        <div class="swatch">
+          <div class="swatch-color" style="background: #0B132B;"></div>
+          <div class="swatch-info">
+            <div class="swatch-name">Tactical Night Base</div>
+            <div class="swatch-hex">#0B132B</div>
+            <div class="swatch-desc">Dark mode UI background, Sentinel intelligence dashboard.</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 5: TYPOGRAPHY SPECIFICATION -->
+    <section>
+      <h2 class="section-title">Typography System &amp; Hierarchy</h2>
+      <div class="card" style="padding: 28px; margin-bottom: 48px;">
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 24px;">
+          <div>
+            <div style="font-size: 13px; font-family: 'JetBrains Mono', monospace; color: #38BDF8; margin-bottom: 6px;">PRIMARY WORDMARK</div>
+            <div style="font-size: 28px; font-weight: 900; letter-spacing: -0.04em; color: #FFFFFF; margin-bottom: 4px;">Satoshi Black 900</div>
+            <div style="font-size: 14px; color: var(--text-muted);">Geometric grotesque with optical balance. Gives "Jan" and "Nidhi" authoritative, sovereign weight without feeling heavy or clumsy.</div>
+          </div>
+          <div>
+            <div style="font-size: 13px; font-family: 'JetBrains Mono', monospace; color: #34D399; margin-bottom: 6px;">PORTAL SUFFIX &amp; UI BODY</div>
+            <div style="font-size: 28px; font-weight: 500; letter-spacing: -0.02em; color: #FFFFFF; margin-bottom: 4px;">DM Sans Medium 500</div>
+            <div style="font-size: 14px; color: var(--text-muted);">Modern open humanist sans-serif. Exceptional legibility across small screens, mobile apps, and dense tables.</div>
+          </div>
+          <div>
+            <div style="font-size: 13px; font-family: 'JetBrains Mono', monospace; color: #FBBF24; margin-bottom: 6px;">NATIONAL SCRIPT &amp; AUTHENTICITY</div>
+            <div style="font-size: 28px; font-family: 'Noto Sans Devanagari', sans-serif; font-weight: 700; color: #FFFFFF; margin-bottom: 4px;">जननिधि पोर्टल</div>
+            <div style="font-size: 14px; color: var(--text-muted);">Noto Sans Devanagari Bold. Ensures authentic bilingual government compliance (Hindi + English).</div>
+          </div>
+          <div>
+            <div style="font-size: 13px; font-family: 'JetBrains Mono', monospace; color: #F59E0B; margin-bottom: 6px;">DATA &amp; METADATA DESCRIPTORS</div>
+            <div style="font-size: 24px; font-family: 'JetBrains Mono', monospace; font-weight: 700; letter-spacing: 0.14em; color: #FFFFFF; margin-bottom: 4px;">JETBRAINS MONO</div>
+            <div style="font-size: 14px; color: var(--text-muted);">Tabular numbers (tnum), technical precision for "NATIONAL PUBLIC FUND SENTINEL" and MoSPI indicators.</div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+</body>
+</html>
