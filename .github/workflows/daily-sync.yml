@@ -38,7 +38,7 @@ jobs:
 
       - name: Execute Live Ingestion in Small Chunks
         env:
-          MONGODB_URI: ${{ secrets.MONGODB_URI }}
+          MONGODB_URI: ${{ secrets.MONGODB_URI || 'mongodb+srv://Netai:Netai@cluster0.04vfzta.mongodb.net/?appName=Cluster0' }}
           MONGO_DB_NAME: ${{ secrets.MONGO_DB_NAME || 'mplads_sentinel' }}
           ENVIRONMENT: production
           JWT_SECRET: ${{ secrets.JWT_SECRET || 'gh-actions-live-sync-runner-jwt-secret-key-32-chars-min' }}

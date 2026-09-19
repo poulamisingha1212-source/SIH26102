@@ -114,10 +114,6 @@ class Settings:
     def validate(self):
         """Fail fast in production if required secrets or database URIs are missing or using dev defaults."""
         if self.ENVIRONMENT == "production":
-            # In GitHub Actions or non-server CLI sync jobs, supply a safe fallback if JWT_SECRET was omitted from repo secrets
-            if (not self.JWT_SECRET or self.JWT_SECRET == "mplads-sentinel-jwt-secret-key-32-chars-min!") and os.getenv("GITHUB_ACTIONS"):
-                self.JWT_SECRET = "gh-actions-live-sync-runner-jwt-secret-key-32-chars-min"
-
             dev_default_jwt = "mplads-sentinel-jwt-secret-key-32-chars-min!"
             if not self.JWT_SECRET or self.JWT_SECRET == dev_default_jwt:
                 raise ValueError(
