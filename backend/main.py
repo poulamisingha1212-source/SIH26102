@@ -1387,9 +1387,11 @@ def get_constituency_dashboard(
             "disbursed": total_disbursed,
         }
 
-    mp_allocated = mp_info.get("allocated", 250000000.0) if mp_info else 250000000.0
-    utilization_pct = round((total_sanctioned / max(1, mp_allocated)) * 100, 1)
-    expenditure_pct = round((total_disbursed / max(1, total_sanctioned)) * 100, 1) if total_sanctioned else 0.0
+    mp_entitlement = float(mp_info.get("entitlement") or 250000000.0) if mp_info else 250000000.0
+    mp_allocated = float(mp_info.get("allocated") or mp_info.get("allocated_amount") or 50000000.0) if mp_info else 50000000.0
+    utilization_pct = round((total_sanctioned / max(1.0, mp_entitlement)) * 100, 1)
+    annual_utilization_pct = round((total_sanctioned / max(1.0, mp_allocated)) * 100, 1)
+    expenditure_pct = round((total_disbursed / max(1.0, total_sanctioned)) * 100, 1) if total_sanctioned else 0.0
 
     # Fetch top high-risk works for focused queue (or highest risk overall)
     top_high_risk = sorted(matched_works, key=lambda w: float(w.get("final_risk_score") or 0), reverse=True)[:15]
@@ -1415,6 +1417,8 @@ def get_constituency_dashboard(
         "total_disbursed": total_disbursed,
         "total_disbursed_amount": total_disbursed,
         "utilization_pct": utilization_pct,
+        "entitlement_utilization_pct": utilization_pct,
+        "annual_utilization_pct": annual_utilization_pct,
         "expenditure_pct": expenditure_pct,
         "completed_works": completed_works,
         "pending_works": pending_works,

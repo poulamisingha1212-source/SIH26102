@@ -65,7 +65,9 @@ export default function MPDashboard({
   const totalDisbursed = stats.total_disbursed_amount ?? stats.total_disbursed ?? 0;
   const unspentBalance = Math.max(0, totalSanctioned - totalDisbursed);
   const entitlement = mp.entitlement || 250000000;
-  const utilizationPct = stats.utilization_pct ?? (entitlement > 0 ? ((totalSanctioned / entitlement) * 100).toFixed(1) : 0);
+  const utilizationPct = entitlement > 0
+    ? ((totalSanctioned / entitlement) * 100).toFixed(1)
+    : (stats.utilization_pct ?? 0);
   const expenditurePct = stats.expenditure_pct ?? (totalSanctioned > 0 ? ((totalDisbursed / totalSanctioned) * 100).toFixed(1) : 0);
 
   return (
