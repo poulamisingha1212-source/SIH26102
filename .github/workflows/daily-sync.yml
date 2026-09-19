@@ -44,14 +44,18 @@ jobs:
           JWT_SECRET: ${{ secrets.JWT_SECRET || 'gh-actions-live-sync-runner-jwt-secret-key-32-chars-min' }}
           DEMO_ADMIN_PASSWORD: ${{ secrets.DEMO_ADMIN_PASSWORD || 'UnusedCliScriptSecret2026!' }}
           MPLADS_LIVE_HOUSE: ${{ github.event.inputs.houses || 'rajya_sabha,lok_sabha_18' }}
+          CHUNK_SIZE: ${{ github.event.inputs.chunk_size || '200' }}
           BACKEND_URL: ${{ secrets.BACKEND_URL }}
           CRON_SECRET: ${{ secrets.CRON_SECRET }}
         run: |
+          HOUSES="${MPLADS_LIVE_HOUSE:-rajya_sabha,lok_sabha_18}"
+          CHUNKS="${CHUNK_SIZE:-200}"
           if [ -n "$MONGODB_URI" ]; then
             echo "Running direct small-chunk ingestion (Rajya Sabha + 18th Lok Sabha) against MongoDB..."
+            echo "Configured Houses: $HOUSES | Chunk Size: $CHUNKS"
             python -m backend.scripts.feed_live_data \
-              --houses "${{ github.event.inputs.houses || 'rajya_sabha,lok_sabha_18' }}" \
-              --chunk-size "${{ github.event.inputs.chunk_size || 200 }}"
+              --houses "$HOUSES" \
+              --chunk-size "$CHUNKS"
           elif [ -n "$BACKEND_URL" ] && [ -n "$CRON_SECRET" ]; then
             echo "Triggering live sync via backend cron endpoint..."
             curl -f -X POST "${BACKEND_URL}/api/cron/sync?mode=live" \
