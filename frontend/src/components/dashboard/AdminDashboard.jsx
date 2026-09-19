@@ -76,15 +76,17 @@ export default function AdminDashboard({
     setIsExporting(true);
     const toastId = toast.loading('Generating national audit ledger CSV export…');
     try {
-      const res = await apiFetch('/api/export/csv');
+      const qs = house ? `?house=${encodeURIComponent(house)}` : '';
+      const res = await apiFetch(`/api/export/works${qs}`);
       if (!res.ok) {
-        throw new Error('Export generation failed');
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData.detail || `Export failed (${res.status})`);
       }
       const blob = await res.blob();
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `MoSPI_MPLADS_Master_Audit_${new Date().toISOString().slice(0, 10)}.csv`;
+      a.download = `MoSPI_MPLADS_Master_Audit_${house ? `${house.replace(/[^a-zA-Z0-9]/g, '_')}_` : ''}${new Date().toISOString().slice(0, 10)}.csv`;
       document.body.appendChild(a);
       a.click();
       a.remove();
@@ -92,7 +94,7 @@ export default function AdminDashboard({
       toast.success('National Audit Ledger downloaded successfully', { id: toastId });
     } catch (err) {
       console.error('CSV export failed:', err);
-      toast.error('Export failed — check backend availability', { id: toastId });
+      toast.error(err.message || 'Export failed — check backend availability', { id: toastId });
     } finally {
       setIsExporting(false);
     }

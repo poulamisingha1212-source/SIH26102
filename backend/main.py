@@ -215,6 +215,7 @@ def get_works(
 # 1b. GET /api/export/works — Open-data CSV export
 # ==============================================================================
 @app.get("/api/export/works")
+@app.get("/api/export/csv")
 def export_works_csv(
     request: Request,
     state: Optional[str] = Query(None),
