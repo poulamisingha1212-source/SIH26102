@@ -66,6 +66,7 @@ export default function MPDashboard({
   const unspentBalance = Math.max(0, totalSanctioned - totalDisbursed);
   const entitlement = mp.entitlement || 250000000;
   const utilizationPct = stats.utilization_pct ?? (entitlement > 0 ? ((totalSanctioned / entitlement) * 100).toFixed(1) : 0);
+  const expenditurePct = stats.expenditure_pct ?? (totalSanctioned > 0 ? ((totalDisbursed / totalSanctioned) * 100).toFixed(1) : 0);
 
   return (
     <div className="space-y-6">
@@ -172,7 +173,9 @@ export default function MPDashboard({
           <div className="text-2xl font-bold font-mono text-emerald-600 dark:text-emerald-400">
             {isLoading ? <Skeleton className="h-8 w-20" /> : formatINR(totalDisbursed)}
           </div>
-          <p className="text-[11px] text-slate-400 mt-1">Payments disbursed to vendors</p>
+          <p className="text-[11px] text-slate-400 mt-1">
+            {totalSanctioned > 0 ? `${expenditurePct}% of authorized sanctions` : 'Payments disbursed to vendors'}
+          </p>
         </Card>
 
         <Card className="p-4 border-slate-200 dark:border-slate-800 shadow-2xs">
@@ -210,21 +213,19 @@ export default function MPDashboard({
         </div>
       )}
 
-      {/* Tab: Works Recommended */}
+      {/* Tab: Filtered Works */}
       {activeMPTab === 'works' && (
         <Card className="border-slate-200 dark:border-slate-800 shadow-2xs">
           <CardHeader className="py-3.5 px-5 border-b border-slate-100 dark:border-slate-800 flex flex-row items-center justify-between">
-            <div>
+            <div className="flex items-center gap-2">
+              <Building className="w-4 h-4 text-indigo-600" />
               <CardTitle className="text-sm font-bold font-display text-slate-900 dark:text-slate-100">
-                Recommended Works in {constituency} Constituency
+                Parliamentary Works Registry — {constituency}
               </CardTitle>
-              <p className="text-xs text-slate-500 mt-0.5">
-                Overview of community projects funded under MP local area entitlement
-              </p>
             </div>
-            <Badge variant="outline" className="text-xs font-semibold">
-              {highRiskWorks.length} Priority Works
-            </Badge>
+            <span className="text-xs text-slate-500">
+              Showing top priority works recommended in this constituency
+            </span>
           </CardHeader>
           <CardContent className="p-0">
             <div className="overflow-x-auto">
@@ -232,10 +233,10 @@ export default function MPDashboard({
                 <thead className="bg-slate-50 dark:bg-slate-800/60 border-b border-slate-200 dark:border-slate-800 text-slate-500 font-semibold">
                   <tr>
                     <th className="py-2.5 px-4">Work ID & Description</th>
-                    <th className="py-2.5 px-4">Category</th>
-                    <th className="py-2.5 px-4">Sanctioned Amount</th>
-                    <th className="py-2.5 px-4">Disbursed Amount</th>
-                    <th className="py-2.5 px-4">Priority Risk Score</th>
+                    <th className="py-2.5 px-4">Sanctioned</th>
+                    <th className="py-2.5 px-4">Disbursed</th>
+                    <th className="py-2.5 px-4">Risk Score</th>
+                    <th className="py-2.5 px-4">Status</th>
                     <th className="py-2.5 px-4 text-right">Action</th>
                   </tr>
                 </thead>
@@ -243,45 +244,34 @@ export default function MPDashboard({
                   {highRiskWorks.length === 0 ? (
                     <tr>
                       <td colSpan={6} className="py-8 text-center text-slate-400">
-                        No flagged works found for {constituency}. All community projects are proceeding within statutory guidelines.
+                        No high-risk works currently flagged for {constituency}.
                       </td>
                     </tr>
                   ) : (
                     highRiskWorks.map((w) => (
-                      <tr key={w.work_id} className="hover:bg-slate-50/80 dark:hover:bg-slate-800/40 transition-colors">
-                        <td className="py-3 px-4 max-w-sm">
-                          <span className="font-mono font-bold text-slate-900 dark:text-slate-100 block">
-                            {w.work_id}
-                          </span>
-                          <span className="text-slate-600 dark:text-slate-400 line-clamp-1 mt-0.5" title={w.work_description || w.work_type}>
-                            {w.work_description || w.work_title || w.work_type || 'Community Development Work'}
-                          </span>
-                          <span className="text-[10px] text-slate-400 block font-mono">
-                            Vendor: {w.primary_vendor || w.ida || 'District Implementing Agency'}
-                          </span>
+                      <tr key={w.work_id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors">
+                        <td className="py-2.5 px-4">
+                          <div className="font-mono text-slate-500 font-medium">{w.work_id}</div>
+                          <div className="text-slate-800 dark:text-slate-200 line-clamp-1 max-w-sm">{w.work_description}</div>
                         </td>
-                        <td className="py-3 px-4">
-                          <Badge variant="outline" className="text-[10px] bg-slate-50 border-slate-200">
-                            {w.work_category || w.work_type || 'Community Infrastructure'}
+                        <td className="py-2.5 px-4 font-mono font-medium">{formatINR(w.sanction_amount)}</td>
+                        <td className="py-2.5 px-4 font-mono text-emerald-600 font-medium">{formatINR(w.disbursed_amount)}</td>
+                        <td className="py-2.5 px-4">
+                          <Badge variant="outline" className={`font-mono ${w.risk_score > 60 ? 'border-rose-300 text-rose-700 bg-rose-50' : 'border-amber-300 text-amber-700 bg-amber-50'}`}>
+                            {w.risk_score}
                           </Badge>
                         </td>
-                        <td className="py-3 px-4 font-mono font-semibold text-slate-800 dark:text-slate-200">
-                          {formatINR(w.sanctioned_amount ?? w.sanction_amount)}
+                        <td className="py-2.5 px-4">
+                          <Badge variant="outline" className="bg-slate-50 text-slate-600 border-slate-200 text-[10px]">
+                            {w.work_status}
+                          </Badge>
                         </td>
-                        <td className="py-3 px-4 font-mono text-emerald-600 dark:text-emerald-400">
-                          {formatINR(w.total_disbursed ?? w.total_fund_disbursed)}
-                        </td>
-                        <td className="py-3 px-4">
-                          <span className="inline-flex items-center gap-1 font-mono font-bold px-2 py-0.5 rounded text-xs bg-rose-50 text-rose-700 border border-rose-200">
-                            Risk {w.risk_score ?? w.final_risk_score ?? 0}
-                          </span>
-                        </td>
-                        <td className="py-3 px-4 text-right">
+                        <td className="py-2.5 px-4 text-right">
                           <Button
-                            variant="outline"
+                            variant="ghost"
                             size="sm"
                             onClick={() => onSelectWork && onSelectWork(w.work_id)}
-                            className="h-7 px-2.5 text-xs rounded-lg text-indigo-700 border-indigo-200 hover:bg-indigo-50 cursor-pointer"
+                            className="h-7 text-xs text-indigo-600 hover:text-indigo-700 hover:bg-indigo-50 cursor-pointer"
                           >
                             Inspect Details
                           </Button>
@@ -304,34 +294,54 @@ export default function MPDashboard({
               <TrendingUp className="w-4 h-4 text-emerald-600" />
               Expenditure vs Sanction Ratio
             </h4>
+
+            {/* Metric 1: Expenditure vs Sanction Ratio */}
             <div className="space-y-2">
-              <div className="flex justify-between text-xs text-slate-600">
-                <span>Fund Utilization Rate</span>
-                <span className="font-bold font-mono text-emerald-600">{utilizationPct}%</span>
+              <div className="flex justify-between text-xs text-slate-600 dark:text-slate-400">
+                <span className="font-semibold text-slate-800 dark:text-slate-200">Disbursed vs Sanctioned Ratio</span>
+                <span className="font-bold font-mono text-emerald-600 dark:text-emerald-400">{expenditurePct}%</span>
               </div>
-              <Progress value={Math.min(Number(utilizationPct) || 0, 100)} className="h-3" />
+              <Progress value={Math.min(Number(expenditurePct) || 0, 100)} className="h-3" />
               <p className="text-[11px] text-slate-400 leading-relaxed">
-                Represents disbursed contractor vouchers against authorized administrative sanctions in {constituency}.
+                Represents disbursed contractor vouchers ({formatINR(totalDisbursed)}) against authorized administrative sanctions ({formatINR(totalSanctioned)}) in {constituency}.
               </p>
             </div>
 
-            <div className="pt-3 border-t border-slate-100 dark:border-slate-800 grid grid-cols-3 gap-2.5 text-xs">
-              <div className="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/50">
+            {/* Metric 2: Scheme Entitlement Utilization */}
+            <div className="space-y-2 pt-3 border-t border-slate-100 dark:border-slate-800">
+              <div className="flex justify-between text-xs text-slate-600 dark:text-slate-400">
+                <span className="font-medium">MPLADS Entitlement Utilization</span>
+                <span className="font-bold font-mono text-indigo-600 dark:text-indigo-400">{utilizationPct}%</span>
+              </div>
+              <Progress value={Math.min(Number(utilizationPct) || 0, 100)} className="h-2" />
+              <p className="text-[11px] text-slate-400 leading-relaxed">
+                Authorized sanctions committed ({formatINR(totalSanctioned)}) against the statutory 5-year entitlement ({formatINR(entitlement)}).
+              </p>
+            </div>
+
+            <div className="pt-3 border-t border-slate-100 dark:border-slate-800 grid grid-cols-4 gap-2 text-xs">
+              <div className="p-2 rounded-xl bg-slate-50 dark:bg-slate-800/50">
                 <span className="text-slate-400 block text-[10px]">Entitlement</span>
                 <strong className="text-xs font-bold font-mono text-slate-800 dark:text-slate-200">
                   {formatINR(entitlement)}
                 </strong>
               </div>
-              <div className="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/50">
+              <div className="p-2 rounded-xl bg-slate-50 dark:bg-slate-800/50">
                 <span className="text-slate-400 block text-[10px]">Sanctioned</span>
                 <strong className="text-xs font-bold font-mono text-slate-800 dark:text-slate-200">
                   {formatINR(totalSanctioned)}
                 </strong>
               </div>
-              <div className="p-2.5 rounded-xl bg-emerald-50/50 dark:bg-emerald-950/20 border border-emerald-100 dark:border-emerald-900/40">
+              <div className="p-2 rounded-xl bg-emerald-50/50 dark:bg-emerald-950/20 border border-emerald-100 dark:border-emerald-900/40">
                 <span className="text-emerald-700 dark:text-emerald-300 block text-[10px]">Disbursed</span>
                 <strong className="text-xs font-bold font-mono text-emerald-800 dark:text-emerald-200">
                   {formatINR(totalDisbursed)}
+                </strong>
+              </div>
+              <div className="p-2 rounded-xl bg-amber-50/50 dark:bg-amber-950/20 border border-amber-100 dark:border-amber-900/40">
+                <span className="text-amber-700 dark:text-amber-300 block text-[10px]">Unspent</span>
+                <strong className="text-xs font-bold font-mono text-amber-800 dark:text-amber-200">
+                  {formatINR(unspentBalance)}
                 </strong>
               </div>
             </div>

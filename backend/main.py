@@ -1334,6 +1334,23 @@ def get_constituency_dashboard(
         or mp_allocations.find_one({"constituency": {"$regex": f"^{re.escape(clean_const)}", "$options": "i"}})
         or mp_allocations.find_one({"constituency": {"$regex": re.escape(clean_const), "$options": "i"}})
     )
+    if not mp_doc and user and user.get("mp_name"):
+        mp_doc = mp_allocations.find_one({"mp_name": {"$regex": f"^{re.escape(user['mp_name'])}$", "$options": "i"}})
+
+    # Fallback to search works by MP name if constituency name differed
+    if not matched_works:
+        rep_name = (mp_doc.get("mp_name") if mp_doc else None) or (user.get("mp_name") if user else None)
+        if rep_name:
+            matched_works = list(works.find({"mp_name": {"$regex": f"^{re.escape(rep_name)}$", "$options": "i"}}))
+            if matched_works:
+                total_works = len(matched_works)
+                total_sanctioned = sum(float(w.get("sanction_amount") or 0) for w in matched_works)
+                total_disbursed = sum(float(w.get("total_fund_disbursed") or 0) for w in matched_works)
+                completed_works = sum(1 for w in matched_works if w.get("work_status") in ("Completed", "Work Completed"))
+                pending_works = total_works - completed_works
+                high_risk_works = [w for w in matched_works if w.get("risk_tier") == "High Risk - Review"]
+                high_risk_count = len(high_risk_works)
+                avg_risk = sum(float(w.get("final_risk_score") or 0) for w in matched_works) / max(1, total_works)
     mp_info = None
     if mp_doc:
         mp_alloc = float(mp_doc.get("allocated_amount") or mp_doc.get("allocated") or 250000000.0)
