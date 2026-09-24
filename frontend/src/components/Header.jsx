@@ -295,7 +295,7 @@ export default function Header({
 
             <div className="flex items-center justify-between gap-2">
               <a
-                href="https://civicquest-tau.vercel.app/"
+                href="https://questcivic.vercel.app/login"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="h-7 px-2.5 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-800 text-[11px] font-semibold inline-flex items-center gap-1.5 shadow-2xs select-none group"
