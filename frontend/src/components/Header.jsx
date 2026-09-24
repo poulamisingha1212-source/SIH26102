@@ -155,7 +155,7 @@ export default function Header({
             {/* Civic Action Badge (Public view only - compact & non-intrusive) */}
             {currentRole === 'Read-Only Public Tier' && (
               <a
-                href="https://civicquest-tau.vercel.app/"
+                href="https://questcivic.vercel.app/login"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="hidden 2xl:inline-flex h-8 px-2.5 rounded-lg bg-emerald-50/90 hover:bg-emerald-100 border border-emerald-200 text-emerald-800 text-xs font-semibold items-center gap-1.5 shadow-2xs transition-all select-none group"
